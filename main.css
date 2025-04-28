@@ -1,0 +1,193 @@
+
+/* For anything specific to this project */
+
+html {
+  background: var(--bg-main);
+  color: var(--text-color);
+  font-family: "Agdasima", sans-serif;
+  letter-spacing: 0.75px;
+}
+
+/* * * * * * * * * * * * * *
+          Layout 
+* * * * * * * * * * * * * */
+
+.layout {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  grid-template-rows: 120px 1fr;
+  gap: 8px;
+}
+
+.sidebar-container {
+  grid-area: 1 / 1 / 3 / 1;
+  margin-right: 8px;
+}
+
+.topbar-container {
+  grid-area: 1 / 2 / 1 / 3;
+  margin-bottom: 8px;
+}
+
+.main-container {
+  grid-column:  2/3;
+  grid-row: 2/3;
+  overflow: hidden;
+}
+
+
+
+.card-header {
+  font-size: 16px;
+  font-family: math;
+}
+
+
+
+
+
+#banner-gif-container {
+  height: 100%;
+  width: 100%;
+  border-radius: var(--border-radius-med);
+  background-image: var(--banner-url);
+  background-size: 1000px;
+  background-position: 50% -110px;
+}
+
+
+
+/* * * * * * * * * * * * * *
+          Links 
+* * * * * * * * * * * * * */
+
+#links-list-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.link-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.link-group > .link {
+  border-radius: 3px;
+  padding: 3px 7px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.link-group > .link:hover, .link-group > .link:focus {
+  background: var(--bg-link-hover);
+  outline: none;
+}
+
+.link-group > .header {
+  margin-bottom: 2px;
+  border-bottom: 1px solid var(--text-color);
+  width: 90%;
+  font-family: math;
+  letter-spacing: 1.5px;
+}
+
+
+/* * * * * * * * * * * * * *
+          Search
+* * * * * * * * * * * * * */
+
+#search-bar-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+#search-bar-container .title {
+  flex: 5;
+  font-size: 50px;
+  cursor: pointer;
+  font-family: math;
+}
+
+#search-bar-container .search {
+  flex: 2;
+  width: 100%;
+}
+
+#search-bar-container .search > input {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--border-radius-med);
+}
+
+
+
+/* * * * * * * * * * * * * *
+          iFrames
+* * * * * * * * * * * * * */
+#tools-container {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+#iframe-links {
+  position: absolute;
+  right: 10px;
+  top: 20px;
+  bottom: 20px;
+  background: rgba(0,0,0, 0.3);
+  border-radius: 4px;
+  font-size: 14pt;
+}
+
+#iframe-links #iframe-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+}
+
+.iframe-link a {
+  display:inline-block;
+  width: 100%;
+  border-radius: 4px;
+  padding: 4px 6px;
+  text-decoration: none;
+  color: white;
+}
+
+.iframe-link a:hover {
+  background: rgba(0,0,0, 0.6);
+}
+
+#iframe-scroller {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+
+.iframe-container {
+  height: 100%;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.iframe-container iframe {
+  height: 100%;
+  width: 100%;
+  scroll-snap-align: start;
+  border-radius: 5px;
+}
+
+iframe {
+  border: none;
+}

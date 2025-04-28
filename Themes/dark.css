@@ -1,0 +1,26 @@
+
+
+:root {
+  --bg-main: #161B21;
+  --bg-card: #202730;
+  --bg-link-hover: rgba(255,255,255,0.1);
+  --bg-notepad: #161B21;
+
+  --bg-banner: #2c4154;
+
+  --text-color: white;
+
+  --banner-url: url('./banners/ff.gif');
+
+  --icon-filter: invert(100%) sepia(1%) saturate(3748%) hue-rotate(270deg) brightness(120%) contrast(100%);
+  --icon-filter-green: invert(85%) sepia(37%) saturate(673%) hue-rotate(46deg) brightness(88%) contrast(86%);
+  --icon-filter-red: invert(38%) sepia(56%) saturate(1688%) hue-rotate(329deg) brightness(81%) contrast(84%);
+}
+
+
+
+html {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

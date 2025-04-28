@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Need a Thing</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="Components/General/General.css" />
+  <link rel="stylesheet" href="Themes/dark.css" />
+  <link rel="stylesheet" href="main.css" />
+  
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- JS -->
+  <script src="main.js"></script>
+  
+  <!-- Quill (rich text editor) -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+
+</head>
+<body>
+  <div class="layout">
+    <!-- Quick links -->
+    <div class="sidebar-container card">
+      <div id="links-list-container">
+        <div class="card-header">
+          Quick Links
+        </div>
+      </div>
+    </div>
+
+    <!-- search bar -->
+    <div class="topbar-container card">
+      <div id="search-bar-container">
+        <div class="title" data-engine-index="0" id="search-bar-title">
+          consult the oracle
+        </div>
+        <div class="search">
+          <input id="searchBarInput" autocomplete="off" tabindex="1"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-container card">
+      <div id="tools-container">
+        <!-- scroll indicator -->
+        <div id="iframe-links">
+          <div id="iframe-links-list"></div>
+        </div>
+        <div id="iframe-scroller"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
