@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => mainSetup() );
 
 function mainSetup(){
-  createLinksList();
   setupSearchBar();
-  setupScrolling();
+  createLinksList();
+  createToolsLinks();
 }
 
 
@@ -138,95 +138,48 @@ function createLinksList(){
 // * * * * * * * * * * * * *
 //          Tools
 // * * * * * * * * * * * * *
-var pageIndex = 0;
 
-// scrolling effects
-function setupScrolling(){
-  
-  // setup tools links
-  var toolsList = document.getElementById('iframe-links-list');
-  var iframeList = document.getElementById('iframe-scroller');
-  
-  var toolsData = JSON.parse(localStorage.getItem('tools-list'));
-  
-  toolsData.forEach((tool, index) => {
-    var link = `<div class="iframe-link"><a href="#${tool.id}">${tool.title}</a></div>`;
-    toolsList.insertAdjacentHTML("beforeend", link);
+function createToolsLinks(){    
+  const bookmarks = JSON.parse(localStorage.getItem('tools-data'));
+  const container = document.getElementById("bookmarks");
 
-    var iframe = `<div class="iframe-container iframe_${index}" id="${tool.id}" data-index='${index}'><iframe src="${tool.url}"></iframe></div>`;
-    iframeList.insertAdjacentHTML('beforeend', iframe);
-  });
-  
-  // keep track of current index of scrolling
-  const sections = document.querySelectorAll('.iframe-container');
-  const observer = new IntersectionObserver(
-    entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          pageIndex = parseInt(entry.target.dataset.index);
-          console.log('Current Index:', pageIndex);
-        }
-      });
-    },
-    {
-      root: null,
-      threshold: 0.8 
-    }
-  );
+  Object.entries(bookmarks).forEach(([category, tools]) => {
+    const categoryDiv = document.createElement("div");
+    categoryDiv.classList.add("category");
 
-  sections.forEach(section => observer.observe(section));
+    const title = document.createElement("h2");
+    title.classList.add("category-title");
+    title.textContent = category;
+    categoryDiv.appendChild(title);
 
-  document.addEventListener('keydown', function(e){
-    console.log(e);
-    if(e.key - 1 <= sections.length && e.ctrlKey){
-      scrollToChild(parseInt(e.key)-1, 0);
-    }
+    const grid = document.createElement("div");
+    grid.classList.add("grid");
 
-    if(e.key == "ArrowLeft" && e.ctrlKey && pageIndex > 0){
-      scrollToChild(pageIndex-1, 0);
-    }
+    tools.forEach(({ title, href, icon }) => {
+      const card = document.createElement("a");
+      card.href = href;
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+      card.classList.add("card");
 
-    if(e.key == "ArrowRight" && e.ctrlKey && pageIndex < sections.length){
-      scrollToChild(pageIndex+1, 0);
-    }
+      const iconEl = document.createElement("img");
+      iconEl.classList.add("icon");
+      iconEl.src = `../../icons/${icon}.svg`;
+      iconEl.alt = title;
+
+      const text = document.createElement("div");
+      text.classList.add("link-title");
+      text.textContent = title;
+
+      card.appendChild(iconEl);
+      card.appendChild(text);
+      grid.appendChild(card);
+    });
+
+    categoryDiv.appendChild(grid);
+    container.appendChild(categoryDiv);
   });
 }
-
-
-function scrollToChild(index, duration = 1) {
-  console.log('scrolling to ' + index);
-  var container = document.getElementById('iframe-scroller');
-  var iframe = document.querySelector(`.iframe_${index}`);
-  
-  if (!container || !iframe) return;
-
-  const end = iframe.offsetLeft;
-
-  // If duration is 0, scroll instantly
-  if (duration === 0) {
-    container.scrollTo({left: end, behavior: "instant"});
-    return;
-  }
-
-  const start = container.scrollLeft;
-  const change = end - start;
-  const startTime = performance.now();
-
-  function animateScroll(currentTime) {
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1); // Linear easing
-
-    container.scrollLeft = start + change * progress;
-
-    if (elapsed < duration) {
-      requestAnimationFrame(animateScroll);
-    }
-  }
-
-  requestAnimationFrame(animateScroll);
-}
-
-
 
 
 // * * * * * * * * * * * * *

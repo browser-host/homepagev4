@@ -127,67 +127,59 @@ html {
 
 
 /* * * * * * * * * * * * * *
-          iFrames
+          tools
 * * * * * * * * * * * * * */
-#tools-container {
-  height: 100%;
+
+#tools-container .container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+#tools-container .category {
   width: 100%;
-  position: relative;
 }
-
-#iframe-links {
-  position: absolute;
-  right: 10px;
-  top: 20px;
-  bottom: 20px;
-  background: rgba(0,0,0, 0.3);
-  border-radius: 4px;
-  font-size: 14pt;
+#tools-container .category-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
-
-#iframe-links #iframe-links-list {
+#tools-container .grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+#tools-container .card {
+  aspect-ratio: 1.2;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
-}
-
-.iframe-link a {
-  display:inline-block;
-  width: 100%;
-  border-radius: 4px;
-  padding: 4px 6px;
+  align-items: center;
+  padding: 16px;
+  border: 2px solid #444;
+  border-radius: 8px;
+  text-align: center;
+  background-color: var(--bg-card);
+  transition: box-shadow 0.3s, border 0.3s;
   text-decoration: none;
+}
+#tools-container .card:hover {
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+  border: 2px solid transparent;
+  animation: rainbow-border 6s infinite;
+}
+@keyframes rainbow-border {
+  0% { border-color: red; }
+  25% { border-color: orange; }
+  50% { border-color: green; }
+  75% { border-color: blue; }
+  100% { border-color: red; }
+}
+#tools-container .icon {
+  width: 75px;
+  height: 75px;
+  margin-bottom: 8px;
+  filter: invert(100%);
+}
+#tools-container .link-title {
   color: white;
-}
-
-.iframe-link a:hover {
-  background: rgba(0,0,0, 0.6);
-}
-
-#iframe-scroller {
-  height: 100%;
-  width: 100%;
-  display: flex;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-}
-
-.iframe-container {
-  height: 100%;
-  width: 100%;
-  flex-shrink: 0;
-}
-
-.iframe-container iframe {
-  height: 100%;
-  width: 100%;
-  scroll-snap-align: start;
-  border-radius: 5px;
-}
-
-iframe {
-  border: none;
+  text-decoration: none;
 }
