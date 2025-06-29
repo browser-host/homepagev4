@@ -140,10 +140,10 @@ function createLinksList(){
 // * * * * * * * * * * * * *
 
 function createToolsLinks(){    
-  const bookmarks = JSON.parse(localStorage.getItem('tools-data'));
-  const container = document.getElementById("bookmarks");
+  const toolData = JSON.parse(localStorage.getItem('tools-data'));
+  const container = document.getElementById("tools-list-container");
 
-  Object.entries(bookmarks).forEach(([category, tools]) => {
+  Object.entries(toolData).forEach(([category, tools]) => {
     const categoryDiv = document.createElement("div");
     categoryDiv.classList.add("category");
 
@@ -155,16 +155,15 @@ function createToolsLinks(){
     const grid = document.createElement("div");
     grid.classList.add("grid");
 
-    tools.forEach(({ title, href, icon }) => {
+    tools.forEach(({ title, url, icon }) => {
       const card = document.createElement("a");
-      card.href = href;
-      card.target = "_blank";
+      card.href = url;
       card.rel = "noopener noreferrer";
       card.classList.add("card");
 
       const iconEl = document.createElement("img");
       iconEl.classList.add("icon");
-      iconEl.src = `../../icons/${icon}.svg`;
+      iconEl.src = `icons/${icon}.svg`;
       iconEl.alt = title;
 
       const text = document.createElement("div");
