@@ -1,0 +1,23 @@
+
+/* General settings */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg-main);
+  color: var(--text-color);
+  font-family: "Agdasima", sans-serif;
+  letter-spacing: 0.75px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+body {
+  padding: var(--gutter);
+  height: 100%;  
+}
+

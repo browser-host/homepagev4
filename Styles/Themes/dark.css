@@ -9,6 +9,7 @@
   --bg-banner: #2c4154;
 
   --text-color: white;
+  
 
   --banner-url: url('./banners/ff.gif');
 
@@ -18,9 +19,3 @@
 }
 
 
-
-html {
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-}

@@ -1,0 +1,14 @@
+
+:root {
+  --border-radius-med: 5px;
+}
+
+/* For common reusable comnponents */
+
+
+.card {
+  padding: 12px;
+  border-radius: var(--border-radius-med);
+  background: var(--bg-card);
+}
+

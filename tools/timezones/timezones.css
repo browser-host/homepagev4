@@ -1,0 +1,56 @@
+
+#button-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#grid-cotainer {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+#grid {
+  width: 80%;
+  height: 45%;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(1px, 1fr));
+  gap: 20px;
+  font-size: 25px;
+}
+
+@media screen and (max-width: 920px) {
+  #grid {
+    grid-template-columns: repeat(2, minmax(1px, 1fr));
+  }
+}
+
+.timezone-container {
+  height: 100%;
+  width: 100%;
+  position: relative; 
+}
+
+.timezone-container .time {
+  height: 100%;
+  width: 100%;
+  background: none;
+  color: white;
+  font-size: 60px;
+  text-align: center;
+  border: none;
+}
+
+.timezone-container .zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  top: 70%;
+}

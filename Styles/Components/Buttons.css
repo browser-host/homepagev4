@@ -1,0 +1,14 @@
+
+
+
+.button {
+    cursor: pointer;
+    padding: 8px 6px;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    width: fit-content;
+}
+
+.button:hover {
+    background: rgba(255,255,255, 0.1);
+}
