@@ -1,6 +1,6 @@
-document.addEventListener("DOMContentLoaded", () => mainSetup() );
+document.addEventListener("DOMContentLoaded", () => mainSetup());
 
-function mainSetup(){
+function mainSetup() {
   setupSearchBar();
   createLinksList();
   createToolsLinks();
@@ -25,7 +25,7 @@ const searchEngineData = [
   }
 ];
 
-function setupSearchBar(){
+function setupSearchBar() {
   // set initial text
   const title = document.getElementById('search-bar-title');
   const searchBar = document.getElementById('searchBarInput');
@@ -34,16 +34,16 @@ function setupSearchBar(){
 
   // set listeners
   document.onkeyup = (event) => {
-    if(event.key === " " && event.ctrlKey){
+    if (event.key === " " && event.ctrlKey) {
       searchBar.focus();
     }
   }
 
   searchBar.onkeyup = (event) => {
-    if(event.key === " " && event.ctrlKey){
+    if (event.key === " " && event.ctrlKey) {
       title.click();
     }
-    if( event.key === "Enter" ){
+    if (event.key === "Enter") {
       search(event.ctrlKey);
     }
   }
@@ -51,7 +51,7 @@ function setupSearchBar(){
   title.onclick = () => {
     // increment/loop
     engineIndex++;
-    if(engineIndex > searchEngineData.length - 1){
+    if (engineIndex > searchEngineData.length - 1) {
       engineIndex = 0;
     }
 
@@ -66,7 +66,7 @@ const search = (newTab) => {
   // get searchword
   const searchWord = document.getElementById('searchBarInput').value;
 
-  if ( !(searchWord == "" || searchWord == null) ){
+  if (!(searchWord == "" || searchWord == null)) {
     // get selected search engine
     const title = document.getElementById("search-bar-title");
     const searchEngine = title.dataset.engineIndex;
@@ -79,7 +79,7 @@ const search = (newTab) => {
   }
 }
 
-function getTargetUrl(value, engine){
+function getTargetUrl(value, engine) {
   // check to see if input is already a valid URL
   if (isWebUrl(value)) return value
   // check for a custom shortform input
@@ -102,7 +102,7 @@ const isWebUrl = value => {
 }
 
 // custom shortform searches
-const lookup = {"imdb":"/","deepl":"https://deepl.com/","reddit":"https://reddit.com/","maps":"https://maps.google.com/"}
+const lookup = { "imdb": "/", "deepl": "https://deepl.com/", "reddit": "https://reddit.com/", "maps": "https://maps.google.com/" }
 
 
 
@@ -110,7 +110,7 @@ const lookup = {"imdb":"/","deepl":"https://deepl.com/","reddit":"https://reddit
 //          Links
 // * * * * * * * * * * * * *
 
-function createLinksList(){
+function createLinksList() {
   var linksContent = "";
   var tabIndexCounter = 2;
 
@@ -121,7 +121,7 @@ function createLinksList(){
       <div class="link-group">
         <div class="header">${group}</div>
     `;
-    
+
     linksData[group].forEach((link) => {
       linksContent += `<a class="link" href="${link.href}" tabindex=${tabIndexCounter}>${link.title}</a>`;
       tabIndexCounter++;
@@ -139,8 +139,7 @@ function createLinksList(){
 //          Tools
 // * * * * * * * * * * * * *
 
-function createToolsLinks(){    
-  const toolData = JSON.parse(localStorage.getItem('tools-data'));
+function createToolsLinks() {
   const container = document.getElementById("tools-list-container");
 
   Object.entries(toolData).forEach(([category, tools]) => {
@@ -193,4 +192,63 @@ const debounce = (callback, wait) => {
       callback(...args);
     }, wait);
   };
+}
+
+
+
+
+
+// * * * * * * * * * * * * *
+//          JSON
+// * * * * * * * * * * * * *
+
+var toolData = {
+  "Web Design": [
+    {
+      "title": "Color Picker",
+      "id": "color-picker",
+      "url": "./tools/color picker/index.html",
+      "icon": "color-picker"
+    },
+    {
+      "title": "Gradients",
+      "id": "gradients",
+      "url": "./tools/background gradient gen/gradients.html",
+      "icon": "picture"
+    }
+  ],
+  "Data Transformation": [
+    {
+      "title": "Base64 to Mp3",
+      "id": "base64",
+      "url": "./tools/base64 to mp3/base64.html",
+      "icon": "computer-download"
+    },
+    {
+      "title": "Clipboard to Image",
+      "id": "clipboard-to-image",
+      "url": "./tools/clipboard to image/clipboardToImage.html",
+      "icon": "clipboard"
+    },
+    {
+      "title": "Cyberchef",
+      "id": "cyberchef",
+      "url": "./tools/CyberChef_v10.19.4/CyberChef_v10.19.4.html",
+      "icon": "code"
+    },
+    {
+      "title": "Msg File Viewer",
+      "id": "msg-file-viewer",
+      "url": "./tools/msg to html viewer/msg to html viewer.html",
+      "icon": "pdf"
+    }
+  ],
+  "Information": [
+    {
+      "title": "Timezones",
+      "id": "timezone-viewer",
+      "url": "./tools/timezones/index.html",
+      "icon": "clock"
+    }
+  ]
 }

@@ -17,7 +17,7 @@ html {
 }
 
 body {
-  padding: var(--gutter);
+  padding: 16px;
   height: 100%;  
 }
 
