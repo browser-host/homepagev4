@@ -17,6 +17,7 @@ var timezones = [
 
 let grid = document.getElementById('grid');
 
+const curTime = new Date();
 timezones.forEach((timezone) => {
   // create container
   var container = document.createElement('div');
@@ -27,47 +28,62 @@ timezones.forEach((timezone) => {
   var time = document.createElement('input');
   time.classList.add('time');
   time.dataset['zone'] = timezone.zone;
-  let formattedTime = new Date().toLocaleTimeString('en-US',
+  let formattedTime = curTime.toLocaleTimeString('en-US',
     { timeZone: timezone.zone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
   );
   time.value = formattedTime;
-
+  
   // input listeners
   time.addEventListener('focus', () => {
     clearInterval(timeInterval);
   });
-
+  
   time.addEventListener('blur', () => {
     timeInterval = setInterval(incrementTime, 1000);
   })
-
+  
   time.addEventListener('change', (e) => {
     setTime(e.target);
   });
-
+  
   // label display
   var zone = document.createElement('div');
   zone.classList.add('zone');
   zone.textContent = timezone.label;
-
+  
   container.appendChild(time);
   container.appendChild(zone);
-
+  
   grid.appendChild(container);
 });
 
+// init epoch
+const epochTime = document.getElementById('epoch-time');
+epochTime.innerHTML = +curTime;
+
+// setup incrementing time
+timeInterval = setInterval(incrementTime, 1000);
+
+// listener on epoch time
+epochTime.addEventListener('click', function() {
+  navigator.clipboard.writeText(this.innerHTML);
+});
 
 // update time display every second
 function incrementTime(){
   targetTimeCounter += 1000;
+  let time = targetTime === 0 ? new Date() : new Date(targetTime + targetTimeCounter);
+
+  // set time of each time zone
   timezones.forEach((timezone) => {
-    let time = targetTime === 0 ? new Date() : new Date(targetTime + targetTimeCounter);
     let formattedTime = time.toLocaleTimeString('en-US', 
       { timeZone: timezone.zone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }
     );
-
     document.querySelector(`#${timezone.label} .time`).value = formattedTime;
   });
+
+  // set epoch time
+  epochTime.innerHTML = +time;
 }
 
 function roundTime(){
@@ -126,7 +142,3 @@ function pause(){
 
   paused = !paused;
 }
-
-
-// setup incrementing time
-timeInterval = setInterval(incrementTime, 1000);
