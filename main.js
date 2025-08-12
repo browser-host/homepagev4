@@ -1,9 +1,13 @@
+var modal;
+
 document.addEventListener("DOMContentLoaded", () => mainSetup());
 
 function mainSetup() {
   setupSearchBar();
   createLinksList();
   createToolsLinks();
+
+  modal = document.getElementById('modal');
 }
 
 
@@ -116,6 +120,7 @@ function createLinksList() {
 
   const linksData = JSON.parse(localStorage.getItem('links-data'));
 
+  // create links html
   Object.keys(linksData).forEach((group) => {
     linksContent += `
       <div class="link-group">
@@ -131,6 +136,8 @@ function createLinksList() {
   });
 
   document.querySelector('#links-list-container').insertAdjacentHTML("beforeend", linksContent);
+
+  
 }
 
 
@@ -180,6 +187,7 @@ function createToolsLinks() {
 }
 
 
+
 // * * * * * * * * * * * * *
 //          Util
 // * * * * * * * * * * * * *
@@ -193,8 +201,6 @@ const debounce = (callback, wait) => {
     }, wait);
   };
 }
-
-
 
 
 
@@ -251,4 +257,64 @@ var toolData = {
       "icon": "clock"
     }
   ]
+}
+
+
+
+// * * * * * * * * * * * * *
+//          Forms
+// * * * * * * * * * * * * *
+
+function handleNewLinkSubmit(e){
+  var formData = new FormData(e.target);
+
+  // check data
+  var title = formData.get('input-link-title');
+  var href = formData.get('input-link-href');
+  var category = formData.get('input-link-category');
+
+  if (!title || title == '' || !href || href == '')
+    return;
+
+  // use ddl option if no new one input
+  if (!category || category == '')
+    category = formData.get('select-link-category');
+
+  // add new link to data
+  const linksData = JSON.parse(localStorage.getItem('links-data'));
+
+  if (!linksData.hasOwnProperty(category))
+    linksData[category] = [];
+
+  linksData[category].push({
+    'title': title,
+    'href': href,
+    'icon': 'x'
+  });
+  localStorage.setItem('links-data', JSON.stringify(linksData));
+}
+
+function setupNewLinkForm(){
+  const linksData = JSON.parse(localStorage.getItem('links-data'));
+  var selectCategory = document.getElementById('select-link-category');
+
+  Object.keys(linksData).forEach((category) => {
+    var option = `<option value='${category}'>${category}</option>`;
+    selectCategory.insertAdjacentHTML("beforeend", option);
+  });
+}
+
+
+
+// * * * * * * * * * * * * *
+//          Modal
+// * * * * * * * * * * * * *
+
+function openModal(){
+  modal.classList.remove('d-none');
+  setupNewLinkForm();
+}
+
+function closeModal(){
+  modal.classList.add('d-none');
 }

@@ -29,7 +29,7 @@
     <!-- Quick links -->
     <div class="sidebar-container card">
       <div id="links-list-container">
-        <div class="card-header">
+        <div id="add-link" class="card-header" onclick="openModal();">
           Quick Links
         </div>
       </div>
@@ -51,6 +51,42 @@
       <div id="tools-container">
         <div id="tools-list-container"></div>
       </div>
+    </div>
+  </div>
+
+  <div id="modal" class="d-none">
+    <div id="modal-exit" onclick="closeModal();">
+      <img class="icon" src="icons/x.svg" alt="Exit">
+    </div>
+
+    <div id="modal-content" class="hidden">
+      <form id="add-link-form" class="form" onsubmit="handleNewLinkSubmit(event);">
+        <div class="form-content">
+          <div>
+            <div>Title</div>
+            <input type="text" name="input-link-title" autocomplete="off"/>
+          </div>
+          
+          <div>
+            <div>URL</div>
+            <input type="text" name="input-link-href" autocomplete="off"/>
+          </div>
+          
+          <div>
+            <div>Category</div>
+            <div class="double">
+              <select id="select-link-category" name="select-link-category"></select>
+              <span>or</span>
+              <input type="text" name="input-link-category" autocomplete="off" placeholder="enter for new category"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button onclick="closeModal();">Cancel</button>
+          <button type="submit">Add</button>
+        </div>
+      </form>
     </div>
   </div>
 </body>
