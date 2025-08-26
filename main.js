@@ -121,13 +121,13 @@ function createLinksList() {
   const linksData = JSON.parse(localStorage.getItem('links-data'));
 
   // create links html
-  Object.keys(linksData).forEach((group) => {
+  Object.keys(linksData).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach((group) => {
     linksContent += `
       <div class="link-group">
         <div class="header">${group}</div>
     `;
 
-    linksData[group].forEach((link) => {
+    linksData[group].sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase())).forEach((link) => {
       linksContent += `<a class="link" href="${link.href}" tabindex=${tabIndexCounter}>${link.title}</a>`;
       tabIndexCounter++;
     });
@@ -136,8 +136,6 @@ function createLinksList() {
   });
 
   document.querySelector('#links-list-container').insertAdjacentHTML("beforeend", linksContent);
-
-  
 }
 
 
