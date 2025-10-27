@@ -240,12 +240,12 @@ var toolData = {
       "url": "./tools/CyberChef_v10.19.4/CyberChef_v10.19.4.html",
       "icon": "code"
     },
-    {
-      "title": "Msg File Viewer",
-      "id": "msg-file-viewer",
-      "url": "./tools/msg to html viewer/msg to html viewer.html",
-      "icon": "pdf"
-    }
+    // {
+    //   "title": "Msg File Viewer",
+    //   "id": "msg-file-viewer",
+    //   "url": "./tools/msg to html viewer/msg to html viewer.html",
+    //   "icon": "pdf"
+    // }
   ],
   "Information": [
     {

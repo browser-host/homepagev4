@@ -1,5 +1,12 @@
 @import url('atomics.css');
 
+
+:root {
+  --border-radius-sm: 5px;
+  --border-radius-md: 5px;
+}
+
+
 /* General settings */
 * {
   margin: 0;
