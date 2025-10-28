@@ -12,8 +12,13 @@
   font-size: 10pt;
 }
 
-.button:hover {
+.button:not(:disabled):hover {
     background: rgba(255,255,255, 0.1);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: .65;
 }
 
 /* sizes */

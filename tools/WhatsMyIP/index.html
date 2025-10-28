@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Timezones</title>
+  <link rel="stylesheet" href="../../Styles/main.css"/>
+  <link rel="stylesheet" href="../../Styles/Themes/dark.css"/>
+  <link rel="stylesheet" href="../../Styles/Components/Components.css"/>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .card {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    #ip-address {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <span id="ip-address">-</span>
+    <button id="retry-button" class='button' disabled onclick="handleRetryClick();">Retry</button>
+  </div>
+</body>
+
+<script type="text/javascript">
+  var ipifyAPI = 'https://api.ipify.org';
+
+  function handleRetryClick(){
+    console.log('fetching');
+    document.getElementById('ip-address').innerHTML = '-';
+    document.getElementById('retry-button').disabled = true;
+    fetchIPAddress();
+  }
+  
+  function fetchIPAddress(){
+    fetch('https://api.ipify.org')
+      .then(res => res.text())
+      .then(data => {
+        if (data && data != ''){
+          document.getElementById('ip-address').innerHTML = data;
+          document.getElementById('retry-button').disabled = false;
+        }
+      });
+  }
+
+  fetchIPAddress();
+
+</script>
+</html>

@@ -253,6 +253,12 @@ var toolData = {
       "id": "timezone-viewer",
       "url": "./tools/timezones/index.html",
       "icon": "clock"
+    },
+    {
+      "title": "Whats My IP?",
+      "id": "whats-my-ip",
+      "url": "./tools/WhatsMyIP/index.html",
+      "icon": "location"
     }
   ]
 }
