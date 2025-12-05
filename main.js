@@ -118,7 +118,12 @@ function createLinksList() {
   var linksContent = "";
   var tabIndexCounter = 2;
 
-  const linksData = JSON.parse(localStorage.getItem('links-data'));
+  var linksData = JSON.parse(localStorage.getItem('links-data'));
+
+  if (!linksData){
+    linksData = {};
+    localStorage.setItem('links-data', '{}');
+  }
 
   // create links html
   Object.keys(linksData).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).forEach((group) => {
@@ -273,7 +278,7 @@ function handleNewLinkSubmit(e){
   var formData = new FormData(e.target);
 
   // check data
-  var title = formData.get('input-link-title');
+  var title = formData.get('input-link-title') ?? 'No Name';
   var href = formData.get('input-link-href');
   var category = formData.get('input-link-category');
 
@@ -282,7 +287,7 @@ function handleNewLinkSubmit(e){
 
   // use ddl option if no new one input
   if (!category || category == '')
-    category = formData.get('select-link-category');
+    category = formData.get('select-link-category') ?? title[0];
 
   // add new link to data
   const linksData = JSON.parse(localStorage.getItem('links-data'));
