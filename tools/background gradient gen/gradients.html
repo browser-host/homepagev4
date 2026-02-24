@@ -1,4 +1,4 @@
-<!-- SlopWare -->
+<!-- SlopWare Enhanced -->
 <!DOCTYPE html>
 <html lang="en">
 
@@ -37,11 +37,26 @@
       overflow: hidden;
     }
 
-    /* ── PREVIEW ─────────────────────────────── */
-    #preview {
+    /* ── PREVIEW ── */
+    #preview-container {
       flex: 1;
       position: relative;
+      overflow: hidden;
+    }
+
+    #preview {
+      position: absolute;
+      inset: 0;
       transition: background 0.35s ease;
+    }
+
+    #filter-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 1;
     }
 
     #css-output {
@@ -62,6 +77,7 @@
       display: flex;
       align-items: flex-start;
       gap: 10px;
+      z-index: 10;
     }
 
     #css-output:hover {
@@ -76,24 +92,56 @@
       margin-top: 1px;
     }
 
-    /* ── PANEL ────────────────────────────────── */
+    /* ── PANEL ── */
     #panel {
       width: var(--panel-w);
       background: var(--panel);
       border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      overflow-y: auto;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
+      overflow: hidden;
     }
 
-    #panel::-webkit-scrollbar {
-      width: 3px;
+    /* ── TABS ── */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
     }
 
-    #panel::-webkit-scrollbar-thumb {
-      background: var(--border);
+    .tab-btn {
+      flex: 1;
+      padding: 14px 8px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+    }
+
+    .tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 1px 1px 0 0;
+      box-shadow: 0 0 6px var(--accent);
     }
 
     .panel-header {
@@ -106,6 +154,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-shrink: 0;
     }
 
     .header-dot {
@@ -115,6 +164,27 @@
       background: var(--accent);
       box-shadow: 0 0 8px var(--accent);
       flex-shrink: 0;
+    }
+
+    /* ── TAB CONTENT ── */
+    .tab-content {
+      display: none;
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-content::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .tab-content::-webkit-scrollbar-thumb {
+      background: var(--border);
     }
 
     .section {
@@ -143,7 +213,7 @@
       background: var(--border);
     }
 
-    /* ── TYPE BUTTONS ────────────────────────── */
+    /* ── TYPE BUTTONS ── */
     .type-row {
       display: flex;
       gap: 5px;
@@ -175,7 +245,7 @@
       background: var(--accent-dim);
     }
 
-    /* ── ANGLE ───────────────────────────────── */
+    /* ── ANGLE ── */
     .angle-row {
       display: flex;
       align-items: center;
@@ -248,7 +318,7 @@
       cursor: pointer;
     }
 
-    /* ── STOP BAR ────────────────────────────── */
+    /* ── STOP BAR ── */
     #stop-bar-wrap {
       position: relative;
       margin-bottom: 26px;
@@ -295,7 +365,7 @@
       pointer-events: none;
     }
 
-    /* ── COLOR LIST ──────────────────────────── */
+    /* ── COLOR LIST ── */
     #colors-list {
       display: flex;
       flex-direction: column;
@@ -379,7 +449,7 @@
       color: var(--accent);
     }
 
-    /* ── CUSTOM COLOR PICKER POPUP ───────────── */
+    /* ── CUSTOM COLOR PICKER ── */
     #color-picker-popup {
       position: fixed;
       z-index: 1000;
@@ -397,7 +467,6 @@
       display: block;
     }
 
-    /* SV box */
     #cp-sv-box {
       width: 100%;
       height: 150px;
@@ -427,7 +496,6 @@
       pointer-events: none;
     }
 
-    /* Hue bar */
     #cp-hue-bar {
       width: 100%;
       height: 12px;
@@ -435,8 +503,7 @@
       position: relative;
       cursor: ew-resize;
       margin-bottom: 8px;
-      background: linear-gradient(to right,
-          #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+      background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
     }
 
     #cp-hue-cursor {
@@ -451,7 +518,6 @@
       pointer-events: none;
     }
 
-    /* Alpha bar */
     #cp-alpha-bar {
       width: 100%;
       height: 12px;
@@ -533,7 +599,140 @@
       background: var(--border);
     }
 
-    /* ── ACTION BUTTONS ──────────────────────── */
+    /* ── FILTER TAB ── */
+    .filter-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .filter-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: border-color 0.15s, transform 0.1s;
+      position: relative;
+    }
+
+    .filter-card:hover {
+      border-color: var(--accent);
+      transform: scale(1.02);
+    }
+
+    .filter-card.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), inset 0 0 0 1px var(--accent-dim);
+    }
+
+    .filter-card canvas {
+      display: block;
+      width: 100%;
+      height: 70px;
+    }
+
+    .filter-card-label {
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      padding: 5px 8px 6px;
+      text-transform: uppercase;
+    }
+
+    .filter-card.active .filter-card-label {
+      color: var(--accent);
+    }
+
+    .filter-none-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      padding: 10px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      transition: all 0.15s;
+      margin-bottom: 6px;
+    }
+
+    .filter-none-card:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .filter-none-card.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-dim);
+    }
+
+    /* ── SLIDERS ── */
+    .slider-row {
+      margin-bottom: 12px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .slider-name {
+      font-size: 9px;
+      color: var(--muted);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .slider-val {
+      font-size: 10px;
+      color: var(--accent);
+    }
+
+    .slider-ctrl {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 2px;
+      border-radius: 1px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .slider-ctrl::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+
+    /* ── BLEND MODE ── */
+    .blend-select {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 10px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      margin-bottom: 14px;
+    }
+
+    .blend-select:focus {
+      border-color: var(--accent);
+    }
+
+    /* ── BUTTONS ── */
     .btn-add {
       width: 100%;
       padding: 8px;
@@ -600,7 +799,7 @@
       background: var(--accent-dim);
     }
 
-    /* ── PRESETS ─────────────────────────────── */
+    /* ── PRESETS ── */
     .presets-grid {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
@@ -629,8 +828,9 @@
 </head>
 
 <body>
-
-  <div id="preview">
+  <div id="preview-container">
+    <div id="preview"></div>
+    <canvas id="filter-canvas"></canvas>
     <div id="css-output">
       <span class="copy-label">[ copy css ]</span>
       <span id="css-text"></span>
@@ -642,57 +842,123 @@
       <div class="header-dot"></div>
       Gradient Studio
     </div>
-
-    <div class="section">
-      <div style="height:14px"></div>
-      <div class="section-label">Type</div>
-      <div class="type-row">
-        <button class="type-btn active" data-type="linear">Linear</button>
-        <button class="type-btn" data-type="radial">Radial</button>
-        <button class="type-btn" data-type="conic">Conic</button>
-      </div>
-      <div class="section-label">Angle</div>
-      <div class="angle-row">
-        <div id="angle-dial">
-          <div id="dial-needle"></div>
-        </div>
-        <div>
-          <div class="angle-val" id="angle-display">90</div>
-          <div class="angle-unit">degrees</div>
-        </div>
-      </div>
-      <input type="range" id="angle-slider" min="0" max="360" value="90">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="gradient">Gradient</button>
+      <button class="tab-btn" data-tab="filters">Filters</button>
     </div>
 
-    <div class="section">
-      <div class="section-label">Colors</div>
-      <div id="stop-bar-wrap">
-        <div id="stop-bar"></div>
+    <!-- ── GRADIENT TAB ── -->
+    <div class="tab-content active" id="tab-gradient">
+      <div class="section">
+        <div style="height:14px"></div>
+        <div class="section-label">Type</div>
+        <div class="type-row">
+          <button class="type-btn active" data-type="linear">Linear</button>
+          <button class="type-btn" data-type="radial">Radial</button>
+          <button class="type-btn" data-type="conic">Conic</button>
+        </div>
+        <div class="section-label">Angle</div>
+        <div class="angle-row">
+          <div id="angle-dial">
+            <div id="dial-needle"></div>
+          </div>
+          <div>
+            <div class="angle-val" id="angle-display">90</div>
+            <div class="angle-unit">degrees</div>
+          </div>
+        </div>
+        <input type="range" id="angle-slider" min="0" max="360" value="90">
       </div>
-      <div id="colors-list"></div>
-      <button class="btn-add" id="btn-add-color">+ add color stop</button>
-      <div class="btn-row">
-        <button class="btn primary" id="btn-randomize">⟳ Randomize</button>
-        <button class="btn" id="btn-random-angle">⟳ Angle</button>
+      <div class="section">
+        <div class="section-label">Colors</div>
+        <div id="stop-bar-wrap">
+          <div id="stop-bar"></div>
+        </div>
+        <div id="colors-list"></div>
+        <button class="btn-add" id="btn-add-color">+ add color stop</button>
+        <div class="btn-row">
+          <button class="btn primary" id="btn-randomize">⟳ Randomize</button>
+          <button class="btn" id="btn-random-angle">⟳ Angle</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="btn-reverse">⇄ Reverse</button>
+          <button class="btn" id="btn-clear-locks">Unlock All</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn download" id="btn-download">↓ Download 4K PNG</button>
+        </div>
       </div>
-      <div class="btn-row">
-        <button class="btn" id="btn-reverse">⇄ Reverse</button>
-        <button class="btn" id="btn-clear-locks">Unlock All</button>
-      </div>
-      <div class="btn-row">
-        <button class="btn download" id="btn-download">↓ Download 4K PNG</button>
+      <div class="section">
+        <div class="hr"></div>
+        <div style="height:16px"></div>
+        <div class="section-label">Presets</div>
+        <div class="presets-grid" id="presets-grid"></div>
       </div>
     </div>
 
-    <div class="section">
-      <div class="hr"></div>
-      <div style="height:16px"></div>
-      <div class="section-label">Presets</div>
-      <div class="presets-grid" id="presets-grid"></div>
+    <!-- ── FILTERS TAB ── -->
+    <div class="tab-content" id="tab-filters">
+      <div class="section">
+        <div style="height:14px"></div>
+        <div class="section-label">Overlay Filter</div>
+        <div class="filter-none-card active" id="filter-none">✕ None</div>
+        <div class="filter-grid" id="filter-grid"></div>
+
+        <div class="section-label">Opacity</div>
+        <div class="slider-row">
+          <div class="slider-header">
+            <span class="slider-name">Filter Strength</span>
+            <span class="slider-val" id="val-opacity">60%</span>
+          </div>
+          <input type="range" class="slider-ctrl" id="sl-opacity" min="0" max="100" value="60">
+        </div>
+
+        <div class="section-label">Blend Mode</div>
+        <select class="blend-select" id="blend-mode">
+          <option value="overlay">Overlay</option>
+          <option value="screen">Screen</option>
+          <option value="multiply">Multiply</option>
+          <option value="soft-light">Soft Light</option>
+          <option value="hard-light">Hard Light</option>
+          <option value="color-dodge">Color Dodge</option>
+          <option value="luminosity">Luminosity</option>
+          <option value="normal">Normal</option>
+        </select>
+
+        <div class="section-label">Parameters</div>
+
+        <div class="slider-row" id="param-scale-row">
+          <div class="slider-header">
+            <span class="slider-name">Scale</span>
+            <span class="slider-val" id="val-scale">50%</span>
+          </div>
+          <input type="range" class="slider-ctrl" id="sl-scale" min="1" max="100" value="50">
+        </div>
+
+        <div class="slider-row" id="param-octaves-row">
+          <div class="slider-header">
+            <span class="slider-name">Detail</span>
+            <span class="slider-val" id="val-octaves">4</span>
+          </div>
+          <input type="range" class="slider-ctrl" id="sl-octaves" min="1" max="8" value="4">
+        </div>
+
+        <div class="slider-row" id="param-contrast-row">
+          <div class="slider-header">
+            <span class="slider-name">Contrast</span>
+            <span class="slider-val" id="val-contrast">50%</span>
+          </div>
+          <input type="range" class="slider-ctrl" id="sl-contrast" min="0" max="100" value="50">
+        </div>
+
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn primary" id="btn-reseed">⟳ Regenerate</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- Custom Color Picker Popup -->
+  <!-- Custom Color Picker -->
   <div id="color-picker-popup">
     <div id="cp-sv-box">
       <canvas id="cp-sv-canvas"></canvas>
@@ -733,10 +999,33 @@
       ]
     };
 
+    let filterState = {
+      active: null,   // null | filter id string
+      opacity: 60,
+      blendMode: 'overlay',
+      scale: 50,
+      octaves: 4,
+      contrast: 50,
+      seed: Math.random() * 10000,
+    };
+
+    // ════════════════════════════════════════════
+    //  TABS
+    // ════════════════════════════════════════════
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      });
+    });
+
     // ════════════════════════════════════════════
     //  DOM REFS
     // ════════════════════════════════════════════
     const preview = document.getElementById('preview');
+    const filterCanvas = document.getElementById('filter-canvas');
     const angleDisp = document.getElementById('angle-display');
     const angleSlider = document.getElementById('angle-slider');
     const angleDial = document.getElementById('angle-dial');
@@ -746,6 +1035,7 @@
     const cssOutput = document.getElementById('css-output');
     const presetsGrid = document.getElementById('presets-grid');
     const stopBar = document.getElementById('stop-bar');
+    const filterGrid = document.getElementById('filter-grid');
 
     // ════════════════════════════════════════════
     //  GRADIENT BUILDER
@@ -780,12 +1070,10 @@
       state.colors.forEach((c, i) => {
         const item = document.createElement('div');
         item.className = 'color-item';
-
         const swatch = document.createElement('div');
         swatch.className = 'swatch-btn';
         swatch.style.background = c.hex;
         swatch.addEventListener('click', () => openPicker(i, swatch));
-
         const hexInput = document.createElement('input');
         hexInput.className = 'color-hex';
         hexInput.type = 'text';
@@ -793,23 +1081,16 @@
         hexInput.maxLength = 7;
         hexInput.addEventListener('change', e => {
           const v = e.target.value.trim();
-          if (/^#[0-9a-fA-F]{6}$/.test(v)) {
-            state.colors[i].hex = v;
-            swatch.style.background = v;
-            render();
-          }
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) { state.colors[i].hex = v; swatch.style.background = v; render(); }
         });
-
         const stopLabel = document.createElement('span');
         stopLabel.className = 'color-stop-label';
         stopLabel.textContent = c.stop + '%';
-
         const lockBtn = document.createElement('button');
         lockBtn.className = 'icon-btn' + (c.locked ? ' locked' : '');
         lockBtn.title = c.locked ? 'Unlock' : 'Lock';
         lockBtn.textContent = c.locked ? '🔒' : '🔓';
         lockBtn.addEventListener('click', () => { state.colors[i].locked = !state.colors[i].locked; renderColors(); });
-
         const removeBtn = document.createElement('button');
         removeBtn.className = 'icon-btn';
         removeBtn.title = 'Remove';
@@ -817,15 +1098,10 @@
         removeBtn.addEventListener('click', () => {
           if (state.colors.length <= 2) return;
           state.colors.splice(i, 1);
-          redistributeStops();
-          render();
+          redistributeStops(); render();
         });
-
-        item.appendChild(swatch);
-        item.appendChild(hexInput);
-        item.appendChild(stopLabel);
-        item.appendChild(lockBtn);
-        item.appendChild(removeBtn);
+        item.appendChild(swatch); item.appendChild(hexInput); item.appendChild(stopLabel);
+        item.appendChild(lockBtn); item.appendChild(removeBtn);
         colorsList.appendChild(item);
       });
     }
@@ -852,12 +1128,10 @@
     const cpClose = document.getElementById('cp-close');
 
     let cpState = { colorIndex: -1, h: 0, s: 1, v: 1, a: 1 };
-    let cpDrag = null; // 'sv' | 'hue' | 'alpha'
+    let cpDrag = null;
 
     function hexToHsv(hex) {
-      let r = parseInt(hex.slice(1, 3), 16) / 255;
-      let g = parseInt(hex.slice(3, 5), 16) / 255;
-      let b = parseInt(hex.slice(5, 7), 16) / 255;
+      let r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
       const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
       let h = 0, s = max === 0 ? 0 : d / max, v = max;
       if (d !== 0) {
@@ -869,10 +1143,8 @@
     }
 
     function hsvToHex(h, s, v) {
-      h = h / 360;
-      let r, g, b;
-      const i = Math.floor(h * 6);
-      const f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+      h = h / 360; let r, g, b;
+      const i = Math.floor(h * 6), f = h * 6 - i, p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
       switch (i % 6) {
         case 0: r = v; g = t; b = p; break; case 1: r = q; g = v; b = p; break;
         case 2: r = p; g = v; b = t; break; case 3: r = p; g = q; b = v; break;
@@ -881,68 +1153,33 @@
       return '#' + [r, g, b].map(x => Math.round(x * 255).toString(16).padStart(2, '0')).join('');
     }
 
-    function hsvToRgb(h, s, v) {
-      const hex = hsvToHex(h, s, v);
-      return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
-    }
+    function hsvToRgb(h, s, v) { const hex = hsvToHex(h, s, v); return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)]; }
 
     function drawSVCanvas() {
       const ctx = svCanvas.getContext('2d');
       const w = svBox.clientWidth, h = svBox.clientHeight;
       svCanvas.width = w; svCanvas.height = h;
-      // Hue base
-      const hueColor = hsvToHex(cpState.h, 1, 1);
-      ctx.fillStyle = hueColor;
+      ctx.fillStyle = hsvToHex(cpState.h, 1, 1);
       ctx.fillRect(0, 0, w, h);
-      // White gradient left→right
       const wg = ctx.createLinearGradient(0, 0, w, 0);
-      wg.addColorStop(0, 'rgba(255,255,255,1)');
-      wg.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = wg;
-      ctx.fillRect(0, 0, w, h);
-      // Black gradient top→bottom
+      wg.addColorStop(0, 'rgba(255,255,255,1)'); wg.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = wg; ctx.fillRect(0, 0, w, h);
       const bg = ctx.createLinearGradient(0, 0, 0, h);
-      bg.addColorStop(0, 'rgba(0,0,0,0)');
-      bg.addColorStop(1, 'rgba(0,0,0,1)');
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, w, h);
+      bg.addColorStop(0, 'rgba(0,0,0,0)'); bg.addColorStop(1, 'rgba(0,0,0,1)');
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
     }
 
-    function updateSVCursor() {
-      const w = svBox.clientWidth, h = svBox.clientHeight;
-      svCursor.style.left = (cpState.s * w) + 'px';
-      svCursor.style.top = ((1 - cpState.v) * h) + 'px';
-    }
-
-    function updateHueCursor() {
-      hueCursor.style.left = (cpState.h / 360 * 100) + '%';
-    }
-
-    function updateAlphaBar() {
-      const [r, g, b] = hsvToRgb(cpState.h, cpState.s, cpState.v);
-      alphaGrad.style.background = `linear-gradient(to right, rgba(${r},${g},${b},0), rgba(${r},${g},${b},1))`;
-      alphaCur.style.left = (cpState.a * 100) + '%';
-    }
-
-    function updatePickerHex() {
-      const hex = hsvToHex(cpState.h, cpState.s, cpState.v);
-      cpHex.value = hex;
-      cpSwatch.style.background = hex;
-    }
+    function updateSVCursor() { const w = svBox.clientWidth, h = svBox.clientHeight; svCursor.style.left = (cpState.s * w) + 'px'; svCursor.style.top = ((1 - cpState.v) * h) + 'px'; }
+    function updateHueCursor() { hueCursor.style.left = (cpState.h / 360 * 100) + '%'; }
+    function updateAlphaBar() { const [r, g, b] = hsvToRgb(cpState.h, cpState.s, cpState.v); alphaGrad.style.background = `linear-gradient(to right,rgba(${r},${g},${b},0),rgba(${r},${g},${b},1))`; alphaCur.style.left = (cpState.a * 100) + '%'; }
+    function updatePickerHex() { const hex = hsvToHex(cpState.h, cpState.s, cpState.v); cpHex.value = hex; cpSwatch.style.background = hex; }
 
     function pickerChanged() {
-      drawSVCanvas();
-      updateSVCursor();
-      updateHueCursor();
-      updateAlphaBar();
-      updatePickerHex();
-      // Live update state
+      drawSVCanvas(); updateSVCursor(); updateHueCursor(); updateAlphaBar(); updatePickerHex();
       if (cpState.colorIndex >= 0) {
         const hex = hsvToHex(cpState.h, cpState.s, cpState.v);
         state.colors[cpState.colorIndex].hex = hex;
-        applyGradient();
-        renderStopBar();
-        // update swatch and hex in list without full re-render
+        applyGradient(); renderStopBar();
         const swatches = colorsList.querySelectorAll('.swatch-btn');
         const hexes = colorsList.querySelectorAll('.color-hex');
         if (swatches[cpState.colorIndex]) swatches[cpState.colorIndex].style.background = hex;
@@ -951,85 +1188,44 @@
     }
 
     function openPicker(colorIndex, anchorEl) {
-      // Mark active swatch
       colorsList.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('active'));
       anchorEl.classList.add('active');
-
       cpState.colorIndex = colorIndex;
       const hsv = hexToHsv(state.colors[colorIndex].hex);
       cpState.h = hsv.h; cpState.s = hsv.s; cpState.v = hsv.v; cpState.a = 1;
-
       picker.classList.add('visible');
       positionPicker(anchorEl);
-      // Draw after visible so dimensions are available
-      requestAnimationFrame(() => {
-        drawSVCanvas();
-        updateSVCursor();
-        updateHueCursor();
-        updateAlphaBar();
-        updatePickerHex();
-      });
+      requestAnimationFrame(() => { drawSVCanvas(); updateSVCursor(); updateHueCursor(); updateAlphaBar(); updatePickerHex(); });
     }
 
     function positionPicker(anchor) {
       const ar = anchor.getBoundingClientRect();
       const pw = 220, ph = 240;
-      let left = ar.left - pw - 10;
-      let top = ar.top;
+      let left = ar.left - pw - 10, top = ar.top;
       if (left < 8) left = ar.right + 10;
       if (top + ph > window.innerHeight - 8) top = window.innerHeight - ph - 8;
-      picker.style.left = left + 'px';
-      picker.style.top = top + 'px';
+      picker.style.left = left + 'px'; picker.style.top = top + 'px';
     }
 
-    function closePicker() {
-      picker.classList.remove('visible');
-      colorsList.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('active'));
-      cpState.colorIndex = -1;
-    }
-
+    function closePicker() { picker.classList.remove('visible'); colorsList.querySelectorAll('.swatch-btn').forEach(s => s.classList.remove('active')); cpState.colorIndex = -1; }
     cpClose.addEventListener('click', closePicker);
 
-    // SV drag
     svBox.addEventListener('mousedown', e => { cpDrag = 'sv'; handleSVDrag(e); e.preventDefault(); });
     hueBar.addEventListener('mousedown', e => { cpDrag = 'hue'; handleHueDrag(e); e.preventDefault(); });
     alphaBar.addEventListener('mousedown', e => { cpDrag = 'alpha'; handleAlphaDrag(e); e.preventDefault(); });
 
-    function handleSVDrag(e) {
-      const r = svBox.getBoundingClientRect();
-      cpState.s = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-      cpState.v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height));
-      pickerChanged();
-    }
-    function handleHueDrag(e) {
-      const r = hueBar.getBoundingClientRect();
-      cpState.h = Math.max(0, Math.min(360, (e.clientX - r.left) / r.width * 360));
-      pickerChanged();
-    }
-    function handleAlphaDrag(e) {
-      const r = alphaBar.getBoundingClientRect();
-      cpState.a = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-      pickerChanged();
-    }
+    function handleSVDrag(e) { const r = svBox.getBoundingClientRect(); cpState.s = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); cpState.v = Math.max(0, Math.min(1, 1 - (e.clientY - r.top) / r.height)); pickerChanged(); }
+    function handleHueDrag(e) { const r = hueBar.getBoundingClientRect(); cpState.h = Math.max(0, Math.min(360, (e.clientX - r.left) / r.width * 360)); pickerChanged(); }
+    function handleAlphaDrag(e) { const r = alphaBar.getBoundingClientRect(); cpState.a = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)); pickerChanged(); }
 
-    document.addEventListener('mousemove', e => {
-      if (!cpDrag) return;
-      if (cpDrag === 'sv') handleSVDrag(e);
-      if (cpDrag === 'hue') handleHueDrag(e);
-      if (cpDrag === 'alpha') handleAlphaDrag(e);
-    });
+    document.addEventListener('mousemove', e => { if (!cpDrag) return; if (cpDrag === 'sv') handleSVDrag(e); if (cpDrag === 'hue') handleHueDrag(e); if (cpDrag === 'alpha') handleAlphaDrag(e); });
     document.addEventListener('mouseup', () => { cpDrag = null; });
 
     cpHex.addEventListener('change', e => {
       const v = e.target.value.trim();
-      if (/^#[0-9a-fA-F]{6}$/.test(v)) {
-        const hsv = hexToHsv(v);
-        cpState.h = hsv.h; cpState.s = hsv.s; cpState.v = hsv.v;
-        pickerChanged();
-      }
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) { const hsv = hexToHsv(v); cpState.h = hsv.h; cpState.s = hsv.s; cpState.v = hsv.v; pickerChanged(); }
     });
 
-    // Close picker when clicking outside
     document.addEventListener('mousedown', e => {
       if (!picker.classList.contains('visible')) return;
       if (picker.contains(e.target)) return;
@@ -1071,16 +1267,11 @@
       const rect = stopBar.getBoundingClientRect();
       const pct = (e.clientX - stopDrag.startX) / rect.width * 100;
       state.colors[stopDrag.index].stop = Math.round(Math.min(100, Math.max(0, stopDrag.startStop + pct)));
-      // fast path
       const sorted = [...state.colors].sort((a, b) => a.stop - b.stop);
       stopBar.style.background = `linear-gradient(to right, ${sorted.map(c => `${c.hex} ${c.stop}%`).join(', ')})`;
       const handles = stopBar.querySelectorAll('.stop-handle');
       state.colors.forEach((c, i) => {
-        if (handles[i]) {
-          handles[i].style.left = c.stop + '%';
-          const lbl = handles[i].querySelector('.stop-handle-label');
-          if (lbl) lbl.textContent = c.stop + '%';
-        }
+        if (handles[i]) { handles[i].style.left = c.stop + '%'; const lbl = handles[i].querySelector('.stop-handle-label'); if (lbl) lbl.textContent = c.stop + '%'; }
       });
       applyGradient();
     });
@@ -1088,12 +1279,11 @@
     document.addEventListener('mouseup', () => {
       if (!stopDrag) return;
       stopBar.querySelectorAll('.stop-handle').forEach(h => h.classList.remove('dragging'));
-      stopDrag = null;
-      renderColors();
+      stopDrag = null; renderColors();
     });
 
     // ════════════════════════════════════════════
-    //  ANGLE DIAL
+    //  ANGLE
     // ════════════════════════════════════════════
     let dialDragging = false, dialCenter = {};
     angleDial.addEventListener('mousedown', e => {
@@ -1106,22 +1296,19 @@
       if (!dialDragging) return;
       let angle = Math.round(Math.atan2(e.clientX - dialCenter.x, -(e.clientY - dialCenter.y)) * 180 / Math.PI);
       if (angle < 0) angle += 360;
-      state.angle = angle;
-      render();
+      state.angle = angle; render();
     });
     document.addEventListener('mouseup', () => { dialDragging = false; });
-
     angleSlider.addEventListener('input', e => { state.angle = parseInt(e.target.value); render(); });
 
     // ════════════════════════════════════════════
-    //  CONTROLS
+    //  GRADIENT CONTROLS
     // ════════════════════════════════════════════
     document.querySelectorAll('.type-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        state.type = btn.dataset.type;
-        render();
+        state.type = btn.dataset.type; render();
       });
     });
 
@@ -1156,6 +1343,338 @@
     });
 
     // ════════════════════════════════════════════
+    //  NOISE / FILTER ENGINE
+    // ════════════════════════════════════════════
+
+    // Permutation table for Perlin noise
+    function makePermutation(seed) {
+      const p = [];
+      for (let i = 0; i < 256; i++) p.push(i);
+      // Seeded shuffle
+      let s = seed;
+      function srnd() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; }
+      for (let i = 255; i > 0; i--) { const j = Math.floor(srnd() * (i + 1));[p[i], p[j]] = [p[j], p[i]]; }
+      return [...p, ...p];
+    }
+
+    function fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+    function lerp(t, a, b) { return a + t * (b - a); }
+    function grad(hash, x, y, z) { const h = hash & 15; const u = h < 8 ? x : y; const v = h < 4 ? y : h === 12 || h === 14 ? x : z; return ((h & 1) ? -u : u) + ((h & 2) ? -v : v); }
+
+    function makeNoise(seed) {
+      const perm = makePermutation(seed | 0);
+      return function noise(x, y, z = 0) {
+        const X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+        x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+        const u = fade(x), v = fade(y), w = fade(z);
+        const A = perm[X] + Y, AA = perm[A] + Z, AB = perm[A + 1] + Z;
+        const B = perm[X + 1] + Y, BA = perm[B] + Z, BB = perm[B + 1] + Z;
+        return lerp(w, lerp(v, lerp(u, grad(perm[AA], x, y, z), grad(perm[BA], x - 1, y, z)), lerp(u, grad(perm[AB], x, y - 1, z), grad(perm[BB], x - 1, y - 1, z))), lerp(v, lerp(u, grad(perm[AA + 1], x, y, z - 1), grad(perm[BA + 1], x - 1, y, z - 1)), lerp(u, grad(perm[AB + 1], x, y - 1, z - 1), grad(perm[BB + 1], x - 1, y - 1, z - 1))));
+      };
+    }
+
+    function fbm(noiseFunc, x, y, octaves, lacunarity = 2.0, persistence = 0.5) {
+      let val = 0, amp = 1, freq = 1, max = 0;
+      for (let i = 0; i < octaves; i++) { val += noiseFunc(x * freq, y * freq) * amp; max += amp; amp *= persistence; freq *= lacunarity; }
+      return val / max;
+    }
+
+    // FILTER DEFINITIONS
+    const FILTERS = [
+      {
+        id: 'perlin',
+        name: 'Perlin Noise',
+        render(ctx, w, h, params, seed) {
+          const noise = makeNoise(seed);
+          const scale = 0.004 + params.scale * 0.02;
+          const oct = params.octaves;
+          const contrast = 1 + params.contrast * 3;
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            let v = fbm(noise, x * scale, y * scale, oct);
+            v = Math.tanh(v * contrast);
+            v = (v + 1) * 0.5;
+            v = Math.max(0, Math.min(1, v));
+            const i = (y * w + x) * 4;
+            const c = v * 255 | 0;
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      },
+      {
+        id: 'fractal',
+        name: 'Fractal',
+        render(ctx, w, h, params, seed) {
+          const noise = makeNoise(seed);
+          const noise2 = makeNoise(seed + 999);
+          const scale = 0.002 + params.scale * 0.015;
+          const oct = params.octaves;
+          const contrast = 1 + params.contrast * 4;
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const dx = fbm(noise, x * scale + 3.1, y * scale + 4.7, oct);
+            const dy = fbm(noise2, x * scale + 8.3, y * scale + 2.9, oct);
+            let v = fbm(noise, x * scale + dx * 2, y * scale + dy * 2, oct);
+            v = Math.tanh(v * contrast);
+            v = (v + 1) * 0.5;
+            const i = (y * w + x) * 4;
+            const c = Math.max(0, Math.min(255, v * 255 | 0));
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      },
+      {
+        id: 'voronoi',
+        name: 'Voronoi',
+        render(ctx, w, h, params, seed) {
+          const cellCount = Math.round(3 + params.scale * 0.3);
+          const contrast = params.contrast / 50;
+          // Generate points
+          let s = seed;
+          function srnd() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; }
+          const pts = [];
+          for (let i = 0; i < cellCount * cellCount; i++) pts.push([srnd() * w, srnd() * h]);
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          const maxDist = Math.sqrt(w * w + h * h);
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            let d1 = Infinity, d2 = Infinity;
+            for (const [px, py] of pts) {
+              const dist = Math.sqrt((x - px) ** 2 + (y - py) ** 2);
+              if (dist < d1) { d2 = d1; d1 = dist; } else if (dist < d2) { d2 = dist; }
+            }
+            const edge = (d2 - d1) / maxDist;
+            let v = Math.min(1, edge * contrast * 10);
+            v = 1 - Math.pow(1 - v, 2);
+            const i = (y * w + x) * 4;
+            const c = v * 255 | 0;
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      },
+      {
+        id: 'marble',
+        name: 'Marble',
+        render(ctx, w, h, params, seed) {
+          const noise = makeNoise(seed);
+          const scale = 0.003 + params.scale * 0.01;
+          const oct = params.octaves;
+          const freq = 1 + params.contrast * 5;
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const n = fbm(noise, x * scale, y * scale, oct);
+            let v = Math.sin(x * scale * freq + n * 6) * 0.5 + 0.5;
+            v = Math.max(0, Math.min(1, v));
+            const i = (y * w + x) * 4;
+            const c = v * 255 | 0;
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      },
+      {
+        id: 'grain',
+        name: 'Film Grain',
+        render(ctx, w, h, params, seed) {
+          const intensity = 0.2 + params.contrast * 0.8;
+          const coarseness = 0.5 + params.scale * 2;
+          const noise = makeNoise(seed);
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const n = noise(x * coarseness * 0.05, y * coarseness * 0.05);
+            let v = (n + 1) * 0.5;
+            v = 0.5 + (v - 0.5) * intensity;
+            v = Math.max(0, Math.min(1, v));
+            const i = (y * w + x) * 4;
+            const c = v * 255 | 0;
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      },
+      {
+        id: 'waves',
+        name: 'Waves',
+        render(ctx, w, h, params, seed) {
+          const noise = makeNoise(seed);
+          const scale = 0.002 + params.scale * 0.01;
+          const waveFreq = 1 + params.contrast * 8;
+          const oct = params.octaves;
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const n = fbm(noise, x * scale, y * scale, oct);
+            const vx = Math.sin(y * scale * waveFreq + n * 4) * 0.5 + 0.5;
+            const vy = Math.sin(x * scale * waveFreq + n * 4) * 0.5 + 0.5;
+            let v = (vx + vy) * 0.5;
+            v = Math.max(0, Math.min(1, v));
+            const i = (y * w + x) * 4;
+            const c = v * 255 | 0;
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      },
+      {
+        id: 'crystal',
+        name: 'Crystal',
+        render(ctx, w, h, params, seed) {
+          let s = seed;
+          function srnd() { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; }
+          const noise = makeNoise(seed);
+          const count = Math.round(5 + params.scale * 0.5);
+          const pts = [];
+          for (let i = 0; i < count; i++) pts.push([srnd() * w, srnd() * h, Math.floor(srnd() * 3)]);
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          const scale = 0.003 + params.scale * 0.005;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const warp = noise(x * scale, y * scale) * 30;
+            let closest = Infinity, idx = 0;
+            for (let j = 0; j < pts.length; j++) {
+              const dist = Math.abs(x + warp - pts[j][0]) + Math.abs(y + warp - pts[j][1]);
+              if (dist < closest) { closest = dist; idx = j; }
+            }
+            const v = Math.min(1, (closest / (Math.min(w, h) * 0.3)) * (0.5 + params.contrast));
+            const i = (y * w + x) * 4;
+            const c = v * 255 | 0;
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      },
+      {
+        id: 'plasma',
+        name: 'Plasma',
+        render(ctx, w, h, params, seed) {
+          const noise = makeNoise(seed);
+          const noise2 = makeNoise(seed + 12345);
+          const scale = 0.002 + params.scale * 0.012;
+          const contrast = 1 + params.contrast * 2;
+          const data = ctx.createImageData(w, h);
+          const d = data.data;
+          for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+            const n1 = fbm(noise, x * scale, y * scale, params.octaves);
+            const n2 = fbm(noise2, x * scale + 100, y * scale + 100, params.octaves);
+            let v = Math.sin(n1 * Math.PI * contrast) * Math.cos(n2 * Math.PI * contrast);
+            v = (v + 1) * 0.5;
+            v = Math.max(0, Math.min(1, v));
+            const i = (y * w + x) * 4;
+            const c = v * 255 | 0;
+            d[i] = c; d[i + 1] = c; d[i + 2] = c; d[i + 3] = 255;
+          }
+          ctx.putImageData(data, 0, 0);
+        }
+      }
+    ];
+
+    // ── FILTER THUMBNAILS ──
+    const thumbCanvases = {};
+    function buildFilterThumbnail(filter) {
+      const card = document.createElement('div');
+      card.className = 'filter-card';
+      card.dataset.id = filter.id;
+      const c = document.createElement('canvas');
+      c.width = 128; c.height = 70;
+      thumbCanvases[filter.id] = c;
+      const lbl = document.createElement('div');
+      lbl.className = 'filter-card-label';
+      lbl.textContent = filter.name;
+      card.appendChild(c); card.appendChild(lbl);
+      card.addEventListener('click', () => selectFilter(filter.id));
+      filterGrid.appendChild(card);
+      drawFilterThumb(filter, c, filterState.seed);
+    }
+
+    function drawFilterThumb(filter, canvas, seed) {
+      const ctx = canvas.getContext('2d');
+      const params = { scale: 50, octaves: 3, contrast: 40 };
+      filter.render(ctx, canvas.width, canvas.height, params, seed);
+    }
+
+    FILTERS.forEach(f => buildFilterThumbnail(f));
+
+    document.getElementById('filter-none').addEventListener('click', () => selectFilter(null));
+
+    function selectFilter(id) {
+      filterState.active = id;
+      document.getElementById('filter-none').classList.toggle('active', id === null);
+      document.querySelectorAll('.filter-card').forEach(c => {
+        c.classList.toggle('active', c.dataset.id === id);
+      });
+      drawFilter();
+    }
+
+    // ── DRAW FILTER OVERLAY ──
+    let filterDrawTimer = null;
+    function drawFilter() {
+      const container = document.getElementById('preview-container');
+      filterCanvas.width = container.clientWidth;
+      filterCanvas.height = container.clientHeight;
+
+      if (!filterState.active) {
+        filterCanvas.style.opacity = 0;
+        filterCanvas.style.mixBlendMode = 'normal';
+        return;
+      }
+
+      const filter = FILTERS.find(f => f.id === filterState.active);
+      if (!filter) return;
+
+      const ctx = filterCanvas.getContext('2d');
+      const params = {
+        scale: filterState.scale,
+        octaves: filterState.octaves,
+        contrast: filterState.contrast
+      };
+
+      filterCanvas.style.opacity = filterState.opacity / 100;
+      filterCanvas.style.mixBlendMode = filterState.blendMode;
+      filter.render(ctx, filterCanvas.width, filterCanvas.height, params, filterState.seed);
+    }
+
+    function scheduleFilterDraw() {
+      clearTimeout(filterDrawTimer);
+      filterDrawTimer = setTimeout(drawFilter, 50);
+    }
+
+    // ── FILTER CONTROLS ──
+    function sliderSetup(id, valId, onChange, fmt = (v) => v) {
+      const sl = document.getElementById(id);
+      const vl = document.getElementById(valId);
+      sl.addEventListener('input', () => {
+        vl.textContent = fmt(parseInt(sl.value));
+        onChange(parseInt(sl.value));
+      });
+    }
+
+    sliderSetup('sl-opacity', 'val-opacity', v => { filterState.opacity = v; drawFilter(); }, v => v + '%');
+    sliderSetup('sl-scale', 'val-scale', v => { filterState.scale = v; scheduleFilterDraw(); }, v => v + '%');
+    sliderSetup('sl-octaves', 'val-octaves', v => { filterState.octaves = v; scheduleFilterDraw(); });
+    sliderSetup('sl-contrast', 'val-contrast', v => { filterState.contrast = v; scheduleFilterDraw(); }, v => v + '%');
+
+    document.getElementById('blend-mode').addEventListener('change', e => {
+      filterState.blendMode = e.target.value;
+      drawFilter();
+    });
+
+    document.getElementById('btn-reseed').addEventListener('click', () => {
+      filterState.seed = Math.random() * 100000;
+      // Redraw thumbs with new seed
+      FILTERS.forEach(f => {
+        if (thumbCanvases[f.id]) drawFilterThumb(f, thumbCanvases[f.id], filterState.seed);
+      });
+      scheduleFilterDraw();
+    });
+
+    // ════════════════════════════════════════════
     //  DOWNLOAD 4K
     // ════════════════════════════════════════════
     document.getElementById('btn-download').addEventListener('click', () => {
@@ -1163,58 +1682,64 @@
       const canvas = document.createElement('canvas');
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
-
       const sorted = [...state.colors].sort((a, b) => a.stop - b.stop);
 
       if (state.type === 'linear') {
         const rad = state.angle * Math.PI / 180;
-        // Calculate gradient line endpoints for the bounding box
         const cos = Math.cos(rad), sin = Math.sin(rad);
         const hw = W / 2, hh = H / 2;
         const len = Math.abs(hw * sin) + Math.abs(hh * cos);
-        const x0 = hw - sin * len, y0 = hh + cos * len;
-        const x1 = hw + sin * len, y1 = hh - cos * len;
+        const x0 = hw - sin * len, y0 = hh + cos * len, x1 = hw + sin * len, y1 = hh - cos * len;
         const grad = ctx.createLinearGradient(x0, y0, x1, y1);
         sorted.forEach(c => grad.addColorStop(c.stop / 100, c.hex));
         ctx.fillStyle = grad;
-
       } else if (state.type === 'radial') {
         const grad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) / 2);
         sorted.forEach(c => grad.addColorStop(c.stop / 100, c.hex));
         ctx.fillStyle = grad;
-
       } else {
-        // Conic — draw via offscreen canvas with CSS trick won't work; use pixel math fallback
-        // We'll use a series of linear sweeps to approximate conic
         const cx = W / 2, cy = H / 2;
-        const totalStops = sorted.length;
         for (let deg = 0; deg < 360; deg += 0.5) {
           const t = ((deg - state.angle + 360) % 360) / 360;
-          // find color at this t
           let color = sorted[0].hex;
           for (let j = 0; j < sorted.length - 1; j++) {
             const s0 = sorted[j].stop / 100, s1 = sorted[j + 1].stop / 100;
-            if (t >= s0 && t <= s1) {
-              const f = (t - s0) / (s1 - s0);
-              color = lerpHex(sorted[j].hex, sorted[j + 1].hex, f);
-              break;
-            }
+            if (t >= s0 && t <= s1) { color = lerpHex(sorted[j].hex, sorted[j + 1].hex, (t - s0) / (s1 - s0)); break; }
             color = sorted[sorted.length - 1].hex;
           }
-          const rad0 = (deg - 0.25) * Math.PI / 180;
-          const rad1 = (deg + 0.75) * Math.PI / 180;
+          const rad0 = (deg - 0.25) * Math.PI / 180, rad1 = (deg + 0.75) * Math.PI / 180;
           const far = Math.max(W, H);
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.arc(cx, cy, far, rad0, rad1);
-          ctx.closePath();
-          ctx.fillStyle = color;
-          ctx.fill();
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, far, rad0, rad1); ctx.closePath();
+          ctx.fillStyle = color; ctx.fill();
+        }
+        if (filterState.active) {
+          const fCanvas = document.createElement('canvas'); fCanvas.width = W; fCanvas.height = H;
+          const fCtx = fCanvas.getContext('2d');
+          const filter = FILTERS.find(f => f.id === filterState.active);
+          if (filter) {
+            filter.render(fCtx, W, H, { scale: filterState.scale, octaves: filterState.octaves, contrast: filterState.contrast }, filterState.seed);
+            ctx.save(); ctx.globalAlpha = filterState.opacity / 100; ctx.globalCompositeOperation = filterState.blendMode === 'overlay' ? 'overlay' : filterState.blendMode;
+            ctx.drawImage(fCanvas, 0, 0); ctx.restore();
+          }
         }
         triggerDownload(canvas); return;
       }
 
       ctx.fillRect(0, 0, W, H);
+
+      if (filterState.active) {
+        const fCanvas = document.createElement('canvas'); fCanvas.width = W; fCanvas.height = H;
+        const fCtx = fCanvas.getContext('2d');
+        const filter = FILTERS.find(f => f.id === filterState.active);
+        if (filter) {
+          filter.render(fCtx, W, H, { scale: filterState.scale, octaves: filterState.octaves, contrast: filterState.contrast }, filterState.seed);
+          ctx.save(); ctx.globalAlpha = filterState.opacity / 100;
+          const blendMap = { 'soft-light': 'soft-light', 'hard-light': 'hard-light', 'color-dodge': 'color-dodge', 'luminosity': 'luminosity', 'screen': 'screen', 'multiply': 'multiply', 'normal': 'source-over', 'overlay': 'overlay' };
+          ctx.globalCompositeOperation = blendMap[filterState.blendMode] || 'overlay';
+          ctx.drawImage(fCanvas, 0, 0); ctx.restore();
+        }
+      }
+
       triggerDownload(canvas);
     });
 
@@ -1227,15 +1752,12 @@
 
     function triggerDownload(canvas) {
       const btn = document.getElementById('btn-download');
-      btn.textContent = '⏳ Generating…';
-      btn.disabled = true;
+      btn.textContent = '⏳ Generating…'; btn.disabled = true;
       setTimeout(() => {
         canvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
-          a.href = url;
-          a.download = `gradient-${Date.now()}.png`;
-          a.click();
+          a.href = url; a.download = `gradient-${Date.now()}.png`; a.click();
           URL.revokeObjectURL(url);
           btn.textContent = '✓ Downloaded!';
           setTimeout(() => { btn.textContent = '↓ Download 4K PNG'; btn.disabled = false; }, 2000);
@@ -1251,9 +1773,7 @@
       div.className = 'preset';
       div.style.background = `linear-gradient(135deg, ${colors.join(', ')})`;
       div.addEventListener('click', () => {
-        state.colors = colors.map((hex, i) => ({
-          hex, stop: Math.round((i / (colors.length - 1)) * 100), locked: false
-        }));
+        state.colors = colors.map((hex, i) => ({ hex, stop: Math.round((i / (colors.length - 1)) * 100), locked: false }));
         render();
       });
       presetsGrid.appendChild(div);
@@ -1262,9 +1782,10 @@
     // ════════════════════════════════════════════
     //  UTILS
     // ════════════════════════════════════════════
-    function randomHex() {
-      return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-    }
+    function randomHex() { return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0'); }
+
+    // Resize canvas on window resize
+    window.addEventListener('resize', () => { if (filterState.active) drawFilter(); });
 
     render();
   </script>
