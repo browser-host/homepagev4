@@ -8,12 +8,13 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="../../Styles/Themes/dark.css">
+  <link rel="stylesheet" href="../../Styles/Themes/dark.css" data-theme-sheet>
   <link rel="stylesheet" href="../../Styles/main.css">
   <link rel="stylesheet" href="../../Styles/Components/Components.css">
   <link rel="stylesheet" href="../../Styles/atomics.css">
   <link rel="stylesheet" href="timezones.css">
   <script src="../../JS/utility.js"></script>
+  <script src="../../JS/settings.js"></script>
 </head>
 
 <body class="noise-bg">
@@ -121,7 +122,6 @@
       const diff = (new Date(tzStr) - new Date(utcStr)) / 3600000;
       return (diff >= 0 ? 'UTC+' : 'UTC') + diff;
     }
-
 
 
 

@@ -505,10 +505,6 @@ function saveOrganized() {
 
 
 
-
-
-
-
 // * * * * * * * * * * * * *
 //          JSON
 // * * * * * * * * * * * * *
@@ -524,7 +520,7 @@ var toolData = {
     { "title": "Cyberchef", "id": "cyberchef", "url": "./tools/CyberChef_v10.19.4/CyberChef_v10.19.4.html", "icon": "code" }
   ],
   "Information": [
-    { "title": "Timezones", "id": "timezone-viewer", "url": "./tools/timezones/timezones.html", "icon": "clock" },
+    { "title": "Timezones", "id": "timezone-viewer", "url": "./tools/timezones/index.html", "icon": "clock" },
     { "title": "Whats My IP?", "id": "whats-my-ip", "url": "./tools/WhatsMyIP/index.html", "icon": "location" }
   ]
 }
