@@ -1,2 +1,1323 @@
-@import url(Base.css);
-@import url(Buttons.css);
+/* ============================================================
+   COMPONENTS.CSS — Reusable UI Components
+   Full component library for the Studio design system.
+   Requires theme.css (and optionally main.css + atomic.css).
+   ============================================================ */
+
+  @import url('./Icons.css');
+
+/* ════════════════════════════════════════
+   CARD
+   ════════════════════════════════════════
+   Usage: <div class="card">…</div>
+   Variants: card--raised, card--interactive, card--accent-top,
+             card--flash, card--hero
+   ════════════════════════════════════════ */
+
+.card {
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8) var(--space-10);
+  position: relative;
+  overflow: hidden;
+}
+
+.card--raised {
+  box-shadow: var(--shadow-md);
+}
+
+.card--interactive {
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+  cursor: default;
+}
+.card--interactive:hover {
+  border-color: #3e4560;
+  box-shadow: var(--shadow-md);
+}
+
+/* Card with coloured top border line */
+.card--accent-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gradient-cool);
+}
+
+/* Card with coloured left stripe (set --card-color to customise) */
+.card--stripe::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  background: var(--card-color, var(--color-accent));
+  border-radius: var(--radius-2xl) 0 0 var(--radius-2xl);
+}
+
+/* Flash animation used when card data updates */
+.card--flash {
+  animation: flash-border 0.4s ease forwards;
+}
+
+/* Hero / featured card */
+.card--hero {
+  padding: var(--space-11) var(--space-12);
+}
+
+
+/* ════════════════════════════════════════
+   PANEL (sidebar / drawer)
+   ════════════════════════════════════════ */
+
+.panel {
+  width: var(--panel-width);
+  background: var(--color-surface);
+  border-left: var(--border-default);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel__header {
+  padding: var(--space-8) var(--space-8) var(--space-7);
+  border-bottom: var(--border-default);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.panel__body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+.panel__body::-webkit-scrollbar { width: 3px; }
+.panel__body::-webkit-scrollbar-thumb { background: var(--color-border); }
+
+.panel__section {
+  padding: var(--space-7) var(--space-8) 0;
+}
+.panel__section:last-child {
+  padding-bottom: var(--space-9);
+}
+
+
+/* ════════════════════════════════════════
+   TABS
+   ════════════════════════════════════════
+   Usage:
+     <div class="tab-bar">
+       <button class="tab-btn active" data-tab="foo">Foo</button>
+     </div>
+     <div class="tab-content active" id="tab-foo">…</div>
+   ════════════════════════════════════════ */
+
+.tab-bar {
+  display: flex;
+  border-bottom: var(--border-default);
+  flex-shrink: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: var(--space-6) var(--space-3);
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+  position: relative;
+}
+.tab-btn:hover { color: var(--color-text); }
+.tab-btn.active { color: var(--color-accent); }
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; left: 0; right: 0;
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: 1px 1px 0 0;
+  box-shadow: var(--shadow-glow-sm);
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+
+/* ════════════════════════════════════════
+   BUTTONS
+   ════════════════════════════════════════
+   Base:   <button class="btn">…</button>
+   Mods:   btn--primary  btn--outline  btn--ghost
+           btn--sm  btn--lg  btn--full  btn--icon
+   ════════════════════════════════════════ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: var(--border-default);
+  border-radius: var(--radius-base);
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+}
+.btn:hover {
+  background: var(--color-border);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Primary / filled */
+.btn--primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0e1418;
+  font-weight: 700;
+}
+.btn--primary:hover {
+  background: #4ab5c0;
+  border-color: #4ab5c0;
+}
+
+/* Outline accent */
+.btn--outline {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.btn--outline:hover {
+  background: var(--color-accent-dim);
+}
+
+/* Ghost (no border) */
+.btn--ghost {
+  border-color: transparent;
+  color: var(--color-muted);
+}
+.btn--ghost:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+/* Danger */
+.btn--danger {
+  border-color: var(--color-pink);
+  color: var(--color-pink);
+}
+.btn--danger:hover {
+  background: rgba(232, 67, 147, 0.1);
+}
+
+/* Warning / paused state */
+.btn--warning {
+  border-color: var(--color-accent-3);
+  color: var(--color-accent-3);
+  background: var(--color-accent-3-dim);
+}
+.btn--warning:hover {
+  background: rgba(245, 166, 35, 0.14);
+}
+
+/* Add / dashed */
+.btn--dashed {
+  border: var(--border-dashed);
+  color: var(--color-muted);
+  width: 100%;
+}
+.btn--dashed:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* Sizes */
+.btn--sm {
+  padding: var(--space-1) var(--space-4);
+  font-size: var(--text-2xs);
+}
+.btn--lg {
+  padding: var(--space-4) var(--space-9);
+  font-size: var(--text-sm);
+}
+.btn--full { width: 100%; }
+
+/* Icon button */
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.btn-icon:hover {
+  color: var(--color-text);
+  background: var(--color-border);
+}
+.btn-icon.active {
+  color: var(--color-accent);
+}
+
+/* Button row (horizontal group) */
+.btn-row {
+  display: flex;
+  gap: var(--space-2);
+}
+.btn-row .btn { flex: 1; }
+
+
+/* ════════════════════════════════════════
+   TYPE SELECTOR (segmented control)
+   ════════════════════════════════════════
+   Usage:
+     <div class="type-selector">
+       <button class="type-selector__btn active">Linear</button>
+     </div>
+   ════════════════════════════════════════ */
+
+.type-selector {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.type-selector__btn {
+  flex: 1;
+  padding: var(--space-2) var(--space-1);
+  border: var(--border-default);
+  background: transparent;
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+.type-selector__btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+.type-selector__btn.active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
+
+
+/* ════════════════════════════════════════
+   SWATCH (colour preview button)
+   ════════════════════════════════════════ */
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: border-color var(--transition-fast);
+  position: relative;
+}
+.swatch:hover {
+  border-color: var(--color-accent);
+}
+.swatch.active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px var(--color-accent-dim);
+}
+
+
+/* ════════════════════════════════════════
+   COLOUR ITEM (row inside colour list)
+   ════════════════════════════════════════ */
+
+.color-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--color-surface-3);
+  border: var(--border-default);
+  border-radius: var(--radius-base);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-3);
+}
+
+.color-item__hex {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  outline: none;
+  min-width: 0;
+}
+
+.color-item__stop {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+
+/* ════════════════════════════════════════
+   SLIDER ROW
+   ════════════════════════════════════════
+   Usage:
+     <div class="slider-row">
+       <div class="slider-row__header">
+         <span class="slider-row__name">Scale</span>
+         <span class="slider-row__val">50%</span>
+       </div>
+       <input type="range" class="slider">
+     </div>
+   ════════════════════════════════════════ */
+
+.slider-row { margin-bottom: var(--space-5); }
+
+.slider-row__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.slider-row__name {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.slider-row__val {
+  font-size: var(--text-xs);
+  color: var(--color-accent);
+}
+
+/* Base range input */
+.slider {
+  width: 100%;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+.slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  cursor: pointer;
+  border: none;
+}
+
+
+/* ════════════════════════════════════════
+   ANGLE DIAL
+   ════════════════════════════════════════ */
+
+.angle-dial {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface-3);
+  position: relative;
+  cursor: grab;
+  flex-shrink: 0;
+  transition: border-color var(--transition-fast);
+}
+.angle-dial:hover { border-color: var(--color-accent); }
+.angle-dial:active { cursor: grabbing; }
+
+.angle-dial__needle {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 2px;
+  height: 12px;
+  background: var(--color-accent);
+  border-radius: 1px;
+  transform-origin: bottom center;
+  margin-left: -1px;
+  pointer-events: none;
+}
+
+
+/* ════════════════════════════════════════
+   SELECT (native dropdown)
+   ════════════════════════════════════════ */
+
+.select {
+  width: 100%;
+  background: var(--color-surface-3);
+  border: var(--border-default);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color var(--transition-fast);
+}
+.select:focus { border-color: var(--color-accent); }
+
+
+/* ════════════════════════════════════════
+   TEXT INPUT
+   ════════════════════════════════════════ */
+
+.input {
+  background: var(--color-surface-3);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-2);
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.input:focus { border-color: var(--color-accent); }
+.input:hover { background: var(--color-surface-2); }
+
+/* Inline time/value input (borderless, bottom only) */
+.input-inline {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  padding: var(--space-1) var(--space-1);
+  outline: none;
+  transition: border-bottom-color var(--transition-base), background var(--transition-base);
+  cursor: text;
+}
+.input-inline:hover {
+  border-bottom-color: var(--color-border);
+  background: var(--color-surface-2);
+}
+.input-inline:focus {
+  border-bottom-color: var(--color-accent);
+  background: var(--color-surface-2);
+}
+
+
+/* ════════════════════════════════════════
+   PRESET GRID
+   ════════════════════════════════════════ */
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-2);
+}
+
+.preset-swatch {
+  aspect-ratio: 1;
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+.preset-swatch:hover {
+  border-color: var(--color-accent);
+  transform: scale(1.07);
+}
+.preset-swatch.active {
+  border-color: var(--color-accent);
+}
+
+
+/* ════════════════════════════════════════
+   FILTER CARD (thumbnail + label)
+   ════════════════════════════════════════ */
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.filter-card {
+  background: var(--color-surface-3);
+  border: var(--border-default);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--transition-fast), transform 0.1s;
+  position: relative;
+}
+.filter-card:hover {
+  border-color: var(--color-accent);
+  transform: scale(1.02);
+}
+.filter-card.active {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent), inset 0 0 0 1px var(--color-accent-dim);
+}
+.filter-card canvas {
+  display: block;
+  width: 100%;
+  height: 70px;
+}
+.filter-card__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.1em;
+  color: var(--color-muted);
+  padding: var(--space-2) var(--space-3) var(--space-2);
+  text-transform: uppercase;
+}
+.filter-card.active .filter-card__label {
+  color: var(--color-accent);
+}
+
+.filter-none-card {
+  background: var(--color-surface-3);
+  border: var(--border-default);
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  padding: var(--space-4);
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: all var(--transition-fast);
+  margin-bottom: var(--space-2);
+}
+.filter-none-card:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+.filter-none-card.active {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
+}
+
+
+/* ════════════════════════════════════════
+   CSS OUTPUT BAR
+   ════════════════════════════════════════ */
+
+.css-output {
+  background: rgba(20, 23, 28, 0.7);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-base);
+  padding: var(--space-4) var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: rgba(255, 255, 255, 0.5);
+  word-break: break-all;
+  cursor: pointer;
+  transition: background var(--transition-base);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  z-index: var(--z-raised);
+}
+.css-output:hover {
+  background: rgba(20, 23, 28, 0.85);
+}
+.css-output__label {
+  color: var(--color-accent);
+  font-size: var(--text-2xs);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+
+/* ════════════════════════════════════════
+   TOAST NOTIFICATION
+   ════════════════════════════════════════ */
+
+.toast {
+  position: fixed;
+  bottom: var(--space-12);
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--color-surface-2);
+  border: var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-9);
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-accent);
+  letter-spacing: var(--tracking-label);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: var(--z-popup);
+  pointer-events: none;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+
+/* ════════════════════════════════════════
+   HEADER (page / app header)
+   ════════════════════════════════════════ */
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-14);
+}
+
+.app-header__title {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-mono);
+  color: var(--color-text);
+  text-transform: uppercase;
+}
+
+
+/* ════════════════════════════════════════
+   HERO BLOCK (large time / value display)
+   ════════════════════════════════════════ */
+
+.hero-block {
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-11) var(--space-12);
+  margin-bottom: var(--space-11);
+  position: relative;
+  overflow: hidden;
+}
+.hero-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--gradient-cool);
+}
+
+.hero-block__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-muted);
+  text-transform: uppercase;
+  margin-bottom: var(--space-5);
+}
+
+.hero-block__location {
+  font-size: var(--text-md);
+  color: var(--color-accent);
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+}
+
+.hero-block__value {
+  font-family: var(--font-ui);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  line-height: 1;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: var(--space-1);
+}
+
+.hero-block__sub {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  color: var(--color-muted);
+}
+
+.hero-block__hint {
+  position: absolute;
+  top: var(--space-11);
+  right: var(--space-11);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  letter-spacing: 1px;
+}
+.hero-block__hint kbd {
+  background: var(--color-surface-2);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 2px var(--space-2);
+  color: var(--color-accent-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+}
+
+
+/* ════════════════════════════════════════
+   OFFSET BADGE
+   ════════════════════════════════════════ */
+
+.offset-badge {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  letter-spacing: 1px;
+}
+
+
+/* ════════════════════════════════════════
+   COLOR PICKER POPUP
+   ════════════════════════════════════════
+   Usage:
+     <div class="cp-popup">
+       <div class="cp-sv-box"><canvas class="cp-sv-canvas"></canvas><div class="cp-sv-cursor"></div></div>
+       <div class="cp-hue-bar"><div class="cp-hue-cursor"></div></div>
+       <div class="cp-alpha-bar">…</div>
+       <div class="cp-hex-row">…</div>
+     </div>
+   ════════════════════════════════════════ */
+
+.cp-popup {
+  position: fixed;
+  z-index: var(--z-popup);
+  background: #1c2028;
+  border: var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  width: 220px;
+  box-shadow: var(--shadow-lg);
+  display: none;
+  user-select: none;
+}
+.cp-popup.visible { display: block; }
+
+.cp-sv-box {
+  width: 100%;
+  height: 150px;
+  border-radius: var(--radius-base);
+  position: relative;
+  cursor: crosshair;
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+.cp-sv-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.cp-sv-cursor {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  border: 2px solid #fff;
+  box-shadow: 0 0 3px rgba(0,0,0,0.8);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cp-hue-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: var(--radius-base);
+  position: relative;
+  cursor: ew-resize;
+  margin-bottom: var(--space-3);
+  background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+}
+.cp-hue-cursor {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  border: 2px solid #fff;
+  box-shadow: 0 0 3px rgba(0,0,0,0.8);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cp-alpha-bar {
+  width: 100%;
+  height: 12px;
+  border-radius: var(--radius-base);
+  position: relative;
+  cursor: ew-resize;
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+}
+.cp-alpha-checker {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-conic-gradient(#555 0% 25%, #333 0% 50%);
+  background-size: 8px 8px;
+  border-radius: var(--radius-base);
+}
+.cp-alpha-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-base);
+}
+.cp-alpha-cursor {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  border: 2px solid #fff;
+  box-shadow: 0 0 3px rgba(0,0,0,0.8);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.cp-hex-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.cp-preview-swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.cp-hex-input {
+  flex: 1;
+  background: var(--color-surface-3);
+  border: var(--border-default);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  outline: none;
+}
+.cp-hex-input:focus { border-color: var(--color-accent); }
+.cp-close {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-size: var(--text-md);
+  padding: 2px var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+.cp-close:hover { color: var(--color-text); background: var(--color-border); }
+
+
+/* ════════════════════════════════════════
+   STOP BAR (gradient editor bar)
+   ════════════════════════════════════════ */
+
+.stop-bar-wrap {
+  position: relative;
+  margin-bottom: 26px;
+  user-select: none;
+}
+.stop-bar {
+  width: 100%;
+  height: 28px;
+  border-radius: var(--radius-base);
+  cursor: crosshair;
+  position: relative;
+  border: var(--border-default);
+}
+.stop-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 20px;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radius-sm);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.3);
+  cursor: ew-resize;
+  z-index: var(--z-base);
+  transition: box-shadow var(--transition-fast);
+}
+.stop-handle:hover,
+.stop-handle.dragging {
+  box-shadow: 0 1px 4px rgba(0,0,0,0.6), 0 0 0 2px var(--color-accent);
+  z-index: var(--z-raised);
+}
+.stop-handle-label {
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+
+/* ════════════════════════════════════════
+   TZ CARD (timezone display card)
+   ════════════════════════════════════════
+   Usage:
+     <div class="card card--interactive tz-card" style="--card-color: #3a9faa">
+       <div class="tz-card__offset offset-badge">UTC+X</div>
+       <div class="tz-card__abbr" style="color: var(--card-color)">PT</div>
+       <div class="tz-card__region">Vancouver · Pacific Time</div>
+       <div class="tz-card__time-wrap">
+         <input class="tz-card__time" type="text">
+         <span class="tz-card__ampm">AM</span>
+       </div>
+       <div class="tz-card__date">Mon, Jan 1 · 00:00:00</div>
+     </div>
+   ════════════════════════════════════════ */
+
+.tz-card__offset {
+  position: absolute;
+  top: var(--space-7);
+  right: var(--space-7);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  letter-spacing: 1px;
+}
+
+.tz-card__abbr {
+  font-family: var(--font-ui);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.tz-card__region {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  margin-bottom: var(--space-4);
+  letter-spacing: 1px;
+}
+
+.tz-card__time-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.tz-card__time {
+  font-family: var(--font-ui);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  width: 140px;
+  padding: 2px var(--space-1);
+  outline: none;
+  cursor: text;
+  transition: border-bottom-color var(--transition-base), background var(--transition-base);
+}
+.tz-card__time:hover {
+  border-bottom-color: var(--color-border);
+  background: var(--color-surface-2);
+}
+.tz-card__time:focus {
+  border-bottom-color: var(--color-accent);
+  background: var(--color-surface-2);
+}
+
+.tz-card__ampm {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.tz-card__date {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  margin-top: var(--space-2);
+}
+
+
+/* ════════════════════════════════════════
+   MODAL (overlay + dialog)
+   ════════════════════════════════════════
+   Usage:
+     <div class="modal d-none">
+       <div class="modal__backdrop" onclick="closeModal()"></div>
+       <div class="modal__dialog">
+         <div class="modal__header">
+           <span class="modal__title">…</span>
+           <button class="modal__close">…</button>
+         </div>
+         <div class="modal__body">…</div>
+       </div>
+     </div>
+   States: remove .d-none / toggle visibility
+   ════════════════════════════════════════ */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10);
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+}
+
+.modal__dialog {
+  position: relative;
+  z-index: 1;
+  background: var(--color-surface);
+  border: var(--border-default);
+  border-radius: var(--radius-2xl);
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  animation: fade-in 0.2s ease forwards;
+  overflow: hidden;
+}
+
+.modal__header {
+  padding: var(--space-8) var(--space-10) var(--space-7);
+  border-bottom: var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.modal__title {
+  font-family: var(--font-ui);
+  font-size: var(--text-base);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast), background var(--transition-fast);
+  flex-shrink: 0;
+}
+.modal__close:hover {
+  color: var(--color-text);
+  background: var(--color-border);
+}
+.modal__close img {
+  width: 14px;
+  height: 14px;
+  filter: invert(0.5);
+}
+.modal__close:hover img { filter: invert(0.8); }
+
+.modal__body {
+  padding: var(--space-8) var(--space-10) var(--space-10);
+}
+
+
+/* ════════════════════════════════════════
+   FORM
+   ════════════════════════════════════════
+   Usage:
+     <form class="form">
+       <div class="form__fields">
+         <div class="form__group">
+           <label class="form__label">Title</label>
+           <input class="input" type="text">
+         </div>
+       </div>
+       <div class="form__actions">
+         <button class="btn">Cancel</button>
+         <button class="btn btn--primary" type="submit">Add</button>
+       </div>
+     </form>
+   ════════════════════════════════════════ */
+
+.form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-bottom: var(--space-9);
+}
+
+.form__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.form__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.form__split {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.form__split-or {
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.form__actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+
+/* ════════════════════════════════════════
+   QUICK LINK ITEM
+   ════════════════════════════════════════
+   Usage:
+     <div class="quick-link-group">
+       <div class="quick-link-group__label">Category</div>
+       <a class="quick-link" href="…">Title</a>
+     </div>
+   ════════════════════════════════════════ */
+
+.quick-link-group {
+  margin-bottom: var(--space-5);
+}
+
+.quick-link-group__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-muted-alt);
+  padding: 0 var(--space-3) var(--space-2);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.quick-link-group__label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+.quick-link {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: color var(--transition-fast), background var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.quick-link:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+
+/* ════════════════════════════════════════
+   STATUS INDICATOR
+   ════════════════════════════════════════ */
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-accent-3);
+}
+.status-indicator::before {
+  content: '●';
+  font-size: 8px;
+}
+.status-indicator--hidden { display: none; }
+.status-indicator--visible { display: inline-flex; }

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TIME STUDIO</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../../Styles/Themes/dark.css">
+  <link rel="stylesheet" href="../../Styles/main.css">
+  <link rel="stylesheet" href="../../Styles/Components/Components.css">
+  <link rel="stylesheet" href="../../Styles/atomics.css">
+  <link rel="stylesheet" href="timezones.css">
+  <script src="../../JS/utility.js"></script>
+</head>
+
+<body class="noise-bg">
+  <div class="container">
+
+    <div class="app-header mb-14">
+      <div class="dot-indicator dot-indicator--lg animate-pulse"></div>
+      <h1 class="app-header__title">Time Studio</h1>
+    </div>
+
+    <div class="hero-block mb-14" id="hero">
+      <div class="hero-block__label">Your Local Time</div>
+      <div class="hero-block__location" id="local-tz">Detecting timezone...</div>
+      <div class="hero-block__value" id="local-time">--:--:--</div>
+      <div class="hero-block__sub" id="local-date">---</div>
+      <div class="hero-block__hint"><kbd>Ctrl+Click</kbd> any time to copy ms</div>
+    </div>
+
+    <div class="section-label mb-7">Canadian Timezones</div>
+
+    <div class="controls">
+      <button class="btn" id="pauseBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0">
+          <rect x="6" y="4" width="4" height="16" />
+          <rect x="14" y="4" width="4" height="16" />
+        </svg>
+        Pause
+      </button>
+      <button class="btn" id="roundBtn">Round to Hour</button>
+      <span class="status-indicator status-indicator--hidden" id="pausedLabel">PAUSED</span>
+    </div>
+
+    <div class="tz-grid" id="grid"></div>
+
+  </div>
+
+  <div class="toast" id="toast">COPIED TO CLIPBOARD</div>
+
+  <script>
+    const ZONES = [
+      { city: 'Vancouver', abbr: 'PT', region: 'PACIFIC TIME', tz: 'America/Vancouver', color: '#3a9faa' },
+      { city: 'Edmonton', abbr: 'MT', region: 'MOUNTAIN TIME', tz: 'America/Edmonton', color: '#6c63ff' },
+      { city: 'Regina', abbr: 'CST', region: 'CENTRAL (NO DST)', tz: 'America/Regina', color: '#f5a623' },
+      { city: 'Winnipeg', abbr: 'CT', region: 'CENTRAL TIME', tz: 'America/Winnipeg', color: '#4caf82' },
+      { city: 'Toronto', abbr: 'ET', region: 'EASTERN TIME', tz: 'America/Toronto', color: '#e84393' },
+      { city: 'Halifax', abbr: 'AT', region: 'ATLANTIC TIME', tz: 'America/Halifax', color: '#3a9faa' },
+      { city: "St. John's", abbr: 'NT', region: 'NEWFOUNDLAND TIME', tz: 'America/St_Johns', color: '#6c63ff' },
+    ];
+
+    const localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let masterMs = Date.now();
+    let isManualMode = false;
+    let manualTimer = null;
+    let isPaused = false;
+
+    function setPaused(val, updateBtn = true) {
+      isPaused = val;
+      isManualMode = val;
+      const dotEl = document.querySelector('.dot-indicator');
+      const pausedLabel = document.getElementById('pausedLabel');
+      const pauseBtn = document.getElementById('pauseBtn');
+      if (val) {
+        pausedLabel.classList.remove('status-indicator--hidden');
+        pausedLabel.classList.add('status-indicator--visible');
+        if (dotEl) { dotEl.style.animationPlayState = 'paused'; dotEl.style.opacity = '0.3'; }
+        if (updateBtn) {
+          pauseBtn.classList.add('btn--warning');
+          pauseBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><polygon points="5 3 19 12 5 21 5 3"/></svg> Resume`;
+        }
+      } else {
+        pausedLabel.classList.add('status-indicator--hidden');
+        pausedLabel.classList.remove('status-indicator--visible');
+        if (dotEl) { dotEl.style.animationPlayState = 'running'; dotEl.style.opacity = ''; }
+        if (updateBtn) {
+          pauseBtn.classList.remove('btn--warning');
+          pauseBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`;
+        }
+      }
+    }
+
+    function formatTime(ms, tz) {
+      return new Intl.DateTimeFormat('en-US', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false, timeZone: tz
+      }).format(new Date(ms));
+    }
+
+    function formatAmPm(ms, tz) {
+      const h = parseInt(new Intl.DateTimeFormat('en-US', { hour: 'numeric', hour12: false, timeZone: tz }).format(new Date(ms)));
+      return h >= 12 ? 'PM' : 'AM';
+    }
+
+    function formatDate(ms, tz) {
+      return new Intl.DateTimeFormat('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false, timeZone: tz
+      }).format(new Date(ms));
+    }
+
+    function getOffset(tz) {
+      const now = new Date();
+      const utcStr = now.toLocaleString('en-US', { timeZone: 'UTC' });
+      const tzStr = now.toLocaleString('en-US', { timeZone: tz });
+      const diff = (new Date(tzStr) - new Date(utcStr)) / 3600000;
+      return (diff >= 0 ? 'UTC+' : 'UTC') + diff;
+    }
+
+
+
+
+    function parseTimeInTZ(timeStr, tz, refMs) {
+      const [hStr, mStr, sStr] = timeStr.split(':');
+      const h = parseInt(hStr), m = parseInt(mStr), s = parseInt(sStr || '0');
+      if (isNaN(h) || isNaN(m)) return null;
+      const refDate = new Date(refMs);
+      const parts = new Intl.DateTimeFormat('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit', timeZone: tz
+      }).formatToParts(refDate);
+      const dateMap = {};
+      parts.forEach(p => dateMap[p.type] = p.value);
+      const utcDate = new Date(`${dateMap.year}-${dateMap.month}-${dateMap.day}T${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}Z`);
+      const tzOffset = getTZOffset(tz, utcDate.getTime());
+      return utcDate.getTime() - tzOffset * 3600000;
+    }
+
+    function getTZOffset(tz, ms) {
+      const d = new Date(ms);
+      const utcStr = d.toLocaleString('en-US', { timeZone: 'UTC' });
+      const tzStr = d.toLocaleString('en-US', { timeZone: tz });
+      return (new Date(tzStr) - new Date(utcStr)) / 3600000;
+    }
+
+    function updateAllDisplays() {
+      document.getElementById('local-time').textContent = formatTime(masterMs, localTZ);
+      document.getElementById('local-date').textContent = formatDate(masterMs, localTZ);
+      ZONES.forEach((z, i) => {
+        const card = document.getElementById(`card-${i}`);
+        if (!card) return;
+        const inp = card.querySelector('.tz-card__time');
+        const ampm = card.querySelector('.tz-card__ampm');
+        const date = card.querySelector('.tz-card__date');
+        if (document.activeElement !== inp) inp.value = formatTime(masterMs, z.tz);
+        if (ampm) ampm.textContent = formatAmPm(masterMs, z.tz);
+        if (date) date.textContent = formatDate(masterMs, z.tz);
+      });
+    }
+
+    function flashCards(excludeIndex) {
+      ZONES.forEach((_, j) => {
+        if (j === excludeIndex) return;
+        const c = document.getElementById(`card-${j}`);
+        c.classList.remove('card--tz-flash');
+        void c.offsetWidth;
+        c.classList.add('card--tz-flash');
+        setTimeout(() => c.classList.remove('card--tz-flash'), 500);
+      });
+    }
+
+    // Build grid
+    const grid = document.getElementById('grid');
+    ZONES.forEach((z, i) => {
+      const card = document.createElement('div');
+      card.className = 'card card--interactive';
+      card.id = `card-${i}`;
+      card.style.setProperty('--card-color', z.color);
+
+      const offset = getOffset(z.tz);
+      function getTZAbbr(tz) {
+        const parts = new Intl.DateTimeFormat('en-CA', { timeZoneName: 'short', timeZone: tz }).formatToParts(new Date());
+        const tzPart = parts.find(p => p.type === 'timeZoneName');
+        return tzPart ? tzPart.value : z.abbr;
+      }
+      const liveAbbr = getTZAbbr(z.tz);
+
+      card.innerHTML = `
+    <div class="card--stripe" style="background:${z.color}; position:absolute; top:0; left:0; bottom:0; width:3px; border-radius:var(--radius-2xl) 0 0 var(--radius-2xl);"></div>
+    <div class="tz-card__offset">${offset}</div>
+    <div class="tz-card__abbr" style="color:${z.color}">${liveAbbr}</div>
+    <div class="tz-card__region">${z.city} · ${z.region}</div>
+    <div class="tz-card__time-wrap">
+      <input class="tz-card__time" type="text" value="--:--:--" spellcheck="false" autocomplete="off" data-idx="${i}">
+      <span class="tz-card__ampm"></span>
+    </div>
+    <div class="tz-card__date"></div>
+  `;
+
+      const inp = card.querySelector('.tz-card__time');
+
+      inp.addEventListener('click', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          copyToClipboardWithToast(String(masterMs), 'COPIED: ' + masterMs + ' ms');
+        }
+      });
+
+      inp.addEventListener('change', () => {
+        const newMs = parseTimeInTZ(inp.value, z.tz, masterMs);
+        if (newMs !== null) {
+          masterMs = newMs;
+          clearTimeout(manualTimer);
+          setPaused(true);
+          updateAllDisplays();
+          flashCards(i);
+        }
+      });
+
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') inp.blur(); });
+
+      grid.appendChild(card);
+    });
+
+    // Local TZ label
+    document.getElementById('local-tz').textContent = localTZ.replace('_', ' ').split('/').join(' · ');
+
+    // Hero ctrl+click
+    document.getElementById('hero').addEventListener('click', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        copyToClipboardWithToast(String(masterMs), 'COPIED: ' + masterMs + ' ms');
+      }
+    });
+
+    // Tick
+    function tick() {
+      if (!isManualMode) masterMs = Date.now();
+      updateAllDisplays();
+    }
+    tick();
+    setInterval(tick, 1000);
+
+    // Pause
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+      if (isPaused) {
+        clearTimeout(manualTimer);
+        manualTimer = null;
+        setPaused(false);
+      } else {
+        masterMs = Date.now();
+        setPaused(true);
+      }
+    });
+
+    // Round to hour
+    document.getElementById('roundBtn').addEventListener('click', () => {
+      const d = new Date(masterMs);
+      d.setMinutes(0, 0, 0);
+      masterMs = d.getTime();
+      clearTimeout(manualTimer);
+      setPaused(true);
+      updateAllDisplays();
+      flashCards(-1);
+      showToast('ROUNDED TO HOUR — PAUSED');
+    });
+  </script>
+</body>
+
+</html>

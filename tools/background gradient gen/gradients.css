@@ -1,0 +1,83 @@
+/* ============================================================
+   GRADIENTS.CSS — Page-specific styles for Gradient Studio
+   Requires: dark.css, main.css, Components.css
+   ============================================================ */
+
+/* ── Layout ── */
+body {
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── Preview area ── */
+#preview-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+#preview {
+  position: absolute;
+  inset: 0;
+  transition: background var(--transition-slow);
+}
+#filter-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 1;
+}
+#css-output {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+}
+
+/* ── Angle display ── */
+.angle-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+.angle-val {
+  font-size: var(--text-2xl);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+}
+.angle-unit {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+/* ── Angle slider ── */
+#angle-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--color-border);
+  outline: none;
+  margin-bottom: var(--space-7);
+  cursor: pointer;
+}
+#angle-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  cursor: pointer;
+}
+
+/* ── Colors list ── */
+#colors-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}

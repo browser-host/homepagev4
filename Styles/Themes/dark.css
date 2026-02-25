@@ -1,21 +1,121 @@
-
+/* ============================================================
+   THEME.CSS — Design Token Foundation
+   Unified visual language extracted from Gradient Studio
+   and Time Studio. Import this first, before all other sheets.
+   ============================================================ */
 
 :root {
-  --bg-main: #161B21;
-  --bg-card: #202730;
-  --bg-link-hover: rgba(255,255,255,0.1);
-  --bg-notepad: #161B21;
 
-  --bg-banner: #2c4154;
+  /* ── COLOR: Backgrounds ── */
+  --color-bg:         #151820;   /* Deepest background (body) */
+  --color-surface:    #1e2230;   /* Card / panel base */
+  --color-surface-2:  #252a3a;   /* Elevated surface, inputs, hover fills */
+  --color-surface-3:  #171a20;   /* Recessed / inset areas */
 
-  --text-color: white;
-  
+  /* ── COLOR: Borders ── */
+  --color-border:     #2e3448;   /* Default border */
+  --color-border-dim: #2e3340;   /* Slightly muted variant */
 
-  --banner-url: url('./banners/ff.gif');
+  /* ── COLOR: Text ── */
+  --color-text:       #e8eaf6;   /* Primary readable text */
+  --color-text-alt:   #d4d8e2;   /* Slightly cooler white variant */
+  --color-muted:      #6b7299;   /* Secondary / placeholder text */
+  --color-muted-alt:  #5a6070;   /* Even more muted */
 
-  --icon-filter: invert(100%) sepia(1%) saturate(3748%) hue-rotate(270deg) brightness(120%) contrast(100%);
-  --icon-filter-green: invert(85%) sepia(37%) saturate(673%) hue-rotate(46deg) brightness(88%) contrast(86%);
-  --icon-filter-red: invert(38%) sepia(56%) saturate(1688%) hue-rotate(329deg) brightness(81%) contrast(84%);
+  /* ── COLOR: Accents ── */
+  --color-accent:     #3a9faa;   /* Primary cyan-teal accent */
+  --color-accent-2:   #6c63ff;   /* Secondary violet accent */
+  --color-accent-3:   #f5a623;   /* Warning / highlight amber */
+  --color-green:      #4caf82;   /* Success / positive green */
+  --color-pink:       #e84393;   /* Highlight / destructive rose */
+
+  /* ── COLOR: Accent tints (alpha fills) ── */
+  --color-accent-dim: rgba(58, 159, 170, 0.12);
+  --color-accent-2-dim: rgba(108, 99, 255, 0.08);
+  --color-accent-3-dim: rgba(245, 166, 35, 0.08);
+
+  /* ── TYPOGRAPHY ── */
+  --font-mono:   'Courier New', 'Lucida Console', monospace;
+  --font-ui:     'Space Mono', monospace;      /* Headers, labels, time display */
+  --font-body:   'DM Sans', sans-serif;        /* Body copy, card text */
+
+  /* ── FONT SIZES ── */
+  --text-2xs:  9px;
+  --text-xs:   10px;
+  --text-sm:   11px;
+  --text-base: 13px;
+  --text-md:   14px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  26px;
+  --text-3xl:  52px;
+
+  /* ── LETTER SPACING ── */
+  --tracking-tight:  -0.03em;
+  --tracking-normal: 0.04em;
+  --tracking-wide:   0.12em;
+  --tracking-wider:  0.18em;
+  --tracking-widest: 0.22em;
+  --tracking-label:  3px;       /* used for uppercase UI labels */
+  --tracking-mono:   4px;       /* used for hero/title labels */
+
+  /* ── SPACING ── */
+  --space-1:   4px;
+  --space-2:   6px;
+  --space-3:   8px;
+  --space-4:   10px;
+  --space-5:   12px;
+  --space-6:   14px;
+  --space-7:   16px;
+  --space-8:   18px;
+  --space-9:   20px;
+  --space-10:  24px;
+  --space-11:  28px;
+  --space-12:  32px;
+  --space-14:  36px;
+  --space-16:  40px;
+
+  /* ── BORDER RADIUS ── */
+  --radius-sm:   3px;
+  --radius-md:   4px;
+  --radius-base: 6px;
+  --radius-lg:   8px;
+  --radius-xl:   10px;
+  --radius-2xl:  12px;
+  --radius-full: 9999px;
+
+  /* ── BORDERS ── */
+  --border-default: 1px solid var(--color-border);
+  --border-accent:  1px solid var(--color-accent);
+  --border-dashed:  1px dashed var(--color-border);
+
+  /* ── SHADOWS ── */
+  --shadow-sm:   0 2px 12px rgba(0, 0, 0, 0.30);
+  --shadow-md:   0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.60);
+  --shadow-glow: 0 0 8px var(--color-accent);
+  --shadow-glow-sm: 0 0 6px var(--color-accent);
+
+  /* ── TRANSITIONS ── */
+  --transition-fast:   0.15s ease;
+  --transition-base:   0.20s ease;
+  --transition-slow:   0.35s ease;
+
+  /* ── Z-INDEX ── */
+  --z-base:    1;
+  --z-raised:  10;
+  --z-overlay: 100;
+  --z-popup:   1000;
+
+  /* ── GRADIENTS: Brand ── */
+  --gradient-primary:   linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  --gradient-warm:      linear-gradient(135deg, var(--color-accent-3), var(--color-pink));
+  --gradient-cool:      linear-gradient(90deg,  var(--color-accent),  var(--color-accent-2));
+
+  /* ── EFFECTS ── */
+  --backdrop-blur: blur(10px);
+
+  /* ── PANEL / LAYOUT ── */
+  --panel-width:     320px;
+  --container-max:   960px;
 }
-
-

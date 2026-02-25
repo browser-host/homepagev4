@@ -1,0 +1,70 @@
+/* ============================================================
+   ICONS.CSS — Icon Utility System
+   Icons are applied as CSS background-images with filter tinting.
+   Never use <img> for icons — use .icon-* classes on <span> or <button>.
+
+   Usage:
+     <span class="icon icon--x"></span>
+     <span class="icon icon--x icon--green"></span>
+
+   Requires: dark.css (theme tokens)
+   ============================================================ */
+
+/* ── Filters ── */
+:root {
+  --icon-filter:       invert(100%) sepia(1%) saturate(3748%) hue-rotate(270deg) brightness(120%) contrast(100%);
+  --icon-filter-muted: invert(50%) sepia(10%) saturate(400%) hue-rotate(200deg) brightness(80%) contrast(90%);
+  --icon-filter-accent:invert(60%) sepia(60%) saturate(400%) hue-rotate(148deg) brightness(95%) contrast(95%);
+  --icon-filter-green: invert(85%) sepia(37%) saturate(673%) hue-rotate(46deg) brightness(88%) contrast(86%);
+  --icon-filter-red:   invert(38%) sepia(56%) saturate(1688%) hue-rotate(329deg) brightness(81%) contrast(84%);
+  --icon-filter-amber: invert(75%) sepia(60%) saturate(600%) hue-rotate(5deg) brightness(95%) contrast(90%);
+}
+
+/* ── Base ── */
+.icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  filter: var(--icon-filter-muted);
+  flex-shrink: 0;
+}
+
+/* ── Size modifiers ── */
+.icon--xs  { width: 10px; height: 10px; }
+.icon--sm  { width: 12px; height: 12px; }
+.icon--md  { width: 16px; height: 16px; }
+.icon--lg  { width: 20px; height: 20px; }
+.icon--xl  { width: 24px; height: 24px; }
+
+/* ── Color modifiers ── */
+.icon--default { filter: var(--icon-filter); }
+.icon--muted   { filter: var(--icon-filter-muted); }
+.icon--accent  { filter: var(--icon-filter-accent); }
+.icon--green   { filter: var(--icon-filter-green); }
+.icon--red     { filter: var(--icon-filter-red); }
+.icon--amber   { filter: var(--icon-filter-amber); }
+
+/* ── Icon definitions ── */
+/* Add new icons by mapping a class to its SVG file path */
+
+.icon--x        { background-image: url('../../icons/x.svg'); }
+.icon--plus     { background-image: url('../../icons/plus.svg'); }
+.icon--search   { background-image: url('../../icons/search.svg'); }
+.icon--link     { background-image: url('../../icons/link.svg'); }
+.icon--external { background-image: url('../../icons/external-link.svg'); }
+.icon--trash    { background-image: url('../../icons/trash.svg'); }
+.icon--edit     { background-image: url('../../icons/edit.svg'); }
+.icon--chevron-down { background-image: url('../../icons/chevron-down.svg'); }
+.icon--chevron-right{ background-image: url('../../icons/chevron-right.svg'); }
+.icon--grid     { background-image: url('../../icons/grid.svg'); }
+.icon--tool     { background-image: url('../../icons/tool.svg'); }
+.icon--clock    { background-image: url('../../icons/clock.svg'); }
+
+/* ── Hover helpers (apply to parent, not icon directly) ── */
+/* Usage: <button class="btn-icon icon-btn--hover-default"><span class="icon icon--x"></span></button> */
+.icon-hover-default:hover .icon { filter: var(--icon-filter); }
+.icon-hover-accent:hover  .icon { filter: var(--icon-filter-accent); }
+.icon-hover-red:hover     .icon { filter: var(--icon-filter-red); }
