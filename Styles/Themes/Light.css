@@ -7,81 +7,59 @@
 :root {
 
   /* ── COLOR: Backgrounds ── */
-  --color-bg:         #f0f2f7;   /* Deepest background (body) */
-  --color-surface:    #ffffff;   /* Card / panel base */
-  --color-surface-2:  #e8ebf2;   /* Elevated surface, inputs, hover fills */
-  --color-surface-3:  #f5f6fa;   /* Recessed / inset areas */
+  --color-bg:         #eef0f7;   /* Deepest background — cool blue-grey, not stark white */
+  --color-surface:    #f7f8fc;   /* Card / panel base — soft white with a blue tint */
+  --color-surface-2:  #dfe3f0;   /* Elevated surface, inputs, hover fills */
+  --color-surface-3:  #f0f2f9;   /* Recessed / inset areas */
 
   /* ── COLOR: Borders ── */
-  --color-border:     #d0d5e4;   /* Default border */
-  --color-border-dim: #dde0ec;   /* Slightly muted variant */
+  --color-border:     #c2c9e0;   /* Default border — visible, slightly blue */
+  --color-border-dim: #d4d9ea;   /* Slightly muted variant */
 
   /* ── COLOR: Text ── */
-  --color-text:       #1a1d2e;   /* Primary readable text */
-  --color-text-alt:   #2c3050;   /* Slightly cooler dark variant */
-  --color-muted:      #7e87a8;   /* Secondary / placeholder text */
-  --color-muted-alt:  #a8afc8;   /* Even more muted */
+  --color-text:       #14172b;   /* Primary readable text — near-black with blue warmth */
+  --color-text-alt:   #252a4a;   /* Slightly cooler dark variant */
+  --color-muted:      #6470a0;   /* Secondary / placeholder — blue-purple mid-tone */
+  --color-muted-alt:  #9099bf;   /* Even more muted */
 
   /* ── COLOR: Accents ── */
-  --color-accent:     #2a8f9a;   /* Primary cyan-teal accent (darkened for contrast) */
-  --color-accent-2:   #5049d4;   /* Secondary violet accent (darkened for contrast) */
-  --color-accent-3:   #d4880a;   /* Warning / highlight amber (darkened for contrast) */
-  --color-green:      #2e8f5f;   /* Success / positive green */
-  --color-pink:       #c42070;   /* Highlight / destructive rose */
+  --color-accent:     #0d8f9e;   /* Primary cyan-teal — rich, saturated */
+  --color-accent-2:   #5548e8;   /* Secondary violet — vivid purple-blue */
+  --color-accent-3:   #c97a08;   /* Warning amber — warm, readable */
+  --color-green:      #1a9460;   /* Success green — vivid emerald */
+  --color-pink:       #d4186a;   /* Highlight rose — punchy magenta-pink */
 
   /* ── COLOR: Accent tints (alpha fills) ── */
-  --color-accent-dim:   rgba(42, 143, 154, 0.10);
-  --color-accent-2-dim: rgba(80, 73, 212, 0.08);
-  --color-accent-3-dim: rgba(212, 136, 10, 0.08);
+  --color-accent-dim:   rgba(13, 143, 158, 0.12);
+  --color-accent-2-dim: rgba(85, 72, 232, 0.10);
+  --color-accent-3-dim: rgba(201, 122, 8, 0.10);
 
   /* ── TYPOGRAPHY ── */
   --font-mono:   'Courier New', 'Lucida Console', monospace;
-  --font-ui:     'Space Mono', monospace;      /* Headers, labels, time display */
-  --font-body:   'DM Sans', sans-serif;        /* Body copy, card text */
+  --font-ui:     'Space Mono', monospace;
+  --font-body:   'DM Sans', sans-serif;
 
   /* ── FONT SIZES ── */
-  --text-2xs:  9px;
-  --text-xs:   10px;
-  --text-sm:   11px;
-  --text-base: 13px;
-  --text-md:   14px;
-  --text-lg:   18px;
-  --text-xl:   22px;
-  --text-2xl:  26px;
-  --text-3xl:  52px;
+  --text-2xs:  9px;   --text-xs:   10px;  --text-sm:   11px;
+  --text-base: 13px;  --text-md:   14px;  --text-lg:   18px;
+  --text-xl:   22px;  --text-2xl:  26px;  --text-3xl:  52px;
 
   /* ── LETTER SPACING ── */
-  --tracking-tight:  -0.03em;
-  --tracking-normal: 0.04em;
-  --tracking-wide:   0.12em;
-  --tracking-wider:  0.18em;
-  --tracking-widest: 0.22em;
-  --tracking-label:  3px;
+  --tracking-tight:  -0.03em;  --tracking-normal: 0.04em;
+  --tracking-wide:   0.12em;   --tracking-wider:  0.18em;
+  --tracking-widest: 0.22em;   --tracking-label:  3px;
   --tracking-mono:   4px;
 
   /* ── SPACING ── */
-  --space-1:   4px;
-  --space-2:   6px;
-  --space-3:   8px;
-  --space-4:   10px;
-  --space-5:   12px;
-  --space-6:   14px;
-  --space-7:   16px;
-  --space-8:   18px;
-  --space-9:   20px;
-  --space-10:  24px;
-  --space-11:  28px;
-  --space-12:  32px;
-  --space-14:  36px;
-  --space-16:  40px;
+  --space-1: 4px;   --space-2: 6px;   --space-3: 8px;
+  --space-4: 10px;  --space-5: 12px;  --space-6: 14px;
+  --space-7: 16px;  --space-8: 18px;  --space-9: 20px;
+  --space-10: 24px; --space-11: 28px; --space-12: 32px;
+  --space-14: 36px; --space-16: 40px;
 
   /* ── BORDER RADIUS ── */
-  --radius-sm:   3px;
-  --radius-md:   4px;
-  --radius-base: 6px;
-  --radius-lg:   8px;
-  --radius-xl:   10px;
-  --radius-2xl:  12px;
+  --radius-sm: 3px;  --radius-md: 4px;   --radius-base: 6px;
+  --radius-lg: 8px;  --radius-xl: 10px;  --radius-2xl: 12px;
   --radius-full: 9999px;
 
   /* ── BORDERS ── */
@@ -90,32 +68,29 @@
   --border-dashed:  1px dashed var(--color-border);
 
   /* ── SHADOWS ── */
-  --shadow-sm:   0 2px 12px rgba(0, 0, 0, 0.07);
-  --shadow-md:   0 4px 20px rgba(0, 0, 0, 0.09);
-  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.14);
-  --shadow-glow: 0 0 8px rgba(42, 143, 154, 0.35);
-  --shadow-glow-sm: 0 0 6px rgba(42, 143, 154, 0.25);
+  /* Blue-tinted shadows for cohesion with the cool surface palette */
+  --shadow-sm:      0 2px 12px rgba(30, 40, 100, 0.09);
+  --shadow-md:      0 4px 20px rgba(30, 40, 100, 0.12);
+  --shadow-lg:      0 8px 32px rgba(30, 40, 100, 0.18);
+  --shadow-glow:    0 0 10px rgba(13, 143, 158, 0.40);
+  --shadow-glow-sm: 0 0 6px  rgba(13, 143, 158, 0.30);
 
   /* ── TRANSITIONS ── */
-  --transition-fast:   0.15s ease;
-  --transition-base:   0.20s ease;
-  --transition-slow:   0.35s ease;
+  --transition-fast: 0.15s ease;  --transition-base: 0.20s ease;
+  --transition-slow: 0.35s ease;
 
   /* ── Z-INDEX ── */
-  --z-base:    1;
-  --z-raised:  10;
-  --z-overlay: 100;
-  --z-popup:   1000;
+  --z-base: 1;  --z-raised: 10;  --z-overlay: 100;  --z-popup: 1000;
 
   /* ── GRADIENTS: Brand ── */
-  --gradient-primary:   linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-  --gradient-warm:      linear-gradient(135deg, var(--color-accent-3), var(--color-pink));
-  --gradient-cool:      linear-gradient(90deg,  var(--color-accent),  var(--color-accent-2));
+  --gradient-primary: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  --gradient-warm:    linear-gradient(135deg, var(--color-accent-3), var(--color-pink));
+  --gradient-cool:    linear-gradient(90deg,  var(--color-accent),  var(--color-accent-2));
 
   /* ── EFFECTS ── */
   --backdrop-blur: blur(10px);
 
   /* ── PANEL / LAYOUT ── */
-  --panel-width:     320px;
-  --container-max:   960px;
+  --panel-width:   320px;
+  --container-max: 960px;
 }

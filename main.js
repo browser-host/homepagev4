@@ -512,7 +512,8 @@ function saveOrganized() {
 var toolData = {
   "Web Design": [
     { "title": "Color Picker", "id": "color-picker", "url": "./tools/color picker/index.html", "icon": "color-picker" },
-    { "title": "Gradients", "id": "gradients", "url": "./tools/background gradient gen/gradients.html", "icon": "picture" }
+    { "title": "Gradients", "id": "gradients", "url": "./tools/background gradient gen/gradients.html", "icon": "picture" },
+    { "title": "Grid Maker", "id": "grid-maker", "url": "./tools/GridMaker/grid-maker.html", "icon": "picture" },
   ],
   "Data Transformation": [
     { "title": "Base64 to Mp3", "id": "base64", "url": "./tools/base64 to mp3/base64.html", "icon": "computer-download" },
@@ -520,7 +521,7 @@ var toolData = {
     { "title": "Cyberchef", "id": "cyberchef", "url": "./tools/CyberChef_v10.19.4/CyberChef_v10.19.4.html", "icon": "code" }
   ],
   "Information": [
-    { "title": "Timezones", "id": "timezone-viewer", "url": "./tools/timezones/index.html", "icon": "clock" },
+    { "title": "Timezones", "id": "timezone-viewer", "url": "./tools/timezones/timezones.html", "icon": "clock" },
     { "title": "Whats My IP?", "id": "whats-my-ip", "url": "./tools/WhatsMyIP/index.html", "icon": "location" }
   ]
 }
