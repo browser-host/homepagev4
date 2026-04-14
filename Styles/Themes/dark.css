@@ -7,48 +7,49 @@
 :root {
 
   /* ── COLOR: Backgrounds ── */
-  --color-bg:         #151820;   /* Deepest background (body) */
-  --color-surface:    #1e2230;   /* Card / panel base */
-  --color-surface-2:  #252a3a;   /* Elevated surface, inputs, hover fills */
-  --color-surface-3:  #171a20;   /* Recessed / inset areas */
+  --color-bg:         #181816;   /* Deepest background (body) */
+  --color-surface:    #1e1e1b;   /* Card / panel base */
+  --color-surface-2:  #221f1c;   /* Elevated surface, inputs, hover fills */
+  --color-surface-3:  #181816;   /* Recessed / inset areas */
 
   /* ── COLOR: Borders ── */
-  --color-border:     #2e3448;   /* Default border */
-  --color-border-dim: #2e3340;   /* Slightly muted variant */
+  --color-border:     rgba(255, 255, 255, 0.05);   /* Default border */
+  --color-border-dim: rgba(255, 255, 255, 0.06);   /* Slightly muted variant */
 
   /* ── COLOR: Text ── */
-  --color-text:       #e8eaf6;   /* Primary readable text */
-  --color-text-alt:   #d4d8e2;   /* Slightly cooler white variant */
-  --color-muted:      #6b7299;   /* Secondary / placeholder text */
-  --color-muted-alt:  #5a6070;   /* Even more muted */
+  --color-text:       #9a9085;   /* Primary readable text */
+  --color-text-alt:   #c4bdb0;   /* Slightly warmer variant */
+  --color-muted:      #524d48;   /* Secondary / placeholder text */
+  --color-muted-alt:  #524d48;   /* Even more muted */
 
-  /* ── COLOR: Accents ── */
-  --color-accent:     #3a9faa;   /* Primary cyan-teal accent */
-  --color-accent-2:   #6c63ff;   /* Secondary violet accent */
-  --color-accent-3:   #f5a623;   /* Warning / highlight amber */
-  --color-green:      #4caf82;   /* Success / positive green */
-  --color-pink:       #e84393;   /* Highlight / destructive rose */
+  /* ── COLOR: Accents — single warm-dark ramp, no hue shifts ── */
+  --color-accent:     #e8e4d9;   /* Primary linen accent */
+  --color-accent-2:   #c4bdb0;   /* Warm amber mid-tone */
+  --color-accent-3:   #a89880;   /* Warm taupe */
+  --color-green:      #a89880;   /* Mapped to warm taupe */
+  --color-pink:       #a89880;   /* Mapped to warm taupe */
 
   /* ── COLOR: Accent tints (alpha fills) ── */
-  --color-accent-dim: rgba(58, 159, 170, 0.12);
-  --color-accent-2-dim: rgba(108, 99, 255, 0.08);
-  --color-accent-3-dim: rgba(245, 166, 35, 0.08);
+  --color-accent-dim:   rgba(232, 228, 217, 0.07);
+  --color-accent-2-dim: rgba(196, 189, 176, 0.07);
+  --color-accent-3-dim: rgba(168, 152, 128, 0.07);
 
   /* ── TYPOGRAPHY ── */
-  --font-mono:   'Courier New', 'Lucida Console', monospace;
-  --font-ui:     'Space Mono', monospace;      /* Headers, labels, time display */
-  --font-body:   'DM Sans', sans-serif;        /* Body copy, card text */
+  --font-mono:    'Courier New', 'Lucida Console', monospace;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-ui:      'Space Mono', monospace;      /* Headers, labels, time display */
+  --font-body:    'Inter', Georgia, sans-serif; /* Body copy, card text */
 
   /* ── FONT SIZES ── */
-  --text-2xs:  9px;
-  --text-xs:   10px;
-  --text-sm:   11px;
-  --text-base: 13px;
-  --text-md:   14px;
-  --text-lg:   18px;
-  --text-xl:   22px;
-  --text-2xl:  26px;
-  --text-3xl:  52px;
+  --text-2xs:  12px;
+  --text-xs:   14px;
+  --text-sm:   15px;
+  --text-base: 17px;
+  --text-md:   18px;
+  --text-lg:   24px;
+  --text-xl:   29px;
+  --text-2xl:  35px;
+  --text-3xl:  69px;
 
   /* ── LETTER SPACING ── */
   --tracking-tight:  -0.03em;
@@ -77,11 +78,11 @@
 
   /* ── BORDER RADIUS ── */
   --radius-sm:   3px;
-  --radius-md:   4px;
-  --radius-base: 6px;
-  --radius-lg:   8px;
-  --radius-xl:   10px;
-  --radius-2xl:  12px;
+  --radius-md:   3px;
+  --radius-base: 3px;
+  --radius-lg:   5px;
+  --radius-xl:   7px;
+  --radius-2xl:  9px;
   --radius-full: 9999px;
 
   /* ── BORDERS ── */
@@ -90,11 +91,11 @@
   --border-dashed:  1px dashed var(--color-border);
 
   /* ── SHADOWS ── */
-  --shadow-sm:   0 2px 12px rgba(0, 0, 0, 0.30);
-  --shadow-md:   0 4px 20px rgba(0, 0, 0, 0.35);
-  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.60);
-  --shadow-glow: 0 0 8px var(--color-accent);
-  --shadow-glow-sm: 0 0 6px var(--color-accent);
+  --shadow-sm:   0 2px 12px rgba(0, 0, 0, 0.40);
+  --shadow-md:   0 4px 20px rgba(0, 0, 0, 0.50);
+  --shadow-lg:   0 8px 32px rgba(0, 0, 0, 0.70);
+  --shadow-glow: 0 0 8px rgba(232, 228, 217, 0.10);
+  --shadow-glow-sm: 0 0 6px rgba(232, 228, 217, 0.08);
 
   /* ── TRANSITIONS ── */
   --transition-fast:   0.15s ease;
@@ -107,10 +108,10 @@
   --z-overlay: 100;
   --z-popup:   1000;
 
-  /* ── GRADIENTS: Brand ── */
-  --gradient-primary:   linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-  --gradient-warm:      linear-gradient(135deg, var(--color-accent-3), var(--color-pink));
-  --gradient-cool:      linear-gradient(90deg,  var(--color-accent),  var(--color-accent-2));
+  /* ── GRADIENTS: Flat linen tone — no hue shifts ── */
+  --gradient-primary:   #e8e4d9;
+  --gradient-warm:      #e8e4d9;
+  --gradient-cool:      #e8e4d9;
 
   /* ── EFFECTS ── */
   --backdrop-blur: blur(10px);

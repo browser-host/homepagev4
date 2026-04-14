@@ -7,42 +7,43 @@
 :root {
 
   /* ── COLOR: Backgrounds ── */
-  --color-bg:         #eef0f7;   /* Deepest background — cool blue-grey, not stark white */
-  --color-surface:    #f7f8fc;   /* Card / panel base — soft white with a blue tint */
-  --color-surface-2:  #dfe3f0;   /* Elevated surface, inputs, hover fills */
-  --color-surface-3:  #f0f2f9;   /* Recessed / inset areas */
+  --color-bg:         #f2ede5;   /* Lightest warm linen */
+  --color-surface:    #e8e2d8;   /* Card / panel base */
+  --color-surface-2:  #ddd7cc;   /* Elevated surface, inputs, hover fills */
+  --color-surface-3:  #f2ede5;   /* Recessed / inset areas — same as bg */
 
   /* ── COLOR: Borders ── */
-  --color-border:     #c2c9e0;   /* Default border — visible, slightly blue */
-  --color-border-dim: #d4d9ea;   /* Slightly muted variant */
+  --color-border:     rgba(0, 0, 0, 0.08);
+  --color-border-dim: rgba(0, 0, 0, 0.10);
 
   /* ── COLOR: Text ── */
-  --color-text:       #14172b;   /* Primary readable text — near-black with blue warmth */
-  --color-text-alt:   #252a4a;   /* Slightly cooler dark variant */
-  --color-muted:      #6470a0;   /* Secondary / placeholder — blue-purple mid-tone */
-  --color-muted-alt:  #9099bf;   /* Even more muted */
+  --color-text:       #4a443e;   /* Body text — dark warm grey */
+  --color-text-alt:   #2a2420;   /* Title / emphasis — near-black warm */
+  --color-muted:      #9a9590;   /* Secondary / placeholder */
+  --color-muted-alt:  #b5b0aa;   /* Even more muted */
 
-  /* ── COLOR: Accents ── */
-  --color-accent:     #0d8f9e;   /* Primary cyan-teal — rich, saturated */
-  --color-accent-2:   #5548e8;   /* Secondary violet — vivid purple-blue */
-  --color-accent-3:   #c97a08;   /* Warning amber — warm, readable */
-  --color-green:      #1a9460;   /* Success green — vivid emerald */
-  --color-pink:       #d4186a;   /* Highlight rose — punchy magenta-pink */
+  /* ── COLOR: Accents — single warm-dark ramp, no hue shifts ── */
+  --color-accent:     #1a1714;   /* Primary accent — near-black warm */
+  --color-accent-2:   #3a3530;   /* Mid-dark warm */
+  --color-accent-3:   #5a5248;   /* Warm taupe dark */
+  --color-green:      #5a5248;   /* Mapped to warm taupe */
+  --color-pink:       #5a5248;   /* Mapped to warm taupe */
 
   /* ── COLOR: Accent tints (alpha fills) ── */
-  --color-accent-dim:   rgba(13, 143, 158, 0.12);
-  --color-accent-2-dim: rgba(85, 72, 232, 0.10);
-  --color-accent-3-dim: rgba(201, 122, 8, 0.10);
+  --color-accent-dim:   rgba(26, 23, 20, 0.07);
+  --color-accent-2-dim: rgba(58, 53, 48, 0.07);
+  --color-accent-3-dim: rgba(90, 82, 72, 0.07);
 
   /* ── TYPOGRAPHY ── */
-  --font-mono:   'Courier New', 'Lucida Console', monospace;
-  --font-ui:     'Space Mono', monospace;
-  --font-body:   'DM Sans', sans-serif;
+  --font-mono:    'Courier New', 'Lucida Console', monospace;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-ui:      'Space Mono', monospace;
+  --font-body:    'Inter', Georgia, sans-serif;
 
   /* ── FONT SIZES ── */
-  --text-2xs:  9px;   --text-xs:   10px;  --text-sm:   11px;
-  --text-base: 13px;  --text-md:   14px;  --text-lg:   18px;
-  --text-xl:   22px;  --text-2xl:  26px;  --text-3xl:  52px;
+  --text-2xs:  12px;  --text-xs:   14px;  --text-sm:   15px;
+  --text-base: 17px;  --text-md:   18px;  --text-lg:   24px;
+  --text-xl:   29px;  --text-2xl:  35px;  --text-3xl:  69px;
 
   /* ── LETTER SPACING ── */
   --tracking-tight:  -0.03em;  --tracking-normal: 0.04em;
@@ -58,8 +59,8 @@
   --space-14: 36px; --space-16: 40px;
 
   /* ── BORDER RADIUS ── */
-  --radius-sm: 3px;  --radius-md: 4px;   --radius-base: 6px;
-  --radius-lg: 8px;  --radius-xl: 10px;  --radius-2xl: 12px;
+  --radius-sm:   3px;  --radius-md:   3px;  --radius-base: 3px;
+  --radius-lg:   5px;  --radius-xl:   7px;  --radius-2xl:  9px;
   --radius-full: 9999px;
 
   /* ── BORDERS ── */
@@ -68,12 +69,11 @@
   --border-dashed:  1px dashed var(--color-border);
 
   /* ── SHADOWS ── */
-  /* Blue-tinted shadows for cohesion with the cool surface palette */
-  --shadow-sm:      0 2px 12px rgba(30, 40, 100, 0.09);
-  --shadow-md:      0 4px 20px rgba(30, 40, 100, 0.12);
-  --shadow-lg:      0 8px 32px rgba(30, 40, 100, 0.18);
-  --shadow-glow:    0 0 10px rgba(13, 143, 158, 0.40);
-  --shadow-glow-sm: 0 0 6px  rgba(13, 143, 158, 0.30);
+  --shadow-sm:      0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-md:      0 4px 20px rgba(0, 0, 0, 0.09);
+  --shadow-lg:      0 8px 32px rgba(0, 0, 0, 0.14);
+  --shadow-glow:    0 0 8px  rgba(26, 23, 20, 0.12);
+  --shadow-glow-sm: 0 0 6px  rgba(26, 23, 20, 0.08);
 
   /* ── TRANSITIONS ── */
   --transition-fast: 0.15s ease;  --transition-base: 0.20s ease;
@@ -82,10 +82,10 @@
   /* ── Z-INDEX ── */
   --z-base: 1;  --z-raised: 10;  --z-overlay: 100;  --z-popup: 1000;
 
-  /* ── GRADIENTS: Brand ── */
-  --gradient-primary: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
-  --gradient-warm:    linear-gradient(135deg, var(--color-accent-3), var(--color-pink));
-  --gradient-cool:    linear-gradient(90deg,  var(--color-accent),  var(--color-accent-2));
+  /* ── GRADIENTS: Flat dark warm tone ── */
+  --gradient-primary: #1a1714;
+  --gradient-warm:    #1a1714;
+  --gradient-cool:    #1a1714;
 
   /* ── EFFECTS ── */
   --backdrop-blur: blur(10px);
@@ -93,4 +93,12 @@
   /* ── PANEL / LAYOUT ── */
   --panel-width:   320px;
   --container-max: 960px;
+
+  /* ── ICON FILTERS: dark icons on light background ── */
+  --icon-filter:        invert(0.25) sepia(0.05);  /* dark warm grey */
+  --icon-filter-muted:  invert(0.45) sepia(0.05);  /* medium warm grey */
+  --icon-filter-accent: invert(0.08) sepia(0.05);  /* near-black warm */
+  --icon-filter-green:  invert(0.32) sepia(0.05);
+  --icon-filter-red:    invert(0.38) sepia(0.05);
+  --icon-filter-amber:  invert(0.30) sepia(0.05);
 }
