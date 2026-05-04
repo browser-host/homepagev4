@@ -5,8 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Need a Thing</title>
 
+  <!-- sp-theme placeholder links: sp-theme.js finds these by ID and sets their hrefs.
+       Positioned before dark.css so the page theme tokens win the cascade. -->
+  <link id="sp-theme-tokens" rel="stylesheet">
+  <link id="sp-theme-active" rel="stylesheet">
+
   <!-- Design system -->
-  <link rel="stylesheet" href="./Styles/Themes/dark.css" data-theme-sheet>
+  <link rel="stylesheet" href="./Styles/Tokens/base.css">
+  <link rel="stylesheet" href="./Styles/Themes/manuscript.css">
   <link rel="stylesheet" href="./Styles/main.css">
   <link rel="stylesheet" href="./Styles/Components/Components.css">
   <link rel="stylesheet" href="./Styles/atomics.css">
@@ -23,10 +29,15 @@
 
   <!-- App JS -->
   <script src="./JS/utility.js"></script>
-  <script src="./JS/settings.js"></script>
   <script src="main.js"></script>
 </head>
 <body>
+  <sp-theme></sp-theme>
+
+  <sp-nav sticky>
+    <span slot="brand">Need a Thing</span>
+  </sp-nav>
+
   <div class="layout">
 
     <!-- ── Sidebar: Quick Links ── -->
@@ -36,9 +47,9 @@
           <div id="add-link" onclick="openLinkModal();">
             Quick Links
           </div>
-          <button class="btn btn--ghost btn--sm sidebar-organize-btn" onclick="openOrganizeModal();" title="Organize links">
+          <sp-button variant="ghost" size="sm" class="sidebar-organize-btn" onclick="openOrganizeModal();" title="Organize links">
             Organize
-          </button>
+          </sp-button>
         </div>
       </div>
     </div>
@@ -102,7 +113,7 @@
           </div>
 
           <div class="form__actions">
-            <button class="btn" type="button" onclick="closeLinkModal();">Cancel</button>
+            <sp-button onclick="closeLinkModal();">Cancel</sp-button>
             <button class="btn btn--primary" type="submit">Add Link</button>
           </div>
         </form>
@@ -127,13 +138,19 @@
         <p class="org-instructions">Drag categories and links to reorder. Links can be moved between categories.</p>
         <div id="organize-list" class="org-list"></div>
         <div class="form__actions" style="margin-top: var(--space-8);">
-          <button class="btn" type="button" onclick="closeOrganizeModal();">Cancel</button>
-          <button class="btn btn--primary" type="button" onclick="saveOrganized();">Save Order</button>
+          <sp-button onclick="closeOrganizeModal();">Cancel</sp-button>
+          <sp-button variant="primary" onclick="saveOrganized();">Save Order</sp-button>
         </div>
       </div>
 
     </div>
   </div>
 
+
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+  </script>
 </body>
 </html>

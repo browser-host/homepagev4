@@ -1,0 +1,82 @@
+/* ============================================================
+   BASE TOKENS — always applied, no theme dependence.
+   Typography, spacing, radius, transitions, z-index, layout.
+   Import before any theme file.
+   ============================================================ */
+
+:root {
+
+  /* ── Typography ── */
+  --font-mono:    'Courier New', 'Lucida Console', monospace;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-ui:      'Space Mono', monospace;
+  --font-body:    'Inter', Georgia, sans-serif;
+
+  /* ── Font sizes ── */
+  --text-2xs:  12px;
+  --text-xs:   14px;
+  --text-sm:   15px;
+  --text-base: 17px;
+  --text-md:   18px;
+  --text-lg:   24px;
+  --text-xl:   29px;
+  --text-2xl:  35px;
+  --text-3xl:  69px;
+
+  /* ── Letter spacing ── */
+  --tracking-tight:  -0.03em;
+  --tracking-normal:  0.04em;
+  --tracking-wide:    0.12em;
+  --tracking-wider:   0.18em;
+  --tracking-widest:  0.22em;
+  --tracking-label:   3px;
+  --tracking-mono:    4px;
+
+  /* ── Spacing ── */
+  --space-1:   4px;
+  --space-2:   6px;
+  --space-3:   8px;
+  --space-4:   10px;
+  --space-5:   12px;
+  --space-6:   14px;
+  --space-7:   16px;
+  --space-8:   18px;
+  --space-9:   20px;
+  --space-10:  24px;
+  --space-11:  28px;
+  --space-12:  32px;
+  --space-14:  36px;
+  --space-16:  40px;
+
+  /* ── Border radius ── */
+  --radius-sm:   3px;
+  --radius-md:   3px;
+  --radius-base: 3px;
+  --radius-lg:   5px;
+  --radius-xl:   7px;
+  --radius-2xl:  9px;
+  --radius-full: 9999px;
+
+  /* ── Composite border shorthands (resolve against the active theme's color vars) ── */
+  --border-default: 1px solid var(--color-border);
+  --border-accent:  1px solid var(--color-accent);
+  --border-dashed:  1px dashed var(--color-border);
+
+  /* ── Transitions ── */
+  --transition-fast:   0.15s ease;
+  --transition-base:   0.20s ease;
+  --transition-slow:   0.35s ease;
+
+  /* ── Z-index ── */
+  --z-base:    1;
+  --z-raised:  10;
+  --z-overlay: 100;
+  --z-popup:   1000;
+
+  /* ── Effects ── */
+  --backdrop-blur: blur(10px);
+
+  /* ── Layout ── */
+  --panel-width:   320px;
+  --container-max: 960px;
+}

@@ -3,6 +3,14 @@
    Requires: dark.css, main.css, Components.css
    ============================================================ */
 
+/* ── Full-viewport body flex column so sp-nav + layout stack cleanly ── */
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
 /* ── Page grid layout ── */
 .layout {
   display: grid;
@@ -11,7 +19,8 @@
   grid-template-areas:
     "sidebar topbar"
     "sidebar main";
-  height: 100vh;
+  flex: 1;
+  min-height: 0;
   gap: var(--space-5);
   padding: var(--space-5);
   overflow: hidden;
@@ -54,16 +63,16 @@
   color: var(--color-accent);
 }
 
-.sidebar-organize-btn {
-  font-size: var(--text-2xs) !important;
-  padding: var(--space-1) var(--space-3) !important;
-  letter-spacing: var(--tracking-wide) !important;
-  color: var(--color-muted) !important;
-  border-color: transparent !important;
+sp-button.sidebar-organize-btn::part(button) {
+  font-size: var(--text-2xs);
+  padding: var(--space-1) var(--space-3);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-muted);
+  border-color: transparent;
 }
-.sidebar-organize-btn:hover {
-  color: var(--color-accent) !important;
-  background: var(--color-accent-dim) !important;
+sp-button.sidebar-organize-btn:hover::part(button) {
+  color: var(--color-accent);
+  background: var(--color-accent-dim);
 }
 
 /* ── Sidebar link groups ── */
