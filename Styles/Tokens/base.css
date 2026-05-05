@@ -6,11 +6,11 @@
 
 :root {
 
-  /* ── Typography ── */
-  --font-mono:    'Courier New', 'Lucida Console', monospace;
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-ui:      'Space Mono', monospace;
-  --font-body:    'Inter', Georgia, sans-serif;
+  /* ── Typography — delegates to sp-theme ── */
+  --font-mono:    var(--font-family-mono);
+  --font-display: var(--font-family-display, serif);
+  --font-ui:      var(--font-family-mono);
+  --font-body:    var(--font-family-base);
 
   /* ── Font sizes ── */
   --text-2xs:  12px;

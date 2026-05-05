@@ -188,12 +188,12 @@ function createToolsLinks() {
 // * * * * * * * * * * * * *
 
 function openOrganizeModal() {
-  openModal(organizeModal);
+  organizeModal.show();
   buildOrganizeUI();
 }
 
 function closeOrganizeModal() {
-  closeModal(organizeModal);
+  organizeModal.close();
 }
 
 function buildOrganizeUI() {
@@ -576,10 +576,10 @@ function setupNewLinkForm() {
 // * * * * * * * * * * * * *
 
 function openLinkModal() {
-  openModal(modal);
+  modal.show();
   setupNewLinkForm();
 }
 
 function closeLinkModal() {
-  closeModal(modal);
+  modal.close();
 }

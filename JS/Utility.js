@@ -26,18 +26,10 @@ const debounce = (callback, wait) => {
 //          Toast
 // * * * * * * * * * * * * *
 
-/**
- * Shows a toast notification.
- * Expects a <div id="toast" class="toast"> element in the DOM.
- * @param {string} msg - Message to display
- * @param {number} [duration=2200] - How long to show in ms
- */
 function showToast(msg, duration = 2200) {
   const toast = document.getElementById('toast');
   if (!toast) return;
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), duration);
+  toast.show(msg, duration);
 }
 
 
@@ -70,24 +62,3 @@ function copyToClipboardWithToast(text, toastMsg = 'COPIED TO CLIPBOARD') {
 }
 
 
-// * * * * * * * * * * * * *
-//          Modal
-// * * * * * * * * * * * * *
-
-/**
- * Opens a modal by removing the 'd-none' class.
- * @param {string|HTMLElement} modal - Element ID string or DOM element
- */
-function openModal(modal) {
-  const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
-  if (el) el.classList.remove('d-none');
-}
-
-/**
- * Closes a modal by adding the 'd-none' class.
- * @param {string|HTMLElement} modal - Element ID string or DOM element
- */
-function closeModal(modal) {
-  const el = typeof modal === 'string' ? document.getElementById(modal) : modal;
-  if (el) el.classList.add('d-none');
-}

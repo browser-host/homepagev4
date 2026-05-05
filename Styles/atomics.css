@@ -12,7 +12,7 @@
 .d-block      { display: block; }
 .d-inline     { display: inline; }
 .d-inline-flex{ display: inline-flex; }
-.d-none       { display: none; }
+.d-none       { display: none !important; }
 
 /* ════════════════════════════════════════
    FLEX
