@@ -5,27 +5,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TIME STUDIO</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="../../Styles/Themes/dark.css" data-theme-sheet>
+
+  <link id="sp-theme-tokens" rel="stylesheet">
+  <link id="sp-theme-active" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../Styles/Tokens/base.css">
+  <link rel="stylesheet" href="../../Styles/Themes/manuscript.css">
   <link rel="stylesheet" href="../../Styles/main.css">
   <link rel="stylesheet" href="../../Styles/Components/Components.css">
   <link rel="stylesheet" href="../../Styles/atomics.css">
   <link rel="stylesheet" href="timezones.css">
   <script src="../../JS/utility.js"></script>
-  <script src="../../JS/settings.js"></script>
 </head>
 
 <body class="noise-bg">
+  <sp-theme></sp-theme>
+  <sp-nav sticky>
+    <span slot="brand">Time Studio</span>
+  </sp-nav>
+
   <div class="container">
 
-    <div class="app-header mb-14">
+    <div class="app-header mb-8">
       <div class="dot-indicator dot-indicator--lg animate-pulse"></div>
       <h1 class="app-header__title">Time Studio</h1>
     </div>
 
-    <div class="hero-block mb-14" id="hero">
+    <div class="hero-block mb-8" id="hero">
       <div class="hero-block__label">Your Local Time</div>
       <div class="hero-block__location" id="local-tz">Detecting timezone...</div>
       <div class="hero-block__value" id="local-time">--:--:--</div>
@@ -36,14 +42,14 @@
     <div class="section-label mb-7">Canadian Timezones</div>
 
     <div class="controls">
-      <button class="btn" id="pauseBtn">
+      <sp-button id="pauseBtn">
         <svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0">
           <rect x="6" y="4" width="4" height="16" />
           <rect x="14" y="4" width="4" height="16" />
         </svg>
         Pause
-      </button>
-      <button class="btn" id="roundBtn">Round to Hour</button>
+      </sp-button>
+      <sp-button id="roundBtn">Round to Hour</sp-button>
       <span class="status-indicator status-indicator--hidden" id="pausedLabel">PAUSED</span>
     </div>
 
@@ -51,7 +57,14 @@
 
   </div>
 
-  <div class="toast" id="toast">COPIED TO CLIPBOARD</div>
+  <sp-toast id="toast"></sp-toast>
+
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-toast.js'
+  </script>
 
   <script>
     const ZONES = [
@@ -81,7 +94,7 @@
         pausedLabel.classList.add('status-indicator--visible');
         if (dotEl) { dotEl.style.animationPlayState = 'paused'; dotEl.style.opacity = '0.3'; }
         if (updateBtn) {
-          pauseBtn.classList.add('btn--warning');
+          pauseBtn.setAttribute('variant', 'danger');
           pauseBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><polygon points="5 3 19 12 5 21 5 3"/></svg> Resume`;
         }
       } else {
@@ -89,7 +102,7 @@
         pausedLabel.classList.remove('status-indicator--visible');
         if (dotEl) { dotEl.style.animationPlayState = 'running'; dotEl.style.opacity = ''; }
         if (updateBtn) {
-          pauseBtn.classList.remove('btn--warning');
+          pauseBtn.removeAttribute('variant');
           pauseBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" style="width:13px;height:13px;flex-shrink:0"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`;
         }
       }

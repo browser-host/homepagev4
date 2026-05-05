@@ -115,6 +115,8 @@
 .mb-8  { margin-bottom: var(--space-8); }
 .mb-10 { margin-bottom: var(--space-10); }
 .mb-12 { margin-bottom: var(--space-12); }
+.mb-14 { margin-bottom: var(--space-14); }
+.mb-16 { margin-bottom: var(--space-16); }
 
 .mx-auto { margin-inline: auto; }
 
