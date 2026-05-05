@@ -1,3 +1,5 @@
+@import url('./Styles/Components/Icons.css');
+
 /* ============================================================
    HOMEPAGE.CSS — Page-specific styles for Need a Thing
    Requires: dark.css, main.css, Components.css
@@ -63,17 +65,6 @@ body {
   color: var(--color-accent);
 }
 
-sp-button.sidebar-organize-btn::part(button) {
-  font-size: var(--text-2xs);
-  padding: var(--space-1) var(--space-3);
-  letter-spacing: var(--tracking-wide);
-  color: var(--color-muted);
-  border-color: transparent;
-}
-sp-button.sidebar-organize-btn:hover::part(button) {
-  color: var(--color-accent);
-  background: var(--color-accent-dim);
-}
 
 /* ── Sidebar link groups ── */
 .link-group {
@@ -128,7 +119,7 @@ sp-button.sidebar-organize-btn:hover::part(button) {
 }
 
 .title {
-  font-family: 'Agdasima', sans-serif;
+  font-family: var(--font-display);
   font-size: var(--text-2xl);
   letter-spacing: var(--tracking-label);
   color: var(--color-accent);
@@ -257,11 +248,6 @@ sp-button.sidebar-organize-btn:hover::part(button) {
   padding: 0;
 }
 
-/* ── Wide modal variant for organize ── */
-.modal__dialog--wide {
-  max-width: 560px;
-}
-
 /* ── Organize modal ── */
 .org-instructions {
   font-size: var(--text-sm);
@@ -274,9 +260,6 @@ sp-button.sidebar-organize-btn:hover::part(button) {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  max-height: 440px;
-  overflow-y: auto;
-  padding-right: var(--space-1);
 }
 
 /* Category block */
@@ -410,3 +393,55 @@ sp-button.sidebar-organize-btn:hover::part(button) {
   flex: 1;
   min-width: 0;
 }
+
+
+/* ── Form ── */
+.form__fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-7);
+}
+.form__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.form__label {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+.form__split {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.form__split-or {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+.form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* ── Input ── */
+.input {
+  background: var(--color-surface-3);
+  border: var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  padding: var(--space-3) var(--space-4);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.input:focus { border-color: var(--color-accent); }
+.input::placeholder { color: var(--color-muted); }
