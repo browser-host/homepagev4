@@ -3,61 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Timezones</title>
+  <title>What's My IP?</title>
+
+  <link id="sp-theme-tokens" rel="stylesheet">
+  <link id="sp-theme-active" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../Styles/Tokens/base.css"/>
+  <link rel="stylesheet" href="../../Styles/Themes/manuscript.css"/>
   <link rel="stylesheet" href="../../Styles/main.css"/>
-  <link rel="stylesheet" href="../../Styles/Themes/dark.css"/>
   <link rel="stylesheet" href="../../Styles/Components/Components.css"/>
+
   <style>
-    body {
+    .page-content {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
     }
-
     .card {
       width: 300px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: var(--space-7);
     }
-
     #ip-address {
       display: block;
+      font-family: var(--font-mono);
+      font-size: var(--text-xl);
+      color: var(--color-accent);
+      letter-spacing: var(--tracking-mono);
     }
   </style>
 </head>
+<body style="display:flex;flex-direction:column;min-height:100vh;">
+  <sp-theme></sp-theme>
+  <sp-nav sticky>
+    <span slot="brand">What's My IP?</span>
+  </sp-nav>
 
-<body>
-  <div class="card">
-    <span id="ip-address">-</span>
-    <button id="retry-button" class='button' disabled onclick="handleRetryClick();">Retry</button>
+  <div class="page-content">
+    <div class="card">
+      <span id="ip-address">—</span>
+      <sp-button id="retry-button" disabled onclick="handleRetryClick();">Retry</sp-button>
+    </div>
   </div>
-</body>
 
-<script type="text/javascript">
-  var ipifyAPI = 'https://api.ipify.org';
+  <script type="text/javascript">
+    function handleRetryClick() {
+      document.getElementById('ip-address').textContent = '—';
+      document.getElementById('retry-button').setAttribute('disabled', '');
+      fetchIPAddress();
+    }
 
-  function handleRetryClick(){
-    console.log('fetching');
-    document.getElementById('ip-address').innerHTML = '-';
-    document.getElementById('retry-button').disabled = true;
+    function fetchIPAddress() {
+      fetch('https://api.ipify.org')
+        .then(res => res.text())
+        .then(data => {
+          if (data && data !== '') {
+            document.getElementById('ip-address').textContent = data;
+            document.getElementById('retry-button').removeAttribute('disabled');
+          }
+        });
+    }
+
     fetchIPAddress();
-  }
-  
-  function fetchIPAddress(){
-    fetch('https://api.ipify.org')
-      .then(res => res.text())
-      .then(data => {
-        if (data && data != ''){
-          document.getElementById('ip-address').innerHTML = data;
-          document.getElementById('retry-button').disabled = false;
-        }
-      });
-  }
+  </script>
 
-  fetchIPAddress();
-
-</script>
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+  </script>
+</body>
 </html>

@@ -3,82 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Base64 to File Converter</title>
-  <link rel="stylesheet" href="../../Styles/Themes/dark.css"/>
-  <link rel="stylesheet" href="../../Styles/main.css"/> 
+  <title>Base64 to File</title>
+
+  <link id="sp-theme-tokens" rel="stylesheet">
+  <link id="sp-theme-active" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../Styles/Tokens/base.css"/>
+  <link rel="stylesheet" href="../../Styles/Themes/manuscript.css"/>
+  <link rel="stylesheet" href="../../Styles/main.css"/>
   <link rel="stylesheet" href="../../Styles/Components/Components.css"/>
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+    .page-content {
+      flex: 1;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      padding: var(--space-9);
     }
-    
+    .card {
+      width: 100%;
+      max-width: 560px;
+    }
     textarea {
       width: 100%;
       height: 150px;
-      margin-bottom: 15px;
-      padding: 10px;
-      border-radius: 4px;
+      margin-bottom: var(--space-5);
+      padding: var(--space-5);
+      border-radius: var(--radius-md);
       box-sizing: border-box;
-      border: none;
+      background: var(--color-surface-2);
+      border: var(--border-default);
+      color: var(--color-text);
+      font-family: var(--font-mono);
+      font-size: var(--text-sm);
+      resize: vertical;
       outline: none;
     }
-
-    button {
-      float: right;
+    textarea:focus {
+      border-color: var(--color-accent);
+    }
+    .card-actions {
+      display: flex;
+      justify-content: flex-end;
     }
   </style>
 </head>
-<body>
+<body style="display:flex;flex-direction:column;min-height:100vh;">
+  <sp-theme></sp-theme>
+  <sp-nav sticky>
+    <span slot="brand">Base64 to File</span>
+  </sp-nav>
 
-<div class="card">
-  <h2>Base64 to MP3 Converter</h2>
-  <br>
-  <textarea id="base64Input" placeholder="Paste your Base64 string here"></textarea>
-  <br>
-  <button class="button" onclick="downloadBase64File()">Download File</button>
-</div>
+  <div class="page-content">
+    <div class="card">
+      <h2 style="margin-bottom:var(--space-7);">Base64 to MP3 Converter</h2>
+      <textarea id="base64Input" placeholder="Paste your Base64 string here…"></textarea>
+      <div class="card-actions">
+        <sp-button variant="primary" onclick="downloadBase64File()">Download File</sp-button>
+      </div>
+    </div>
+  </div>
 
-<script>
-  function downloadBase64File() {
-    const base64String = document.getElementById("base64Input").value;
-
-    if (!base64String) {
-      alert("Please enter a Base64 string.");
-      return;
-    }
-
-    try {
-      // Clean the Base64 string (remove any data URL prefix)
-      const cleanBase64 = base64String.split(",").pop();
-
-      // Convert Base64 to a Blob
-      const byteCharacters = atob(cleanBase64);
-      const byteNumbers = new Uint8Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
+  <script>
+    function downloadBase64File() {
+      const base64String = document.getElementById('base64Input').value;
+      if (!base64String) { alert('Please enter a Base64 string.'); return; }
+      try {
+        const cleanBase64 = base64String.split(',').pop();
+        const byteCharacters = atob(cleanBase64);
+        const byteNumbers = new Uint8Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
           byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const blob = new Blob([byteNumbers], { type: 'application/octet-stream' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'output.mp3';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } catch (error) {
+        alert('Invalid Base64 string or something went wrong!');
+        console.error('Error:', error);
       }
-      const blob = new Blob([byteNumbers], { type: "application/octet-stream" });
-
-      // Create a link element
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "output.mp3"; // You can change the file name here
-
-      // Programmatically click the link to trigger the download
-      document.body.appendChild(link);
-      link.click();
-      link.remove(); // Clean up
-    } catch (error) {
-      alert("Invalid Base64 string or something went wrong!");
-      console.error("Error:", error);
     }
-  }
-</script>
+  </script>
 
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+  </script>
 </body>
 </html>
