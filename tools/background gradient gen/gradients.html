@@ -5,16 +5,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gradient Studio</title>
-  <link rel="stylesheet" href="../../Styles/Themes/dark.css" data-theme-sheet>
+  <link id="sp-theme-tokens" rel="stylesheet">
+  <link id="sp-theme-active" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../Styles/Tokens/base.css">
+  <link rel="stylesheet" href="../../Styles/Themes/manuscript.css">
   <link rel="stylesheet" href="../../Styles/main.css">
   <link rel="stylesheet" href="../../Styles/Components/Components.css">
   <link rel="stylesheet" href="../../Styles/atomics.css">
   <link rel="stylesheet" href="gradients.css">
   <script src="../../JS/utility.js"></script>
-  <script src="../../JS/settings.js"></script>
 </head>
 
 <body>
+  <sp-theme></sp-theme>
+  <sp-nav sticky>
+    <span slot="brand">Gradient Studio</span>
+  </sp-nav>
+
+  <div id="gradients-layout">
   <div id="preview-container">
     <div id="preview"></div>
     <canvas id="filter-canvas"></canvas>
@@ -37,24 +46,25 @@
     <!-- ── GRADIENT TAB ── -->
     <div class="tab-content active panel__body" id="tab-gradient">
       <div class="panel__section">
-        <div style="height:14px"></div>
         <div class="section-label">Type</div>
         <div class="type-selector mb-6">
-          <button class="type-selector__btn active" data-type="linear">Linear</button>
-          <button class="type-selector__btn" data-type="radial">Radial</button>
-          <button class="type-selector__btn" data-type="conic">Conic</button>
+          <sp-button variant="primary" data-type="linear">Linear</sp-button>
+          <sp-button data-type="radial">Radial</sp-button>
+          <sp-button data-type="conic">Conic</sp-button>
         </div>
-        <div class="section-label">Angle</div>
-        <div class="angle-row">
-          <div class="angle-dial" id="angle-dial">
-            <div class="angle-dial__needle" id="dial-needle"></div>
+        <div id="angle-section">
+          <div class="section-label">Angle</div>
+          <div class="angle-row">
+            <div class="angle-dial" id="angle-dial">
+              <div class="angle-dial__needle" id="dial-needle"></div>
+            </div>
+            <div>
+              <div class="angle-val" id="angle-display">90</div>
+              <div class="angle-unit">degrees</div>
+            </div>
           </div>
-          <div>
-            <div class="angle-val" id="angle-display">90</div>
-            <div class="angle-unit">degrees</div>
-          </div>
+          <input type="range" id="angle-slider" min="0" max="360" value="90">
         </div>
-        <input type="range" id="angle-slider" min="0" max="360" value="90">
       </div>
       <div class="panel__section">
         <div class="section-label">Colors</div>
@@ -62,22 +72,20 @@
           <div class="stop-bar" id="stop-bar"></div>
         </div>
         <div id="colors-list"></div>
-        <button class="btn btn--dashed mb-6" id="btn-add-color">+ add color stop</button>
+        <sp-button class="mb-6" id="btn-add-color">+ add color stop</sp-button>
         <div class="btn-row mb-2">
-          <button class="btn btn--primary" id="btn-randomize">⟳ Randomize</button>
-          <button class="btn" id="btn-random-angle">⟳ Angle</button>
+          <sp-button id="btn-randomize">⟳ Randomize</sp-button>
+          <sp-button id="btn-random-angle">⟳ Angle</sp-button>
         </div>
         <div class="btn-row mb-2">
-          <button class="btn" id="btn-reverse">⇄ Reverse</button>
-          <button class="btn" id="btn-clear-locks">Unlock All</button>
+          <sp-button id="btn-reverse">⇄ Reverse</sp-button>
+          <sp-button id="btn-clear-locks">Unlock All</sp-button>
         </div>
         <div class="btn-row">
-          <button class="btn btn--outline w-full" id="btn-download">↓ Download 4K PNG</button>
+          <sp-button variant="primary" full id="btn-download">↓ Download 4K PNG</sp-button>
         </div>
       </div>
       <div class="panel__section">
-        <div class="divider"></div>
-        <div style="height:16px"></div>
         <div class="section-label">Presets</div>
         <div class="preset-grid" id="presets-grid"></div>
       </div>
@@ -86,7 +94,6 @@
     <!-- ── FILTERS TAB ── -->
     <div class="tab-content panel__body" id="tab-filters">
       <div class="panel__section">
-        <div style="height:14px"></div>
         <div class="section-label">Overlay Filter</div>
         <div class="filter-none-card active" id="filter-none">✕ None</div>
         <div class="filter-grid" id="filter-grid"></div>
@@ -139,11 +146,12 @@
         </div>
 
         <div class="btn-row mt-2">
-          <button class="btn btn--primary w-full" id="btn-reseed">⟳ Regenerate</button>
+          <sp-button variant="primary" full id="btn-reseed">⟳ Regenerate</sp-button>
         </div>
       </div>
     </div>
   </div>
+  </div><!-- end #gradients-layout -->
 
   <!-- Custom Color Picker -->
   <div id="color-picker-popup" class="cp-popup">
@@ -242,9 +250,13 @@
 
     function render() {
       applyGradient();
-      angleDisp.textContent = state.angle;
-      angleSlider.value = state.angle;
-      dialNeedle.style.transform = `rotate(${state.angle}deg)`;
+      const isRadial = state.type === 'radial';
+      document.getElementById('angle-section').style.display = isRadial ? 'none' : '';
+      if (!isRadial) {
+        angleDisp.textContent = state.angle;
+        angleSlider.value = state.angle;
+        dialNeedle.style.transform = `rotate(${state.angle}deg)`;
+      }
       renderColors();
       renderStopBar();
     }
@@ -491,10 +503,10 @@
     // ════════════════════════════════════════════
     //  GRADIENT CONTROLS
     // ════════════════════════════════════════════
-    document.querySelectorAll('.type-selector__btn').forEach(btn => {
+    document.querySelectorAll('.type-selector sp-button').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.type-selector__btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.querySelectorAll('.type-selector sp-button').forEach(b => b.removeAttribute('variant'));
+        btn.setAttribute('variant', 'primary');
         state.type = btn.dataset.type; render();
       });
     });
@@ -844,6 +856,12 @@
     window.addEventListener('resize', () => { if (filterState.active) drawFilter(); });
 
     render();
+  </script>
+
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
   </script>
 </body>
 
