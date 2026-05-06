@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GridCraft</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d0f12;
+  --surface: #151820;
+  --surface2: #1c2130;
+  --surface3: #232a3a;
+  --border: #2a3347;
+  --border2: #374260;
+  --accent: #4f8ef7;
+  --accent2: #7c3aed;
+  --accent3: #10b981;
+  --warn: #f59e0b;
+  --danger: #ef4444;
+  --text: #e2e8f0;
+  --text2: #94a3b8;
+  --text3: #64748b;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--mono); height: 100dvh; overflow: hidden; display: flex; flex-direction: column; }
+
+/* ── HEADER ── */
+header { display: flex; align-items: center; padding: 6px 14px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; gap: 10px; }
+.logo { font-family: var(--sans); font-weight: 800; font-size: 15px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 7px; white-space: nowrap; flex-shrink: 0; }
+.logo-icon { width: 22px; height: 22px; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+.logo-icon span { border-radius: 2px; }
+.logo-icon span:nth-child(1) { background: var(--accent); }
+.logo-icon span:nth-child(2) { background: var(--accent2); }
+.logo-icon span:nth-child(3) { background: var(--accent3); }
+.logo-icon span:nth-child(4) { background: var(--warn); }
+
+.bp-area { display: flex; align-items: center; gap: 4px; flex: 1; min-width: 0; }
+.bp-tabs { display: flex; align-items: center; gap: 3px; background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 3px; flex-wrap: wrap; }
+.bp-tab { padding: 4px 11px; border-radius: 4px; font-size: 11px; color: var(--text3); cursor: pointer; transition: all 0.15s; white-space: nowrap; user-select: none; }
+.bp-tab.active { background: var(--accent); color: #fff; }
+.bp-tab:not(.active):hover { color: var(--text2); background: var(--surface3); }
+.bp-add-btn { font-size: 11px; color: var(--text3); cursor: pointer; padding: 4px 6px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+.bp-add-btn:hover { color: var(--accent); background: var(--surface3); }
+
+.header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+button { font-family: var(--mono); cursor: pointer; border: none; border-radius: 6px; font-size: 11px; transition: all 0.15s; }
+.btn-primary { background: var(--accent); color: #fff; padding: 6px 13px; font-weight: 600; }
+.btn-primary:hover { background: #6b9ff8; }
+.btn-secondary { background: var(--surface3); color: var(--text2); border: 1px solid var(--border2); padding: 5px 11px; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--text); }
+.btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); padding: 3px 7px; font-size: 10px; }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+
+/* ── LAYOUT ── */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ── */
+.sidebar { width: 250px; flex-shrink: 0; flex-grow: 0; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-tabs { display: flex; border-bottom: 1px solid var(--border); }
+.sidebar-tab { flex: 1; padding: 9px; text-align: center; font-size: 10px; color: var(--text3); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.8px; }
+.sidebar-tab.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(79,142,247,0.05); }
+.sidebar-content { flex: 1; overflow-y: auto; padding: 12px; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+.section-title { font-size: 9px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text3); margin-bottom: 6px; margin-top: 12px; }
+.section-title:first-child { margin-top: 0; }
+
+.element-list { display: flex; flex-direction: column; gap: 5px; }
+.element-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; cursor: grab; transition: all 0.15s; display: flex; align-items: center; gap: 7px; }
+.element-item:hover { border-color: var(--accent); background: var(--surface3); }
+.element-item.dragging { opacity: 0.4; }
+.element-color { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.element-name { flex: 1; font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.element-badge { font-size: 9px; background: var(--surface3); color: var(--text3); padding: 1px 4px; border-radius: 3px; }
+.no-elements { font-size: 11px; color: var(--text3); text-align: center; padding: 16px 8px; line-height: 1.7; }
+
+.prop-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.prop-label { font-size: 10px; color: var(--text3); width: 78px; flex-shrink: 0; }
+.prop-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 11px; border-radius: 5px; padding: 4px 7px; }
+.prop-input:focus { outline: none; border-color: var(--accent); }
+.prop-input-sm { width: 50px; flex: none; }
+.divider { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+/* ── CANVAS ── */
+.canvas-area { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.canvas-toolbar { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; flex-wrap: wrap; }
+.toolbar-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; }
+.gap-input { width: 54px; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 11px; border-radius: 5px; padding: 3px 5px; text-align: center; }
+.gap-input:focus { outline: none; border-color: var(--accent); }
+.gap-input::placeholder { color: var(--text3); }
+
+/* ── CANVAS SCROLL — fills remaining vertical space, clips content ── */
+.canvas-scroll {
+  flex: 1;
+  overflow: hidden;
+  padding: 24px;
+  position: relative;
+  min-width: 0;
+}
+
+/* Clips the scaled viewport — same size as canvas-scroll content box */
+.grid-viewport-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* The real-size container — container queries fire based on THIS width.
+   Position absolute so it doesn't push anything around. */
+.grid-viewport {
+  container-type: inline-size;
+  container-name: gridview;
+  margin: auto;
+  border: 1px dashed var(--border2);
+  border-radius: 6px;
+  overflow: hidden;
+  transform-origin: top left;
+  /* width & transform set by JS */
+}
+
+/* Grid viewport right-edge drag handle */
+.viewport-resize-handle {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.viewport-resize-handle::after {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 32px;
+  border-radius: 2px;
+  background: var(--border2);
+  transition: background 0.15s;
+}
+.viewport-resize-handle:hover::after,
+.viewport-resize-handle.is-dragging::after { background: var(--accent); }
+.viewport-label {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  font-size: 8px;
+  color: var(--text3);
+  padding: 3px 8px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed var(--border);
+  pointer-events: none;
+  z-index: 5;
+  background: rgba(13,15,18,0.6);
+}
+.viewport-label span { font-size: 9px; color: var(--border2); }
+
+/* BP ruler — tick marks showing where each BP fires */
+.bp-ruler {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 18px;
+  pointer-events: none;
+  z-index: 5;
+  overflow: hidden;
+}
+.bp-ruler-tick {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.bp-ruler-tick-line {
+  width: 1px;
+  height: 8px;
+  background: var(--accent);
+  opacity: 0.6;
+}
+.bp-ruler-tick-label {
+  font-size: 7px;
+  color: var(--accent);
+  white-space: nowrap;
+  margin-bottom: 2px;
+  opacity: 0.7;
+}
+
+/* The actual grid sits inside the viewport with padding for labels */
+#grid-container {
+  display: grid;
+  position: relative;
+  width: 100%;
+  /* push down past the top label, up from bottom ruler */
+  margin-top: 22px;
+  margin-bottom: 20px;
+}
+
+.grid-cell { background: var(--surface2); border: 1px solid var(--border); min-width: 20px; min-height: 40px; transition: background 0.1s; }
+.grid-cell.drop-target { background: rgba(79,142,247,0.15); border-color: var(--accent); }
+.grid-cell.drop-invalid { background: rgba(239,68,68,0.1); border-color: var(--danger); }
+
+.placed-element { position: absolute; display: flex; align-items: center; justify-content: center; cursor: grab; border-radius: 4px; border: 2px solid transparent; z-index: 2; overflow: hidden; user-select: none; width: 100%; height: 100%; transition: box-shadow 0.15s; }
+.placed-element:hover { z-index: 10; box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
+.placed-element.selected-element { z-index: 10; box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(79,142,247,0.4); }
+.placed-element.dragging-placed { opacity: 0.4; }
+.placed-element-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.92); text-shadow: 0 1px 4px rgba(0,0,0,0.7); text-align: center; padding: 4px; pointer-events: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.placed-element-resize { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; cursor: se-resize; color: rgba(255,255,255,0.6); font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.placed-element-delete { position: absolute; top: 3px; right: 3px; width: 15px; height: 15px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; cursor: pointer; font-size: 9px; display: flex; align-items: center; justify-content: center; color: #fff; opacity: 0; transition: opacity 0.15s; z-index: 3; }
+.placed-element:hover .placed-element-delete { opacity: 1; }
+
+/* ── TRACK CONTROLS ── */
+.track-controls { padding: 7px 12px; background: var(--surface); border-top: 1px solid var(--border); flex-shrink: 0; display: flex; flex-direction: column; gap: 5px; }
+.track-row { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.track-section-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); width: 26px; flex-shrink: 0; }
+.track-chip { display: flex; align-items: center; gap: 3px; background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 3px 5px; }
+.track-chip-label { font-size: 9px; color: var(--text3); }
+.track-chip-input { width: 58px; background: transparent; border: none; color: var(--text); font-family: var(--mono); font-size: 11px; text-align: center; }
+.track-chip-input:focus { outline: none; }
+.track-chip-del { color: var(--text3); cursor: pointer; font-size: 11px; line-height: 1; padding: 0 1px; }
+.track-chip-del:hover { color: var(--danger); }
+.track-add { background: var(--surface2); border: 1px dashed var(--border2); color: var(--text3); border-radius: 5px; padding: 3px 10px; font-size: 14px; cursor: pointer; transition: all 0.15s; line-height: 1; }
+.track-add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── RESIZE HANDLE ── */
+
+
+/* ── OUTPUT PANEL ── */
+.output-panel { width: 350px; flex-shrink: 0; flex-grow: 0; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+.output-header { padding: 9px 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.output-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text2); font-weight: 600; }
+.output-content { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+.code-block { background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 10px; margin-bottom: 8px; }
+.code-block-label { font-size: 9px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text3); margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; }
+.code-text { font-size: 10.5px; line-height: 1.75; white-space: pre; overflow-x: auto; color: var(--text2); }
+.copy-btn { font-size: 10px; padding: 2px 7px; background: var(--surface2); color: var(--text3); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-family: var(--mono); }
+.copy-btn:hover { color: var(--text); border-color: var(--accent); }
+.s-sel { color: #7dd3fc; }
+.s-at { color: #7dd3fc; }
+.s-prop { color: #c084fc; }
+.s-val { color: #86efac; }
+.s-str { color: #fde68a; }
+.s-comment { color: #4a5568; font-style: italic; }
+
+/* ── MODAL ── */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.72); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+.modal-backdrop.open { display: flex; }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 10px; padding: 20px; width: 340px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+.modal-title { font-family: var(--sans); font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.modal-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); font-family: var(--mono); font-size: 13px; border-radius: 6px; padding: 7px 10px; }
+.modal-input:focus { outline: none; border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; margin-top: 14px; justify-content: flex-end; }
+.bp-modal { width: 420px; }
+.bp-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; max-height: 220px; overflow-y: auto; }
+.bp-item { display: flex; align-items: center; gap: 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; }
+.bp-item-label { font-size: 12px; font-weight: 600; flex: 1; }
+.bp-item-mq { font-size: 11px; color: var(--accent); }
+.bp-add-row { display: flex; gap: 6px; align-items: center; }
+
+/* ── ACTIVE BP INDICATOR on ruler ── */
+.bp-ruler-tick.active-bp .bp-ruler-tick-line { background: var(--accent3); opacity: 1; height: 12px; }
+.bp-ruler-tick.active-bp .bp-ruler-tick-label { color: var(--accent3); opacity: 1; font-weight: 700; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+</style>
+</head>
+<body>
+  <sp-theme></sp-theme>
+  <sp-nav sticky>
+    <div class="logo" slot="brand">
+      <div class="logo-icon"><span></span><span></span><span></span><span></span></div>
+      GridCraft
+    </div>
+    <sp-button slot="actions" onclick="addElement()">+ Element</sp-button>
+    <sp-button slot="actions" onclick="clearAll()">Clear All</sp-button>
+  </sp-nav>
+
+<header>
+  <div class="bp-area">
+    <div class="bp-tabs" id="bp-tabs"></div>
+    <div class="bp-add-btn" onclick="openBpModal()">⊕ BP</div>
+  </div>
+</header>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" id="stab-elements" onclick="switchTab('elements')">Elements</div>
+      <div class="sidebar-tab" id="stab-properties" onclick="switchTab('properties')">Properties</div>
+    </div>
+    <div class="sidebar-content">
+      <div id="tab-elements">
+        <div class="section-title">Drag onto grid or click to place</div>
+        <div class="element-list" id="element-list"></div>
+      </div>
+      <div id="tab-properties" style="display:none;">
+        <div id="no-selection" style="color:var(--text3);font-size:11px;text-align:center;padding:20px;line-height:1.8;">
+          Click a placed element<br>to edit its properties.
+        </div>
+        <div id="prop-panel" style="display:none;">
+          <div class="section-title">Identity</div>
+          <div class="prop-row"><span class="prop-label">name / area</span><input class="prop-input" id="prop-name" type="text" placeholder="header"></div>
+          <div class="prop-row"><span class="prop-label">color</span><input type="color" id="prop-color" style="flex:1;height:28px;border-radius:5px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;"></div>
+          <hr class="divider">
+          <div class="section-title">Placement</div>
+          <div class="prop-row">
+            <span class="prop-label">grid-column</span>
+            <input class="prop-input prop-input-sm" id="prop-col-start" type="text" placeholder="1">
+            <span style="color:var(--text3);font-size:10px;">/</span>
+            <input class="prop-input prop-input-sm" id="prop-col-end" type="text" placeholder="3">
+          </div>
+          <div class="prop-row">
+            <span class="prop-label">grid-row</span>
+            <input class="prop-input prop-input-sm" id="prop-row-start" type="text" placeholder="1">
+            <span style="color:var(--text3);font-size:10px;">/</span>
+            <input class="prop-input prop-input-sm" id="prop-row-end" type="text" placeholder="2">
+          </div>
+          <div class="prop-row"><span class="prop-label">order</span><input class="prop-input prop-input-sm" id="prop-order" type="number" placeholder="0"></div>
+          <div class="prop-row"><span class="prop-label">z-index</span><input class="prop-input prop-input-sm" id="prop-zindex" type="number" placeholder="auto"></div>
+          <hr class="divider">
+          <div class="section-title">Self Alignment</div>
+          <div class="prop-row"><span class="prop-label">justify-self</span>
+            <select class="prop-input" id="prop-justify-self">
+              <option value="">auto</option><option>start</option><option>end</option><option>center</option><option>stretch</option>
+            </select>
+          </div>
+          <div class="prop-row"><span class="prop-label">align-self</span>
+            <select class="prop-input" id="prop-align-self">
+              <option value="">auto</option><option>start</option><option>end</option><option>center</option><option>stretch</option>
+            </select>
+          </div>
+          <hr class="divider">
+          <div style="display:flex;gap:6px;">
+            <button class="btn-primary" onclick="applyProps()" style="flex:1;padding:5px;">Apply</button>
+            <button class="btn-danger" onclick="deleteSelected()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-area">
+    <div class="canvas-toolbar">
+      <span class="toolbar-label">Gap</span>
+      <span style="font-size:10px;color:var(--text3);">col</span>
+      <input class="gap-input" id="gap-col" placeholder="5px" oninput="onGapChange()">
+      <span style="font-size:10px;color:var(--text3);">row</span>
+      <input class="gap-input" id="gap-row" placeholder="10px" oninput="onGapChange()">
+      <div style="flex:1;"></div>
+      <!-- Active BP indicator -->
+      <span id="active-bp-label" style="font-size:10px;color:var(--accent3);font-weight:600;"></span>
+      <span id="grid-info" style="font-size:10px;color:var(--text3);margin-left:6px;"></span>
+    </div>
+
+    <!-- The scroll area. The viewport wrapper lives here, scaled. -->
+    <div class="canvas-scroll" id="canvas-scroll">
+      <div class="grid-viewport-wrapper" id="grid-viewport-wrapper">
+        <div class="grid-viewport" id="grid-viewport">
+          <div class="viewport-label">
+            <span>container</span>
+            <span id="viewport-width-label"></span>
+          </div>
+          <div id="grid-container"></div>
+          <div class="bp-ruler" id="bp-ruler"></div>
+          <div class="viewport-resize-handle" id="viewport-resize-handle"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRACK CONTROLS -->
+    <div class="track-controls">
+      <div class="track-row">
+        <span class="track-section-label">Cols</span>
+        <div id="col-tracks" style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;"></div>
+        <button class="track-add" onclick="addCol()">+</button>
+      </div>
+      <div class="track-row">
+        <span class="track-section-label">Rows</span>
+        <div id="row-tracks" style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;"></div>
+        <button class="track-add" onclick="addRow()">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTPUT PANEL -->
+  <div class="output-panel" id="output-panel">
+    <div class="output-header">
+      <span class="output-title">CSS Output</span>
+      <button class="btn-secondary" style="font-size:10px;padding:3px 8px;" onclick="refreshOutput()">↻</button>
+    </div>
+    <div class="output-content">
+      <div class="code-block">
+        <div class="code-block-label">.container <button class="copy-btn" id="cbtn-container" onclick="copyBlock('code-container','cbtn-container')">copy</button></div>
+        <div class="code-text" id="code-container"></div>
+      </div>
+      <div class="code-block" id="block-cq" style="display:none;">
+        <div class="code-block-label">@container queries <button class="copy-btn" id="cbtn-cq" onclick="copyBlock('code-cq','cbtn-cq')">copy</button></div>
+        <div class="code-text" id="code-cq"></div>
+      </div>
+      <div class="code-block">
+        <div class="code-block-label">item selectors <button class="copy-btn" id="cbtn-items" onclick="copyBlock('code-items','cbtn-items')">copy</button></div>
+        <div class="code-text" id="code-items"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BREAKPOINT MODAL -->
+<div class="modal-backdrop" id="modal-bp">
+  <div class="modal bp-modal">
+    <div class="modal-title">Breakpoints</div>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:12px;line-height:1.6;">
+      Each breakpoint defines a different grid layout triggered by a <code style="color:var(--accent);">@container (min-width: ...)</code> query. The preview scales to show all breakpoints at once.
+    </p>
+    <div class="bp-list" id="bp-list"></div>
+    <div class="bp-add-row">
+      <input class="modal-input" id="new-bp-label" placeholder="Label (e.g. md)" style="flex:1;">
+      <input class="modal-input" id="new-bp-minwidth" placeholder="min-width (e.g. 768px)" style="flex:1.5;">
+      <button class="btn-primary" onclick="addBreakpoint()">Add</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeBpModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONSTANTS  (must be first — const is not hoisted)
+// ─────────────────────────────────────────────────────────────────────────────
+const PALETTE = ['#4f8ef7','#7c3aed','#10b981','#f59e0b','#ef4444','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1','#14b8a6','#a855f7'];
+const DEFAULT_GAP_COL = '5px';
+const DEFAULT_GAP_ROW = '10px';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PURE HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+function makeBpData(cols, rows) {
+  return {
+    cols, rows,
+    colSizes: Array(cols).fill('1fr'),
+    rowSizes: Array(rows).fill('120px'),
+    gapCol: DEFAULT_GAP_COL,
+    gapRow: DEFAULT_GAP_ROW,
+    placements: []
+  };
+}
+
+function cssName(n) {
+  return (n || 'area').replace(/[^a-zA-Z0-9_-]/g, '-').replace(/^[-\d]+/, '') || 'area';
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function span(cls, content) { return '<span class="' + cls + '">' + content + '</span>'; }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+let _palIdx  = 0;
+let _nameIdx = 0;
+let _idC     = 1;
+
+let elements = [];
+
+/*
+  Breakpoints: array of { id, label, minWidth (px number, null for base) }
+  Sorted ascending by minWidth when used.
+  The "base" bp has minWidth = null (0px effectively).
+
+  bpData[id] = { cols, rows, colSizes, rowSizes, gapCol, gapRow, placements[] }
+  All breakpoints share the same `elements` array.
+  placements are per-breakpoint.
+*/
+let breakpoints = [{ id: 'base', label: 'base', minWidth: null }];
+let activeBpId  = 'base';
+let bpData      = { base: makeBpData(4, 3) };
+
+let selectedPlacementId = null;
+let dragSource          = null;
+let userLogicalWidth    = null; // null = auto (fills canvas); number = user-set px
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ACCESSORS
+// ─────────────────────────────────────────────────────────────────────────────
+function uid()       { return 'id' + (_idC++); }
+function nextColor() { return PALETTE[_palIdx++ % PALETTE.length]; }
+function nextName()  {
+  const i = _nameIdx++;
+  if (i < 26) return String.fromCharCode(65 + i);
+  return String.fromCharCode(65 + Math.floor(i / 26) - 1) + String.fromCharCode(65 + (i % 26));
+}
+function getBp()          { return bpData[activeBpId]; }
+function sortedBps()      { return [...breakpoints].sort((a,b) => (a.minWidth||0)-(b.minWidth||0)); }
+function maxBpWidth()     {
+  const widths = breakpoints.map(b => b.minWidth || 0);
+  return Math.max(...widths);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  renderBpTabs();
+  buildGrid();
+  buildTrackControls();
+  renderElementList();
+  refreshOutput();
+  updateViewportScale();
+  injectContainerCSS();
+  initViewportResizeHandle();
+
+  // Observe the stable canvas-area for size changes (not canvas-scroll which we modify).
+  // Debounce to prevent ResizeObserver loop.
+  let _roTimer = null;
+  new ResizeObserver(() => {
+    clearTimeout(_roTimer);
+    _roTimer = setTimeout(updateViewportScale, 0);
+  }).observe(document.getElementById('canvas-scroll'));
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VIEWPORT SCALING
+// The grid-viewport has a logical width = max(maxBpWidth + 200, canvasAvailableWidth).
+// We scale it down so it fits inside the canvas-scroll without horizontal scroll.
+// ─────────────────────────────────────────────────────────────────────────────
+function getLogicalWidth() {
+  const canvas = document.getElementById('canvas-scroll');
+  const availW = canvas.clientWidth - 48;
+  if (userLogicalWidth !== null) {
+    // user has set a specific width — but must be at least largest BP + 200 to show all BPs
+    const minForBps = maxBpWidth() > 0 ? maxBpWidth() + 200 : 0;
+    return Math.max(userLogicalWidth, minForBps);
+  }
+  // auto: fill available canvas width, or expand to show all BPs
+  const minForBps = maxBpWidth() > 0 ? maxBpWidth() + 200 : 0;
+  return Math.max(availW, minForBps);
+}
+
+function initViewportResizeHandle() {
+  const handle   = document.getElementById('viewport-resize-handle');
+  const canvas   = document.getElementById('canvas-scroll');
+  const viewport = document.getElementById('grid-viewport');
+  let dragging = false;
+  let startX   = 0;
+  let startLogical = 0;
+
+  handle.addEventListener('mousedown', e => {
+    e.stopPropagation();
+    dragging = true;
+    startX = e.clientX;
+    // Get current logical width (what the viewport is actually set to)
+    startLogical = parseInt(viewport.style.width) || getLogicalWidth();
+    // Snapshot as user width so dragging feels correct
+    userLogicalWidth = startLogical;
+    handle.classList.add('is-dragging');
+    document.body.style.cursor = 'ew-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const availW   = canvas.clientWidth - 48;
+    const scale    = Math.min(1, availW / startLogical);
+    // Mouse delta in screen pixels → logical pixels
+    const deltaLogical = (e.clientX - startX) / scale;
+    const newLogical   = Math.round(startLogical + deltaLogical);
+    const clamped      = Math.max(320, Math.min(newLogical, Math.round(availW / Math.min(1, availW / newLogical))));
+    // Simpler clamp: min 320px logical, max = whatever fills canvas at scale=1
+    userLogicalWidth = Math.max(320, newLogical);
+    updateViewportScale();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    handle.classList.remove('is-dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+}
+
+function updateViewportScale() {
+  const canvas   = document.getElementById('canvas-scroll');
+  const viewport = document.getElementById('grid-viewport');
+  const label    = document.getElementById('viewport-width-label');
+
+  // Available space inside canvas-scroll (subtract padding)
+  const availW   = canvas.clientWidth  - 48;
+  const logicalW = getLogicalWidth();
+  const scale    = Math.min(1, availW / logicalW);
+
+  // Size the viewport at its logical width, then scale it down to fit
+  viewport.style.width     = logicalW + 'px';
+  viewport.style.transform = 'scale(' + scale + ')';
+
+  label.textContent = Math.round(logicalW) + 'px';
+  updateBpRuler(logicalW);
+  updateActiveBpLabel();
+}
+
+function updateBpRuler(logicalW) {
+  const ruler = document.getElementById('bp-ruler');
+  ruler.innerHTML = '';
+  const nonBase = breakpoints.filter(b => b.minWidth != null).sort((a,b) => a.minWidth - b.minWidth);
+  nonBase.forEach(bp => {
+    const pct = (bp.minWidth / logicalW) * 100;
+    if (pct > 100) return;
+    const tick = document.createElement('div');
+    tick.className = 'bp-ruler-tick' + (bp.id === activeBpId ? ' active-bp' : '');
+    tick.style.left = pct + '%';
+    tick.innerHTML =
+      '<div class="bp-ruler-tick-label">' + escHtml(bp.label) + ' ' + bp.minWidth + 'px</div>' +
+      '<div class="bp-ruler-tick-line"></div>';
+    ruler.appendChild(tick);
+  });
+}
+
+function updateActiveBpLabel() {
+  const lbl = document.getElementById('active-bp-label');
+  const bp = breakpoints.find(b => b.id === activeBpId);
+  if (!bp) { lbl.textContent = ''; return; }
+  lbl.textContent = bp.label + (bp.minWidth ? ' ≥ ' + bp.minWidth + 'px' : ' (base)');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTAINER QUERY CSS INJECTION
+// We inject a <style> tag with @container rules so the actual grid reacts.
+// ─────────────────────────────────────────────────────────────────────────────
+function injectContainerCSS() {
+  let styleEl = document.getElementById('gridcraft-cq-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'gridcraft-cq-style';
+    document.head.appendChild(styleEl);
+  }
+
+  const sorted = sortedBps(); // base first, then ascending by minWidth
+  let css = '';
+
+  sorted.forEach(bp => {
+    const bd = bpData[bp.id];
+    if (!bd) return;
+    const gapCol = bd.gapCol || DEFAULT_GAP_COL;
+    const gapRow = bd.gapRow || DEFAULT_GAP_ROW;
+    const gapIsDefault = gapCol === DEFAULT_GAP_COL && gapRow === DEFAULT_GAP_ROW;
+    const areas = buildAreasForBd(bd);
+
+    const props = [
+      'grid-template-columns: ' + bd.colSizes.join(' ') + ';',
+      'grid-template-rows: ' + bd.rowSizes.join(' ') + ';',
+      ...(!gapIsDefault ? ['gap: ' + gapRow + ' ' + gapCol + ';'] : []),
+      ...(areas ? ['grid-template-areas: ' + areas.map(r => '"' + r + '"').join(' ') + ';'] : [])
+    ].join(' ');
+
+    if (bp.minWidth == null) {
+      css += '#grid-container { ' + props + ' }\n';
+    } else {
+      css += '@container gridview (min-width: ' + bp.minWidth + 'px) { #grid-container { ' + props + ' } }\n';
+    }
+  });
+
+  // Also inject placed element positions per-breakpoint
+  sorted.forEach(bp => {
+    const bd = bpData[bp.id];
+    if (!bd) return;
+    bd.placements.forEach(p => {
+      const el = elements.find(e => e.id === p.elementId);
+      if (!el) return;
+      const sel = '[data-pid="' + p.id + '"]';
+      const props = 'grid-column:' + p.colStart + '/span ' + p.colSpan + ';grid-row:' + p.rowStart + '/span ' + p.rowSpan + ';';
+      if (bp.minWidth == null) {
+        css += sel + ' { ' + props + ' }\n';
+      } else {
+        css += '@container gridview (min-width: ' + bp.minWidth + 'px) { ' + sel + ' { ' + props + ' } }\n';
+      }
+    });
+  });
+
+  styleEl.textContent = css;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BREAKPOINTS
+// ─────────────────────────────────────────────────────────────────────────────
+function renderBpTabs() {
+  const c = document.getElementById('bp-tabs');
+  c.innerHTML = '';
+  sortedBps().forEach(bp => {
+    const d = document.createElement('div');
+    d.className = 'bp-tab' + (bp.id === activeBpId ? ' active' : '');
+    d.textContent = bp.label + (bp.minWidth != null ? ' (' + bp.minWidth + 'px)' : '');
+    d.onclick = () => switchBp(bp.id);
+    c.appendChild(d);
+  });
+}
+
+function switchBp(id) {
+  activeBpId = id;
+  selectedPlacementId = null;
+  hidePropPanel();
+  syncGapInputs();
+  renderBpTabs();
+  buildGrid();
+  buildTrackControls();
+  refreshOutput();
+  updateActiveBpLabel();
+  updateBpRuler(getLogicalWidth());
+}
+
+function syncGapInputs() {
+  const bp = getBp();
+  document.getElementById('gap-col').value = bp.gapCol !== DEFAULT_GAP_COL ? bp.gapCol : '';
+  document.getElementById('gap-row').value = bp.gapRow !== DEFAULT_GAP_ROW ? bp.gapRow : '';
+}
+
+function openBpModal()  { renderBpList(); document.getElementById('modal-bp').classList.add('open'); }
+function closeBpModal() { document.getElementById('modal-bp').classList.remove('open'); }
+
+function renderBpList() {
+  const list = document.getElementById('bp-list');
+  list.innerHTML = '';
+  sortedBps().forEach(bp => {
+    const d = document.createElement('div');
+    d.className = 'bp-item';
+    d.innerHTML =
+      '<span class="bp-item-label">' + escHtml(bp.label) + '</span>' +
+      '<span class="bp-item-mq" style="color:var(--accent);font-size:11px;flex:1;">' +
+        (bp.minWidth != null ? 'min-width: ' + bp.minWidth + 'px' : 'base — no query') +
+      '</span>' +
+      (bp.id !== 'base'
+        ? '<button class="btn-danger" onclick="removeBreakpoint(\'' + bp.id + '\')">×</button>'
+        : '');
+    list.appendChild(d);
+  });
+}
+
+function addBreakpoint() {
+  const label = document.getElementById('new-bp-label').value.trim();
+  const rawW  = document.getElementById('new-bp-minwidth').value.trim();
+  if (!label || !rawW) return;
+  const px = parseInt(rawW);
+  if (isNaN(px) || px <= 0) return;
+  // Check for duplicate
+  if (breakpoints.some(b => b.minWidth === px)) {
+    alert('A breakpoint at ' + px + 'px already exists.');
+    return;
+  }
+  const id = uid();
+  breakpoints.push({ id, label, minWidth: px });
+  // Copy base data as starting point for this bp
+  bpData[id] = JSON.parse(JSON.stringify(bpData['base']));
+  document.getElementById('new-bp-label').value   = '';
+  document.getElementById('new-bp-minwidth').value = '';
+  renderBpList();
+  renderBpTabs();
+  updateViewportScale();
+  injectContainerCSS();
+  refreshOutput();
+}
+
+function removeBreakpoint(id) {
+  breakpoints = breakpoints.filter(b => b.id !== id);
+  delete bpData[id];
+  if (activeBpId === id) { activeBpId = 'base'; syncGapInputs(); buildGrid(); buildTrackControls(); }
+  renderBpList();
+  renderBpTabs();
+  updateViewportScale();
+  injectContainerCSS();
+  refreshOutput();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRID BUILD
+// ─────────────────────────────────────────────────────────────────────────────
+function buildGrid() {
+  const bp = getBp();
+  const gc = document.getElementById('grid-container');
+  gc.innerHTML = '';
+
+  // Base grid style (overridden by injected CQ CSS)
+  gc.style.gridTemplateColumns = bp.colSizes.join(' ');
+  gc.style.gridTemplateRows    = bp.rowSizes.join(' ');
+  gc.style.gap                 = bp.gapRow + ' ' + bp.gapCol;
+
+  for (let r = 1; r <= bp.rows; r++) {
+    for (let c = 1; c <= bp.cols; c++) {
+      const cell = document.createElement('div');
+      cell.className    = 'grid-cell';
+      cell.dataset.col  = c;
+      cell.dataset.row  = r;
+      cell.addEventListener('dragover',  e => e.preventDefault());
+      cell.addEventListener('dragenter', onCellDragEnter);
+      cell.addEventListener('dragleave', onCellDragLeave);
+      cell.addEventListener('drop',      onCellDrop);
+      gc.appendChild(cell);
+    }
+  }
+
+  // Render all placements from the ACTIVE bp (for editing)
+  bp.placements.forEach(p => renderPlacement(p));
+
+  document.getElementById('grid-info').textContent = bp.cols + ' cols × ' + bp.rows + ' rows';
+  injectContainerCSS();
+}
+
+function updateGridStyle() {
+  const bp = getBp();
+  const gc = document.getElementById('grid-container');
+  gc.style.gridTemplateColumns = bp.colSizes.join(' ');
+  gc.style.gridTemplateRows    = bp.rowSizes.join(' ');
+  gc.style.gap                 = bp.gapRow + ' ' + bp.gapCol;
+  injectContainerCSS();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRACK CONTROLS
+// ─────────────────────────────────────────────────────────────────────────────
+function buildTrackControls() {
+  buildTrackSection('col', document.getElementById('col-tracks'));
+  buildTrackSection('row', document.getElementById('row-tracks'));
+}
+
+function buildTrackSection(type, container) {
+  container.innerHTML = '';
+  const bp    = getBp();
+  const sizes = type === 'col' ? bp.colSizes : bp.rowSizes;
+  sizes.forEach((size, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'track-chip';
+    chip.innerHTML =
+      '<span class="track-chip-label">' + (type === 'col' ? 'C' : 'R') + (i + 1) + '</span>' +
+      '<input class="track-chip-input" value="' + escHtml(size) + '" placeholder="1fr">' +
+      '<span class="track-chip-del">×</span>';
+    chip.querySelector('input').addEventListener('input', e => {
+      const b = getBp();
+      if (type === 'col') b.colSizes[i] = e.target.value || '1fr';
+      else                b.rowSizes[i] = e.target.value || '80px';
+      updateGridStyle();
+      refreshOutput();
+    });
+    chip.querySelector('.track-chip-del').addEventListener('click', () => removeTrack(type, i));
+    container.appendChild(chip);
+  });
+}
+
+function addCol() { const b = getBp(); b.cols++; b.colSizes.push('1fr');  buildGrid(); buildTrackControls(); refreshOutput(); }
+function addRow() { const b = getBp(); b.rows++; b.rowSizes.push('120px'); buildGrid(); buildTrackControls(); refreshOutput(); }
+
+function removeTrack(type, idx) {
+  const bp = getBp();
+  if (type === 'col') {
+    if (bp.cols <= 1) return;
+    bp.cols--; bp.colSizes.splice(idx, 1);
+    bp.placements = bp.placements.filter(p => p.colStart <= bp.cols);
+    bp.placements.forEach(p => { if (p.colStart + p.colSpan - 1 > bp.cols) p.colSpan = bp.cols - p.colStart + 1; });
+  } else {
+    if (bp.rows <= 1) return;
+    bp.rows--; bp.rowSizes.splice(idx, 1);
+    bp.placements = bp.placements.filter(p => p.rowStart <= bp.rows);
+    bp.placements.forEach(p => { if (p.rowStart + p.rowSpan - 1 > bp.rows) p.rowSpan = bp.rows - p.rowStart + 1; });
+  }
+  buildGrid(); buildTrackControls(); refreshOutput();
+}
+
+function onGapChange() {
+  const bp  = getBp();
+  bp.gapCol = document.getElementById('gap-col').value.trim() || DEFAULT_GAP_COL;
+  bp.gapRow = document.getElementById('gap-row').value.trim() || DEFAULT_GAP_ROW;
+  updateGridStyle(); refreshOutput();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ELEMENTS — auto-named, auto-placed in next free cell
+// ─────────────────────────────────────────────────────────────────────────────
+function findNextCell(bp) {
+  const occupied = new Set();
+  bp.placements.forEach(p => {
+    for (let r = p.rowStart; r < p.rowStart + p.rowSpan; r++)
+      for (let c = p.colStart; c < p.colStart + p.colSpan; c++)
+        occupied.add(r + ',' + c);
+  });
+  for (let r = 1; r <= bp.rows; r++)
+    for (let c = 1; c <= bp.cols; c++)
+      if (!occupied.has(r + ',' + c)) return { col: c, row: r };
+  return null;
+}
+
+function addElement() {
+  const bp    = getBp();
+  const name  = nextName();
+  const color = nextColor();
+  const el    = { id: uid(), name, color };
+  elements.push(el);
+
+  let cell = findNextCell(bp);
+  if (!cell) {
+    bp.rows++; bp.rowSizes.push('120px');
+    buildTrackControls();
+    cell = findNextCell(bp);
+  }
+
+  // Add to all breakpoints at same position (they can adjust per-bp)
+  const placement = { id: uid(), elementId: el.id, colStart: cell.col, rowStart: cell.row, colSpan: 1, rowSpan: 1, props: { order:'', zIndex:'', justifySelf:'', alignSelf:'' } };
+  bp.placements.push(placement);
+
+  buildGrid(); renderElementList(); refreshOutput();
+}
+
+function renderElementList() {
+  const list = document.getElementById('element-list');
+  if (!elements.length) {
+    list.innerHTML = '<div class="no-elements">No elements yet.<br>Click <strong>+ Element</strong> to add one.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  elements.forEach(el => {
+    const placed = getBp().placements.filter(p => p.elementId === el.id).length;
+    const div = document.createElement('div');
+    div.className  = 'element-item';
+    div.draggable  = true;
+    div.dataset.id = el.id;
+    div.innerHTML  =
+      '<div class="element-color" style="background:' + el.color + '"></div>' +
+      '<span class="element-name">' + escHtml(el.name) + '</span>' +
+      (placed ? '<span class="element-badge">' + placed + '×</span>' : '') +
+      '<button class="btn-danger" style="padding:1px 5px;">×</button>';
+    div.querySelector('button').addEventListener('click', e => { e.stopPropagation(); removeElement(el.id); });
+    div.addEventListener('dragstart', e => {
+      dragSource = { type: 'element', elementId: el.id };
+      e.dataTransfer.effectAllowed = 'copy';
+      div.classList.add('dragging');
+    });
+    div.addEventListener('dragend', () => { dragSource = null; div.classList.remove('dragging'); clearCellHighlights(); });
+    list.appendChild(div);
+  });
+}
+
+function removeElement(id) {
+  elements = elements.filter(e => e.id !== id);
+  Object.values(bpData).forEach(bd => { bd.placements = bd.placements.filter(p => p.elementId !== id); });
+  renderElementList(); buildGrid(); refreshOutput();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DRAG & DROP
+// ─────────────────────────────────────────────────────────────────────────────
+function onCellDragEnter(e) { e.preventDefault(); const c = e.currentTarget; highlightZone(+c.dataset.col, +c.dataset.row); }
+function onCellDragLeave(e) { if (!e.relatedTarget?.classList?.contains('grid-cell')) clearCellHighlights(); }
+
+function highlightZone(col, row) {
+  clearCellHighlights();
+  if (!dragSource) return;
+  const cSpan = dragSource.colSpan || 1, rSpan = dragSource.rowSpan || 1;
+  const bp = getBp();
+  const valid = col + cSpan - 1 <= bp.cols && row + rSpan - 1 <= bp.rows;
+  for (let r = row; r < row + rSpan; r++)
+    for (let c = col; c < col + cSpan; c++) {
+      const cell = document.querySelector('.grid-cell[data-col="'+c+'"][data-row="'+r+'"]');
+      if (cell) cell.classList.add(valid ? 'drop-target' : 'drop-invalid');
+    }
+}
+function clearCellHighlights() { document.querySelectorAll('.grid-cell').forEach(c => c.classList.remove('drop-target','drop-invalid')); }
+
+function onCellDrop(e) {
+  e.preventDefault(); clearCellHighlights();
+  const col = +e.currentTarget.dataset.col, row = +e.currentTarget.dataset.row;
+  const bp  = getBp();
+  if (!dragSource) return;
+  if (dragSource.type === 'element') {
+    const el = elements.find(x => x.id === dragSource.elementId);
+    if (!el || col > bp.cols || row > bp.rows) return;
+    bp.placements.push({ id: uid(), elementId: el.id, colStart: col, rowStart: row, colSpan: 1, rowSpan: 1, props: { order:'', zIndex:'', justifySelf:'', alignSelf:'' } });
+  } else if (dragSource.type === 'placed') {
+    const p = bp.placements.find(x => x.id === dragSource.placementId);
+    if (!p || col + p.colSpan - 1 > bp.cols || row + p.rowSpan - 1 > bp.rows) return;
+    p.colStart = col; p.rowStart = row;
+  }
+  buildGrid(); renderElementList(); refreshOutput();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER PLACEMENT
+// ─────────────────────────────────────────────────────────────────────────────
+function renderPlacement(p) {
+  const el = elements.find(x => x.id === p.elementId);
+  if (!el) return;
+  const gc  = document.getElementById('grid-container');
+  const div = document.createElement('div');
+  div.className  = 'placed-element' + (selectedPlacementId === p.id ? ' selected-element' : '');
+  div.draggable  = true;
+  div.dataset.pid = p.id;
+  // Position is set by injected CQ CSS; set base style fallback here too
+  div.style.cssText =
+    'grid-column:' + p.colStart + '/span ' + p.colSpan + ';' +
+    'grid-row:'    + p.rowStart + '/span ' + p.rowSpan + ';' +
+    'background:'  + el.color + 'cc;' +
+    'border-color:' + el.color + ';';
+  if (p.props.order)       div.style.order       = p.props.order;
+  if (p.props.zIndex)      div.style.zIndex      = p.props.zIndex;
+  if (p.props.justifySelf) div.style.justifySelf = p.props.justifySelf;
+  if (p.props.alignSelf)   div.style.alignSelf   = p.props.alignSelf;
+
+  div.innerHTML =
+    '<span class="placed-element-name">' + escHtml(el.name) + '</span>' +
+    '<div class="placed-element-delete">×</div>' +
+    '<div class="placed-element-resize">⤡</div>';
+
+  div.addEventListener('click', e => { selectPlacement(p.id); e.stopPropagation(); });
+  div.querySelector('.placed-element-delete').addEventListener('click', e => { e.stopPropagation(); deletePlacement(p.id); });
+  div.querySelector('.placed-element-resize').addEventListener('mousedown', e => startResize(e, p));
+  div.addEventListener('dragstart', e => {
+    dragSource = { type: 'placed', placementId: p.id, colSpan: p.colSpan, rowSpan: p.rowSpan };
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => div.classList.add('dragging-placed'), 0);
+  });
+  div.addEventListener('dragend', () => { dragSource = null; div.classList.remove('dragging-placed'); clearCellHighlights(); });
+  gc.appendChild(div);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RESIZE ELEMENT
+// ─────────────────────────────────────────────────────────────────────────────
+function startResize(e, placement) {
+  e.stopPropagation(); e.preventDefault();
+  const sx = e.clientX, sy = e.clientY;
+  const oCS = placement.colSpan, oRS = placement.rowSpan;
+
+  // Account for viewport scale when computing cell size
+  const viewport = document.getElementById('grid-viewport');
+  const gc = document.getElementById('grid-container');
+  const scaleMatch = viewport.style.transform.match(/scale\(([\d.]+)\)/);
+  const scale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
+
+  function move(ev) {
+    const f = document.querySelector('.grid-cell');
+    if (!f) return;
+    const r = f.getBoundingClientRect();
+    const w = r.width, h = r.height; // already in screen px (scaled)
+    const bp  = getBp();
+    const nCS = Math.max(1, Math.min(oCS + Math.round((ev.clientX - sx) / w), bp.cols - placement.colStart + 1));
+    const nRS = Math.max(1, Math.min(oRS + Math.round((ev.clientY - sy) / h), bp.rows - placement.rowStart + 1));
+    if (nCS !== placement.colSpan || nRS !== placement.rowSpan) {
+      placement.colSpan = nCS; placement.rowSpan = nRS;
+      buildGrid(); refreshOutput();
+    }
+  }
+  function up() { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); }
+  document.addEventListener('mousemove', move);
+  document.addEventListener('mouseup',  up);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SELECTION & PROPERTIES
+// ─────────────────────────────────────────────────────────────────────────────
+function selectPlacement(id) {
+  selectedPlacementId = id;
+  const bp = getBp();
+  const p  = bp.placements.find(x => x.id === id);
+  const el = p ? elements.find(x => x.id === p.elementId) : null;
+  if (!p || !el) return;
+  switchTab('properties');
+  document.getElementById('no-selection').style.display = 'none';
+  document.getElementById('prop-panel').style.display   = 'block';
+  document.getElementById('prop-name').value      = el.name;
+  document.getElementById('prop-color').value     = el.color;
+  document.getElementById('prop-col-start').value = p.colStart;
+  document.getElementById('prop-col-end').value   = p.colStart + p.colSpan;
+  document.getElementById('prop-row-start').value = p.rowStart;
+  document.getElementById('prop-row-end').value   = p.rowStart + p.rowSpan;
+  document.getElementById('prop-order').value     = p.props.order || '';
+  document.getElementById('prop-zindex').value    = p.props.zIndex || '';
+  document.getElementById('prop-justify-self').value = p.props.justifySelf || '';
+  document.getElementById('prop-align-self').value   = p.props.alignSelf || '';
+  buildGrid();
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.placed-element') && !e.target.closest('.sidebar') && !e.target.closest('.modal')) {
+    selectedPlacementId = null; buildGrid();
+  }
+});
+
+function applyProps() {
+  const bp = getBp();
+  const p  = bp.placements.find(x => x.id === selectedPlacementId);
+  if (!p) return;
+  const el = elements.find(x => x.id === p.elementId);
+  if (!el) return;
+  const name = document.getElementById('prop-name').value.trim();
+  if (name) el.name = name;
+  el.color = document.getElementById('prop-color').value;
+  const cs = parseInt(document.getElementById('prop-col-start').value) || p.colStart;
+  const ce = parseInt(document.getElementById('prop-col-end').value)   || (p.colStart + p.colSpan);
+  const rs = parseInt(document.getElementById('prop-row-start').value) || p.rowStart;
+  const re = parseInt(document.getElementById('prop-row-end').value)   || (p.rowStart + p.rowSpan);
+  p.colStart = Math.max(1, Math.min(cs, bp.cols));
+  p.colSpan  = Math.max(1, ce - cs);
+  p.rowStart = Math.max(1, Math.min(rs, bp.rows));
+  p.rowSpan  = Math.max(1, re - rs);
+  p.props.order       = document.getElementById('prop-order').value;
+  p.props.zIndex      = document.getElementById('prop-zindex').value;
+  p.props.justifySelf = document.getElementById('prop-justify-self').value;
+  p.props.alignSelf   = document.getElementById('prop-align-self').value;
+  buildGrid(); renderElementList(); refreshOutput();
+}
+
+function deleteSelected()  { deletePlacement(selectedPlacementId); }
+function deletePlacement(id) {
+  const bp = getBp();
+  bp.placements = bp.placements.filter(p => p.id !== id);
+  if (selectedPlacementId === id) { selectedPlacementId = null; hidePropPanel(); }
+  buildGrid(); renderElementList(); refreshOutput();
+}
+function hidePropPanel() {
+  document.getElementById('no-selection').style.display = 'block';
+  document.getElementById('prop-panel').style.display   = 'none';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CLEAR ALL — reset everything
+// ─────────────────────────────────────────────────────────────────────────────
+function clearAll() {
+  if (!confirm('Reset everything? This will remove all elements, breakpoints, and placements.')) return;
+  elements        = [];
+  _palIdx         = 0;
+  _nameIdx        = 0;
+  breakpoints     = [{ id: 'base', label: 'base', minWidth: null }];
+  activeBpId      = 'base';
+  bpData          = { base: makeBpData(4, 3) };
+  selectedPlacementId = null;
+  userLogicalWidth = null;
+  hidePropPanel();
+  syncGapInputs();
+  renderBpTabs();
+  buildGrid();
+  buildTrackControls();
+  renderElementList();
+  updateViewportScale();
+  injectContainerCSS();
+  refreshOutput();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CSS OUTPUT (container queries)
+// ─────────────────────────────────────────────────────────────────────────────
+function buildAreasForBd(bd) {
+  if (!bd.placements.length) return null;
+  const grid = Array.from({ length: bd.rows }, () => new Array(bd.cols).fill('.'));
+  bd.placements.forEach(p => {
+    const el = elements.find(x => x.id === p.elementId);
+    if (!el) return;
+    const n = cssName(el.name);
+    for (let r = p.rowStart - 1; r < p.rowStart - 1 + p.rowSpan && r < bd.rows; r++)
+      for (let c = p.colStart - 1; c < p.colStart - 1 + p.colSpan && c < bd.cols; c++)
+        grid[r][c] = n;
+  });
+  return grid.map(row => row.join(' '));
+}
+
+function buildContainerBlock(bd, indent) {
+  const gapCol       = bd.gapCol || DEFAULT_GAP_COL;
+  const gapRow       = bd.gapRow || DEFAULT_GAP_ROW;
+  const gapIsDefault = gapCol === DEFAULT_GAP_COL && gapRow === DEFAULT_GAP_ROW;
+  const areas        = buildAreasForBd(bd);
+  const I            = indent || '';
+  const lines        = [];
+  lines.push(I + '  display: grid;');
+  lines.push(I + '  grid-template-columns: ' + bd.colSizes.join(' ') + ';');
+  lines.push(I + '  grid-template-rows: ' + bd.rowSizes.join(' ') + ';');
+  if (!gapIsDefault) lines.push(I + '  gap: ' + gapRow + ' ' + gapCol + ';');
+  if (areas) {
+    lines.push(I + '  grid-template-areas:');
+    areas.forEach((l, i) => lines.push(I + '    "' + l + '"' + (i === areas.length-1 ? ';' : '')));
+  }
+  return lines.join('\n');
+}
+
+function refreshOutput() {
+  const base = bpData['base'];
+
+  // Base .container block
+  const baseText = '.container {\n' + buildContainerBlock(base) + '\n}';
+  document.getElementById('code-container').innerHTML = highlight(baseText);
+
+  // Container queries for each non-base BP
+  const nonBase = sortedBps().filter(b => b.minWidth != null && bpData[b.id]);
+  const cqBlock = document.getElementById('block-cq');
+  if (nonBase.length) {
+    cqBlock.style.display = 'block';
+    const parts = nonBase.map(bp => {
+      const bd = bpData[bp.id];
+      return '@container (min-width: ' + bp.minWidth + 'px) {\n  .container {\n' +
+        buildContainerBlock(bd, '  ') + '\n  }\n}';
+    });
+    document.getElementById('code-cq').innerHTML = highlight(parts.join('\n\n'));
+  } else {
+    cqBlock.style.display = 'none';
+  }
+
+  // Item selectors (using base placements)
+  const usedElIds = [...new Set(base.placements.map(p => p.elementId))];
+  let itemsText = '';
+  usedElIds.forEach(eid => {
+    const el  = elements.find(x => x.id === eid);
+    if (!el) return;
+    const pls = base.placements.filter(p => p.elementId === eid);
+    pls.forEach((p, i) => {
+      const suf = pls.length > 1 ? '-' + (i+1) : '';
+      const n   = cssName(el.name);
+      itemsText += '.' + n + suf + ' {\n  grid-area: ' + n + ';\n';
+      if (p.props.order)       itemsText += '  order: ' + p.props.order + ';\n';
+      if (p.props.zIndex)      itemsText += '  z-index: ' + p.props.zIndex + ';\n';
+      if (p.props.justifySelf) itemsText += '  justify-self: ' + p.props.justifySelf + ';\n';
+      if (p.props.alignSelf)   itemsText += '  align-self: ' + p.props.alignSelf + ';\n';
+      itemsText += '  /* grid-column: ' + p.colStart + ' / ' + (p.colStart + p.colSpan) + '; */\n';
+      itemsText += '  /* grid-row: '    + p.rowStart + ' / ' + (p.rowStart + p.rowSpan) + '; */\n';
+      itemsText += '}\n\n';
+    });
+  });
+  document.getElementById('code-items').innerHTML = highlight(itemsText.trimEnd() || '/* No elements placed yet */');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SYNTAX HIGHLIGHT
+// ─────────────────────────────────────────────────────────────────────────────
+function highlight(css) { return css.split('\n').map(highlightLine).join('\n'); }
+
+function highlightLine(line) {
+  const t = line.trim();
+  if (!t) return '';
+  if (t.startsWith('/*') && t.endsWith('*/')) return span('s-comment', escHtml(line));
+  if (t.startsWith('@'))                       return span('s-at',      escHtml(line));
+  if (t.endsWith('{') || t === '}')            return span('s-sel',     escHtml(line));
+  const areaLine = t.match(/^"(.*)"(;?)$/);
+  if (areaLine) {
+    const indent = line.match(/^(\s*)/)[1];
+    return escHtml(indent) + span('s-str', '"' + escHtml(areaLine[1]) + '"') + escHtml(areaLine[2] || '');
+  }
+  if (t.startsWith('/*')) return span('s-comment', escHtml(line));
+  const propMatch = t.match(/^([\w-]+)\s*:\s*(.*?)(;?)$/);
+  if (propMatch) {
+    const indent = line.match(/^(\s*)/)[1];
+    return escHtml(indent) + span('s-prop', escHtml(propMatch[1])) + ': ' + span('s-val', escHtml(propMatch[2])) + escHtml(propMatch[3]);
+  }
+  return escHtml(line);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COPY
+// ─────────────────────────────────────────────────────────────────────────────
+function copyBlock(codeId, btnId) {
+  const tmp  = document.createElement('div');
+  tmp.innerHTML = document.getElementById(codeId).innerHTML;
+  const text = tmp.innerText;
+  const done = () => {
+    const btn = document.getElementById(btnId);
+    if (btn) { const o = btn.textContent; btn.textContent = '✓'; setTimeout(() => btn.textContent = o, 1500); }
+  };
+  navigator.clipboard?.writeText(text).then(done).catch(() => fallbackCopy(text, done)) ?? fallbackCopy(text, done);
+}
+function fallbackCopy(text, cb) {
+  const ta = Object.assign(document.createElement('textarea'), { value: text });
+  ta.style.cssText = 'position:fixed;top:-9999px';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta); if (cb) cb();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// UI HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.getElementById('stab-elements').classList.toggle('active', name === 'elements');
+  document.getElementById('stab-properties').classList.toggle('active', name === 'properties');
+  document.getElementById('tab-elements').style.display   = name === 'elements'   ? 'block' : 'none';
+  document.getElementById('tab-properties').style.display = name === 'properties' ? 'block' : 'none';
+}
+
+document.getElementById('modal-bp').addEventListener('click', e => { if (e.target === e.currentTarget) closeBpModal(); });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeBpModal();
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPlacementId &&
+      !['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)) deleteSelected();
+});
+</script>
+
+<script type="module">
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+</script>
+</body>
+</html>

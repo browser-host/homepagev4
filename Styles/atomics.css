@@ -1,4 +1,361 @@
+/* ============================================================
+   ATOMIC.CSS — Utility Classes
+   Tailored to the Gradient/Time Studio design system.
+   Requires theme.css. Compose freely on any element.
+   ============================================================ */
 
-.d-none {
-  display: none !important;
+/* ════════════════════════════════════════
+   DISPLAY
+   ════════════════════════════════════════ */
+.d-flex       { display: flex; }
+.d-grid       { display: grid; }
+.d-block      { display: block; }
+.d-inline     { display: inline; }
+.d-inline-flex{ display: inline-flex; }
+.d-none       { display: none !important; }
+
+/* ════════════════════════════════════════
+   FLEX
+   ════════════════════════════════════════ */
+.flex-col     { flex-direction: column; }
+.flex-row     { flex-direction: row; }
+.flex-wrap    { flex-wrap: wrap; }
+.flex-1       { flex: 1; }
+.flex-shrink-0{ flex-shrink: 0; }
+
+.items-start   { align-items: flex-start; }
+.items-center  { align-items: center; }
+.items-end     { align-items: flex-end; }
+.items-baseline{ align-items: baseline; }
+
+.justify-start   { justify-content: flex-start; }
+.justify-center  { justify-content: center; }
+.justify-end     { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+
+/* ════════════════════════════════════════
+   GAP
+   ════════════════════════════════════════ */
+.gap-1  { gap: var(--space-1); }
+.gap-2  { gap: var(--space-2); }
+.gap-3  { gap: var(--space-3); }
+.gap-4  { gap: var(--space-4); }
+.gap-5  { gap: var(--space-5); }
+.gap-6  { gap: var(--space-6); }
+.gap-8  { gap: var(--space-8); }
+.gap-10 { gap: var(--space-10); }
+
+/* ════════════════════════════════════════
+   POSITION
+   ════════════════════════════════════════ */
+.relative   { position: relative; }
+.absolute   { position: absolute; }
+.fixed      { position: fixed; }
+.sticky     { position: sticky; }
+.inset-0    { inset: 0; }
+.overflow-hidden { overflow: hidden; }
+.overflow-auto   { overflow: auto; }
+.overflow-x-auto { overflow-x: auto; }
+.pointer-none    { pointer-events: none; }
+
+/* ════════════════════════════════════════
+   SIZING
+   ════════════════════════════════════════ */
+.w-full   { width: 100%; }
+.h-full   { height: 100%; }
+.min-w-0  { min-width: 0; }
+.aspect-1 { aspect-ratio: 1; }
+
+/* ════════════════════════════════════════
+   PADDING
+   ════════════════════════════════════════ */
+.p-1   { padding: var(--space-1); }
+.p-2   { padding: var(--space-2); }
+.p-3   { padding: var(--space-3); }
+.p-4   { padding: var(--space-4); }
+.p-5   { padding: var(--space-5); }
+.p-6   { padding: var(--space-6); }
+.p-7   { padding: var(--space-7); }
+.p-8   { padding: var(--space-8); }
+.p-9   { padding: var(--space-9); }
+.p-10  { padding: var(--space-10); }
+
+.px-3  { padding-inline: var(--space-3); }
+.px-4  { padding-inline: var(--space-4); }
+.px-5  { padding-inline: var(--space-5); }
+.px-7  { padding-inline: var(--space-7); }
+.px-8  { padding-inline: var(--space-8); }
+.px-10 { padding-inline: var(--space-10); }
+
+.py-2  { padding-block: var(--space-2); }
+.py-3  { padding-block: var(--space-3); }
+.py-4  { padding-block: var(--space-4); }
+.py-5  { padding-block: var(--space-5); }
+.py-7  { padding-block: var(--space-7); }
+.py-8  { padding-block: var(--space-8); }
+.py-10 { padding-block: var(--space-10); }
+
+/* ════════════════════════════════════════
+   MARGIN
+   ════════════════════════════════════════ */
+.mt-2  { margin-top: var(--space-2); }
+.mt-4  { margin-top: var(--space-4); }
+.mt-5  { margin-top: var(--space-5); }
+.mt-7  { margin-top: var(--space-7); }
+.mt-8  { margin-top: var(--space-8); }
+.mt-10 { margin-top: var(--space-10); }
+.mt-12 { margin-top: var(--space-12); }
+.mt-14 { margin-top: var(--space-14); }
+
+.mb-2  { margin-bottom: var(--space-2); }
+.mb-4  { margin-bottom: var(--space-4); }
+.mb-5  { margin-bottom: var(--space-5); }
+.mb-6  { margin-bottom: var(--space-6); }
+.mb-7  { margin-bottom: var(--space-7); }
+.mb-8  { margin-bottom: var(--space-8); }
+.mb-10 { margin-bottom: var(--space-10); }
+.mb-12 { margin-bottom: var(--space-12); }
+.mb-14 { margin-bottom: var(--space-14); }
+.mb-16 { margin-bottom: var(--space-16); }
+
+.mx-auto { margin-inline: auto; }
+
+/* ════════════════════════════════════════
+   TYPOGRAPHY
+   ════════════════════════════════════════ */
+.font-mono   { font-family: var(--font-mono); }
+.font-ui     { font-family: var(--font-ui); }
+.font-body   { font-family: var(--font-body); }
+
+.text-2xs    { font-size: var(--text-2xs); }
+.text-xs     { font-size: var(--text-xs); }
+.text-sm     { font-size: var(--text-sm); }
+.text-base   { font-size: var(--text-base); }
+.text-md     { font-size: var(--text-md); }
+.text-lg     { font-size: var(--text-lg); }
+.text-xl     { font-size: var(--text-xl); }
+.text-2xl    { font-size: var(--text-2xl); }
+.text-3xl    { font-size: var(--text-3xl); }
+
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-bold   { font-weight: 700; }
+
+.uppercase   { text-transform: uppercase; }
+.lowercase   { text-transform: lowercase; }
+.no-wrap     { white-space: nowrap; }
+.break-all   { word-break: break-all; }
+
+.tracking-tight   { letter-spacing: var(--tracking-tight); }
+.tracking-normal  { letter-spacing: var(--tracking-normal); }
+.tracking-wide    { letter-spacing: var(--tracking-wide); }
+.tracking-wider   { letter-spacing: var(--tracking-wider); }
+.tracking-widest  { letter-spacing: var(--tracking-widest); }
+.tracking-label   { letter-spacing: var(--tracking-label); }
+.tracking-mono    { letter-spacing: var(--tracking-mono); }
+
+.leading-none   { line-height: 1; }
+.leading-tight  { line-height: 1.2; }
+.leading-normal { line-height: 1.5; }
+.leading-loose  { line-height: 1.6; }
+
+.text-left   { text-align: left; }
+.text-center { text-align: center; }
+.text-right  { text-align: right; }
+
+/* ════════════════════════════════════════
+   COLORS: Text
+   ════════════════════════════════════════ */
+.text-primary  { color: var(--color-text); }
+.text-alt      { color: var(--color-text-alt); }
+.text-muted    { color: var(--color-muted); }
+.text-muted-2  { color: var(--color-muted-alt); }
+.text-accent   { color: var(--color-accent); }
+.text-accent-2 { color: var(--color-accent-2); }
+.text-accent-3 { color: var(--color-accent-3); }
+.text-green    { color: var(--color-green); }
+.text-pink     { color: var(--color-pink); }
+
+/* ════════════════════════════════════════
+   COLORS: Background
+   ════════════════════════════════════════ */
+.bg-base      { background: var(--color-bg); }
+.bg-surface   { background: var(--color-surface); }
+.bg-surface-2 { background: var(--color-surface-2); }
+.bg-surface-3 { background: var(--color-surface-3); }
+.bg-accent    { background: var(--color-accent); }
+.bg-accent-2  { background: var(--color-accent-2); }
+.bg-accent-dim{ background: var(--color-accent-dim); }
+.bg-transparent { background: transparent; }
+
+/* ════════════════════════════════════════
+   GRADIENT TEXT
+   ════════════════════════════════════════ */
+.gradient-text {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
+.gradient-text-warm {
+  background: var(--gradient-warm);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ════════════════════════════════════════
+   BORDERS
+   ════════════════════════════════════════ */
+.border         { border: var(--border-default); }
+.border-accent  { border: var(--border-accent); }
+.border-dashed  { border: var(--border-dashed); }
+.border-top     { border-top: var(--border-default); }
+.border-bottom  { border-bottom: var(--border-default); }
+.border-left    { border-left: var(--border-default); }
+.border-right   { border-right: var(--border-default); }
+.border-none    { border: none; }
+
+/* ════════════════════════════════════════
+   BORDER RADIUS
+   ════════════════════════════════════════ */
+.rounded-sm   { border-radius: var(--radius-sm); }
+.rounded-md   { border-radius: var(--radius-md); }
+.rounded      { border-radius: var(--radius-base); }
+.rounded-lg   { border-radius: var(--radius-lg); }
+.rounded-xl   { border-radius: var(--radius-xl); }
+.rounded-2xl  { border-radius: var(--radius-2xl); }
+.rounded-full { border-radius: var(--radius-full); }
+
+/* ════════════════════════════════════════
+   SHADOWS & GLOW
+   ════════════════════════════════════════ */
+.shadow-sm   { box-shadow: var(--shadow-sm); }
+.shadow-md   { box-shadow: var(--shadow-md); }
+.shadow-lg   { box-shadow: var(--shadow-lg); }
+.glow        { box-shadow: var(--shadow-glow); }
+.glow-sm     { box-shadow: var(--shadow-glow-sm); }
+
+/* ════════════════════════════════════════
+   OPACITY
+   ════════════════════════════════════════ */
+.opacity-0   { opacity: 0; }
+.opacity-40  { opacity: 0.4; }
+.opacity-60  { opacity: 0.6; }
+.opacity-80  { opacity: 0.8; }
+.opacity-100 { opacity: 1; }
+
+/* ════════════════════════════════════════
+   TRANSITIONS
+   ════════════════════════════════════════ */
+.transition       { transition: all var(--transition-fast); }
+.transition-base  { transition: all var(--transition-base); }
+.transition-slow  { transition: all var(--transition-slow); }
+.transition-color { transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast); }
+
+/* ════════════════════════════════════════
+   CURSOR
+   ════════════════════════════════════════ */
+.cursor-pointer  { cursor: pointer; }
+.cursor-grab     { cursor: grab; }
+.cursor-grabbing { cursor: grabbing; }
+.cursor-crosshair{ cursor: crosshair; }
+.cursor-text     { cursor: text; }
+.cursor-ew       { cursor: ew-resize; }
+
+/* ════════════════════════════════════════
+   USER SELECT
+   ════════════════════════════════════════ */
+.select-none  { user-select: none; }
+.select-text  { user-select: text; }
+
+/* ════════════════════════════════════════
+   ANIMATION HELPERS
+   ════════════════════════════════════════ */
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease forwards;
+}
+.animate-flash {
+  animation: flash-border 0.4s ease forwards;
+}
+
+/* ════════════════════════════════════════
+   ACCENT LINE (top highlight bar)
+   ════════════════════════════════════════ */
+.accent-line-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--gradient-cool);
+}
+
+.accent-line-left::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 3px;
+  border-radius: var(--radius-2xl) 0 0 var(--radius-2xl);
+}
+
+/* ════════════════════════════════════════
+   DOT INDICATOR
+   ════════════════════════════════════════ */
+.dot-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent);
+}
+
+.dot-indicator--lg {
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 12px var(--color-accent);
+}
+
+/* ════════════════════════════════════════
+   SECTION LABEL (uppercase divider label)
+   ════════════════════════════════════════ */
+.section-label {
+  font-family: var(--font-ui);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* ════════════════════════════════════════
+   VISUAL UTILITIES
+   ════════════════════════════════════════ */
+.backdrop-blur {
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur);
+}
+
+.gradient-bg-primary {
+  background: var(--gradient-primary);
+}
+
+.gradient-bg-warm {
+  background: var(--gradient-warm);
+}
+
+.z-base    { z-index: var(--z-base); }
+.z-raised  { z-index: var(--z-raised); }
+.z-overlay { z-index: var(--z-overlay); }
+.z-popup   { z-index: var(--z-popup); }

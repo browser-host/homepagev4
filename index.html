@@ -5,89 +5,120 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Need a Thing</title>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="./Styles/main.css" />
-  <link rel="stylesheet" href="./Styles/Components/Base.css" />
-  <link rel="stylesheet" href="./Styles/Themes/dark.css" />
-  <link rel="stylesheet" href="homepage.css" />
-  
-  <!-- Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Agdasima:wght@400;700&display=swap" rel="stylesheet">
+  <!-- sp-theme placeholder links: sp-theme.js finds these by ID and sets their hrefs.
+       Positioned before dark.css so the page theme tokens win the cascade. -->
+  <link id="sp-theme-tokens" rel="stylesheet">
+  <link id="sp-theme-active" rel="stylesheet">
 
-  <!-- JS -->
-  <script src="main.js"></script>
-  
+  <!-- Design system -->
+  <link rel="stylesheet" href="./Styles/Tokens/base.css">
+  <link rel="stylesheet" href="./Styles/Themes/manuscript.css">
+  <link rel="stylesheet" href="./Styles/main.css">
+  <link rel="stylesheet" href="./Styles/Components/Components.css">
+  <link rel="stylesheet" href="./Styles/atomics.css">
+  <link rel="stylesheet" href="homepage.css" />
+
+
   <!-- Quill (rich text editor) -->
   <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
 
+  <!-- App JS -->
+  <script src="./JS/utility.js"></script>
+  <script src="main.js"></script>
 </head>
 <body>
+  <sp-theme></sp-theme>
+
+  <sp-nav sticky>
+    <span slot="brand">Need a Thing</span>
+  </sp-nav>
+
   <div class="layout">
-    <!-- Quick links -->
+
+    <!-- ── Sidebar: Quick Links ── -->
     <div class="sidebar-container card">
       <div id="links-list-container">
-        <div id="add-link" class="card-header" onclick="openModal();">
-          Quick Links
+        <div class="sidebar-header">
+          <div id="add-link" onclick="openLinkModal();">
+            Quick Links
+          </div>
+          <sp-button variant="ghost" size="sm" onclick="openOrganizeModal();" title="Organize links">
+            Organize
+          </sp-button>
         </div>
       </div>
     </div>
 
-    <!-- search bar -->
+    <!-- ── Topbar: Search ── -->
     <div class="topbar-container card">
       <div id="search-bar-container">
         <div class="title" data-engine-index="0" id="search-bar-title">
           consult the oracle
         </div>
         <div class="search">
-          <input id="searchBarInput" autocomplete="off" tabindex="1"/>
+          <input id="searchBarInput" autocomplete="off" tabindex="1" placeholder="search…" />
         </div>
       </div>
     </div>
 
+    <!-- ── Main: Tools ── -->
     <div class="main-container card">
       <div id="tools-container">
         <div id="tools-list-container"></div>
       </div>
     </div>
+
   </div>
 
-  <div id="modal" class="d-none">
-    <div id="modal-exit" onclick="closeModal();">
-      <img class="icon" src="icons/x.svg" alt="Exit">
-    </div>
+  <!-- ── Modal: Add Quick Link ── -->
+  <sp-modal id="modal" heading="Add Quick Link">
+    <form id="add-link-form" class="form" onsubmit="handleNewLinkSubmit(event);">
+      <div class="form__fields">
 
-    <div id="modal-content" class="hidden">
-      <form id="add-link-form" class="form" onsubmit="handleNewLinkSubmit(event);">
-        <div class="form-content">
-          <div>
-            <div>Title</div>
-            <input type="text" name="input-link-title" autocomplete="off"/>
-          </div>
-          
-          <div>
-            <div>URL</div>
-            <input type="text" name="input-link-href" autocomplete="off"/>
-          </div>
-          
-          <div>
-            <div>Category</div>
-            <div class="double">
-              <select id="select-link-category" name="select-link-category"></select>
-              <span>or</span>
-              <input type="text" name="input-link-category" autocomplete="off" placeholder="enter for new category"/>
-            </div>
+        <div class="form__group">
+          <label class="form__label" for="input-link-title">Title</label>
+          <input class="input w-full" type="text" id="input-link-title" name="input-link-title" autocomplete="off" />
+        </div>
+
+        <div class="form__group">
+          <label class="form__label" for="input-link-href">URL</label>
+          <input class="input w-full" type="text" id="input-link-href" name="input-link-href" autocomplete="off" />
+        </div>
+
+        <div class="form__group">
+          <label class="form__label">Category</label>
+          <div class="form__split">
+            <select class="select" id="select-link-category" name="select-link-category"></select>
+            <span class="form__split-or">or</span>
+            <input class="input flex-1" type="text" name="input-link-category" autocomplete="off" placeholder="new category…" />
           </div>
         </div>
 
-        <div class="button-row">
-          <button onclick="closeModal();">Cancel</button>
-          <button type="submit">Add</button>
-        </div>
-      </form>
+      </div>
+    </form>
+    <div class="form__actions" slot="footer">
+      <sp-button onclick="closeLinkModal();">Cancel</sp-button>
+      <sp-button variant="primary" onclick="document.getElementById('add-link-form').requestSubmit();">Add Link</sp-button>
     </div>
-  </div>
+  </sp-modal>
+
+  <!-- ── Modal: Organize Quick Links ── -->
+  <sp-modal id="organize-modal" heading="Organize Links" style="--sp-modal-width: 560px;">
+    <p class="org-instructions">Drag categories and links to reorder. Links can be moved between categories.</p>
+    <div id="organize-list" class="org-list"></div>
+    <div class="form__actions" slot="footer">
+      <sp-button onclick="closeOrganizeModal();">Cancel</sp-button>
+      <sp-button variant="primary" onclick="saveOrganized();">Save Order</sp-button>
+    </div>
+  </sp-modal>
+
+
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-modal.js'
+  </script>
 </body>
 </html>
