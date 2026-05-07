@@ -28,9 +28,16 @@ body {
   overflow: hidden;
 }
 
-.sidebar-container  { grid-area: sidebar; overflow-y: auto; }
+.sidebar-container  { grid-area: sidebar; min-height: 0; }
 .topbar-container   { grid-area: topbar; }
-.main-container     { grid-area: main; overflow-y: auto; }
+.main-container     { grid-area: main; min-height: 0; }
+
+/* ── Card overrides for layout panels ── */
+.sidebar-container::part(card),
+.main-container::part(card) {
+  height: 100%;
+  overflow-y: auto;
+}
 
 /* ── Sidebar header row ── */
 .sidebar-header {
@@ -103,8 +110,7 @@ body {
   text-overflow: ellipsis;
 }
 .link:hover {
-  color: var(--color-text);
-  background: var(--color-surface-2);
+  background: var(--color-accent-dim);
 }
 
 /* ── Search area ── */
@@ -238,14 +244,6 @@ body {
 }
 .tool-card:hover .tool-card__name {
   color: var(--color-accent);
-}
-
-/* ── Card overrides for layout panels ── */
-.sidebar-container.card,
-.topbar-container.card,
-.main-container.card {
-  border-radius: var(--radius-xl);
-  padding: 0;
 }
 
 /* ── Organize modal ── */

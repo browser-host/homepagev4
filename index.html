@@ -37,7 +37,7 @@
   <div class="layout">
 
     <!-- ── Sidebar: Quick Links ── -->
-    <div class="sidebar-container card">
+    <sp-card class="sidebar-container">
       <div id="links-list-container">
         <div class="sidebar-header">
           <div id="add-link" onclick="openLinkModal();">
@@ -48,10 +48,10 @@
           </sp-button>
         </div>
       </div>
-    </div>
+    </sp-card>
 
     <!-- ── Topbar: Search ── -->
-    <div class="topbar-container card">
+    <sp-card class="topbar-container">
       <div id="search-bar-container">
         <div class="title" data-engine-index="0" id="search-bar-title">
           consult the oracle
@@ -60,14 +60,14 @@
           <input id="searchBarInput" autocomplete="off" tabindex="1" placeholder="search…" />
         </div>
       </div>
-    </div>
+    </sp-card>
 
     <!-- ── Main: Tools ── -->
-    <div class="main-container card">
+    <sp-card class="main-container">
       <div id="tools-container">
         <div id="tools-list-container"></div>
       </div>
-    </div>
+    </sp-card>
 
   </div>
 
@@ -118,6 +118,7 @@
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-card.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-modal.js'
   </script>
 </body>

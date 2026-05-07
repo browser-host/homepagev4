@@ -2,64 +2,6 @@
    COMPONENTS.CSS — Reusable UI Components
    ============================================================ */
 
-
-/* ════════════════════════════════════════
-   CARD
-   ════════════════════════════════════════ */
-
-.card {
-  background: var(--color-surface);
-  border: var(--border-default);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-8) var(--space-10);
-  position: relative;
-  overflow: hidden;
-}
-
-
-/* ════════════════════════════════════════
-   BUTTONS
-   ════════════════════════════════════════ */
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-5);
-  border: var(--border-default);
-  border-radius: var(--radius-base);
-  background: transparent;
-  color: var(--color-text);
-  font-family: var(--font-ui);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  white-space: nowrap;
-  user-select: none;
-}
-.btn:hover {
-  background: var(--color-border);
-}
-.btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.btn--primary {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #0e1418;
-  font-weight: 700;
-}
-.btn--primary:hover {
-  background: #4ab5c0;
-  border-color: #4ab5c0;
-}
-
-
 /* ════════════════════════════════════════
    SELECT
    ════════════════════════════════════════ */
