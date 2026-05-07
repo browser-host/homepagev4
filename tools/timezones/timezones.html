@@ -32,13 +32,13 @@
       <h1 class="app-header__title">Time Studio</h1>
     </div>
 
-    <div class="hero-block mb-8" id="hero">
+    <sp-card class="hero-block mb-8" id="hero">
       <div class="hero-block__label">Your Local Time</div>
       <div class="hero-block__location" id="local-tz">Detecting timezone...</div>
       <div class="hero-block__value" id="local-time">--:--:--</div>
       <div class="hero-block__sub" id="local-date">---</div>
       <div class="hero-block__hint"><kbd>Ctrl+Click</kbd> any time to copy ms</div>
-    </div>
+    </sp-card>
 
     <div class="section-label mb-7">Canadian Timezones</div>
 
@@ -64,6 +64,7 @@
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-card.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-toast.js'
   </script>
 
@@ -190,8 +191,9 @@
     // Build grid
     const grid = document.getElementById('grid');
     ZONES.forEach((z, i) => {
-      const card = document.createElement('div');
-      card.className = 'card card--interactive';
+      const card = document.createElement('sp-card');
+      card.setAttribute('interactive', '');
+      card.classList.add('tz-card');
       card.id = `card-${i}`;
       card.style.setProperty('--card-color', z.color);
 
@@ -204,7 +206,7 @@
       const liveAbbr = getTZAbbr(z.tz);
 
       card.innerHTML = `
-    <div class="card--stripe" style="background:${z.color}; position:absolute; top:0; left:0; bottom:0; width:3px; border-radius:var(--radius-2xl) 0 0 var(--radius-2xl);"></div>
+    <div class="tz-card__stripe" style="background:${z.color}"></div>
     <div class="tz-card__offset">${offset}</div>
     <div class="tz-card__abbr" style="color:${z.color}">${liveAbbr}</div>
     <div class="tz-card__region">${z.city} · ${z.region}</div>

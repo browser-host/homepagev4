@@ -22,8 +22,8 @@
       align-items: center;
       justify-content: center;
     }
-    .card {
-      width: 300px;
+    sp-card.card { width: 300px; }
+    sp-card.card::part(card) {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -45,10 +45,10 @@
   </sp-nav>
 
   <div class="page-content">
-    <div class="card">
+    <sp-card class="card">
       <span id="ip-address">—</span>
       <sp-button id="retry-button" disabled onclick="handleRetryClick();">Retry</sp-button>
-    </div>
+    </sp-card>
   </div>
 
   <script type="text/javascript">
@@ -76,6 +76,7 @@
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-card.js'
   </script>
 </body>
 </html>

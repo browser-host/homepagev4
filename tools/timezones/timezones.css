@@ -27,18 +27,28 @@
 /* ── Card updated flash animation ── */
 @keyframes tz-flash {
   0%   { border-color: var(--color-accent); background: rgba(58, 159, 170, 0.15); }
-  100% { border-color: var(--color-border); background: var(--color-surface); }
+  100% { border-color: var(--color-border); background: var(--color-bg-raised); }
 }
-.card--tz-flash {
+sp-card.tz-card.card--tz-flash::part(card) {
   animation: tz-flash 0.4s ease forwards;
 }
 
-/* ── Interactive card variant ── */
-.card--interactive {
-  --card-color: var(--color-accent);
-  transition: border-color var(--transition-fast);
+/* ── Interactive tz card hover (per-card accent) ── */
+sp-card.tz-card { --card-color: var(--color-accent); }
+sp-card.tz-card[interactive]:hover::part(card) {
+  border-color: var(--card-color);
+  transform: none;
+  box-shadow: none;
 }
-.card--interactive:hover { border-color: var(--card-color); }
+
+/* Left accent stripe inside tz card */
+.tz-card__stripe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 3px;
+}
 
 
 /* ── App header ── */
@@ -54,13 +64,10 @@
   color: var(--color-text);
 }
 
-/* ── Hero block (local time) ── */
-.hero-block {
+/* ── Hero block (local time) — sp-card host ── */
+sp-card.hero-block::part(card) {
   padding: var(--space-8) var(--space-10);
-  background: var(--color-surface);
-  border: var(--border-default);
   border-radius: var(--radius-2xl);
-  position: relative;
 }
 .hero-block__label {
   font-family: var(--font-ui);
