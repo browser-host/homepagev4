@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Byte Inspector</title>
+
+  <link id="sp-theme-tokens" rel="stylesheet">
+  <link id="sp-theme-active" rel="stylesheet">
+
+  <link rel="stylesheet" href="../../Styles/Tokens/base.css">
+  <link rel="stylesheet" href="../../Styles/main.css">
+  <link rel="stylesheet" href="../../Styles/Components/Components.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components@latest/atomics.css">
+  <link rel="stylesheet" href="pdf-byte-inspector.css">
+</head>
+<body>
+  <sp-theme></sp-theme>
+  <sp-nav sticky>
+    <span slot="brand">PDF Byte Inspector</span>
+  </sp-nav>
+
+  <div class="container">
+
+    <header class="page-header">
+      <h1>PDF byte inspector</h1>
+      <p class="subtitle">Drop a PDF to view raw bytes, select a range to convert to plain text, and see common PDF structural fields.</p>
+    </header>
+
+    <sp-tabs>
+      <div data-label="Drop file">
+        <div class="drop-zone" id="drop">
+          <p class="title">Drop a PDF here</p>
+          <p class="hint">or click to choose a file</p>
+          <input type="file" id="file" accept=".pdf,application/pdf" hidden />
+        </div>
+      </div>
+      <div data-label="Paste raw bytes" hidden>
+        <div class="raw-input">
+          <div class="raw-header">
+            <label for="raw-format">Input format:</label>
+            <select id="raw-format">
+              <option value="auto">Auto-detect</option>
+              <option value="hex">Hex (e.g. 25 50 44 46 or 25504446)</option>
+              <option value="base64">Base64</option>
+              <option value="ascii">ASCII / text</option>
+              <option value="escaped">Escaped (\x25\x50 or %25%50)</option>
+            </select>
+            <sp-button variant="primary" id="raw-load">Load bytes</sp-button>
+            <sp-button variant="ghost" id="raw-clear">Clear</sp-button>
+            <span class="raw-hint" id="raw-hint">Paste any of: hex dump, base64, raw text, or escape sequences.</span>
+          </div>
+          <textarea id="raw-text" placeholder="Paste bytes here. Examples:
+25 50 44 46 2D 31 2E 34
+25504446-312E34
+%PDF-1.4
+JVBERi0xLjQK"></textarea>
+        </div>
+      </div>
+    </sp-tabs>
+
+    <div class="file-info" id="info"></div>
+
+    <div class="controls" id="controls">
+      <label>Show bytes</label>
+      <input type="number" id="start" value="0" min="0" />
+      <label>to</label>
+      <input type="number" id="end" value="2048" min="1" />
+      <sp-button variant="primary" id="apply">Apply</sp-button>
+      <sp-button id="jump-start">Start</sp-button>
+      <sp-button id="jump-end">End (trailer)</sp-button>
+      <sp-button id="clear-sel">Clear selection</sp-button>
+      <span class="legend"><span class="legend-swatch"></span> Click or drag bytes to select</span>
+    </div>
+
+    <div class="panels" id="panels">
+      <sp-card class="view-panel">
+        <div class="panel-header">
+          <span>Raw bytes</span>
+          <span class="meta" id="byte-range"></span>
+        </div>
+        <div class="byte-view" id="bytes"></div>
+      </sp-card>
+      <sp-card class="view-panel">
+        <div class="panel-header">
+          <span>Selection as plain text</span>
+          <span class="meta" id="sel-info">no selection</span>
+        </div>
+        <div class="text-view" id="text"><span class="placeholder">Click and drag across bytes on the left to convert them to plain text here.</span></div>
+      </sp-card>
+    </div>
+
+    <sp-card class="view-panel" id="fields-section">
+      <div class="panel-header"><span>Common PDF fields &amp; structural markers</span></div>
+      <table class="fields-table">
+        <thead>
+          <tr><th style="width: 22%;">Field</th><th style="width: 28%;">Value</th><th>Description</th></tr>
+        </thead>
+        <tbody id="fields-body"></tbody>
+      </table>
+    </sp-card>
+
+  </div>
+
+  <script type="module">
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-tabs.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-card.js'
+  </script>
+  <script src="pdf-byte-inspector.js"></script>
+</body>
+</html>
