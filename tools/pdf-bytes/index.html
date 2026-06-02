@@ -61,44 +61,76 @@ JVBERi0xLjQK"></textarea>
 
     <div class="file-info" id="info"></div>
 
-    <div class="controls" id="controls">
-      <label>Show bytes</label>
-      <input type="number" id="start" value="0" min="0" />
-      <label>to</label>
-      <input type="number" id="end" value="2048" min="1" />
-      <sp-button variant="primary" id="apply">Apply</sp-button>
-      <sp-button id="jump-start">Start</sp-button>
-      <sp-button id="jump-end">End (trailer)</sp-button>
-      <sp-button id="clear-sel">Clear selection</sp-button>
-      <span class="legend"><span class="legend-swatch"></span> Click or drag bytes to select</span>
-    </div>
-
-    <div class="panels" id="panels">
-      <sp-card class="view-panel">
-        <div class="panel-header">
-          <span>Raw bytes</span>
-          <span class="meta" id="byte-range"></span>
+    <div class="results" id="results">
+      <sp-tabs id="result-tabs">
+        <div data-label="Common PDF fields">
+          <sp-card class="view-panel" id="fields-section">
+            <div class="panel-header"><span>Common PDF fields &amp; structural markers</span></div>
+            <table class="fields-table">
+              <thead>
+                <tr><th style="width: 22%;">Field</th><th style="width: 28%;">Value</th><th>Description</th></tr>
+              </thead>
+              <tbody id="fields-body"></tbody>
+            </table>
+          </sp-card>
         </div>
-        <div class="byte-view" id="bytes"></div>
-      </sp-card>
-      <sp-card class="view-panel">
-        <div class="panel-header">
-          <span>Selection as plain text</span>
-          <span class="meta" id="sel-info">no selection</span>
-        </div>
-        <div class="text-view" id="text"><span class="placeholder">Click and drag across bytes on the left to convert them to plain text here.</span></div>
-      </sp-card>
-    </div>
 
-    <sp-card class="view-panel" id="fields-section">
-      <div class="panel-header"><span>Common PDF fields &amp; structural markers</span></div>
-      <table class="fields-table">
-        <thead>
-          <tr><th style="width: 22%;">Field</th><th style="width: 28%;">Value</th><th>Description</th></tr>
-        </thead>
-        <tbody id="fields-body"></tbody>
-      </table>
-    </sp-card>
+        <div data-label="PDF objects" hidden>
+          <sp-card class="view-panel" id="objects-section">
+            <div class="panel-header">
+              <span>Indirect objects</span>
+              <span class="meta" id="objects-count"></span>
+            </div>
+            <div class="objects-scroll">
+              <table class="fields-table objects-table">
+                <thead>
+                  <tr>
+                    <th style="width: 12%;">Object</th>
+                    <th style="width: 18%;">Type</th>
+                    <th style="width: 18%;">Subtype</th>
+                    <th style="width: 10%;">Stream</th>
+                    <th style="width: 14%;">Length</th>
+                    <th>Offset</th>
+                  </tr>
+                </thead>
+                <tbody id="objects-body"></tbody>
+              </table>
+            </div>
+          </sp-card>
+        </div>
+
+        <div data-label="Raw bytes &amp; text" hidden>
+          <div class="controls" id="controls">
+            <label>Show bytes</label>
+            <input type="number" id="start" value="0" min="0" />
+            <label>to</label>
+            <input type="number" id="end" value="2048" min="1" />
+            <sp-button variant="primary" id="apply">Apply</sp-button>
+            <sp-button id="jump-start">Start</sp-button>
+            <sp-button id="jump-end">End (trailer)</sp-button>
+            <sp-button id="clear-sel">Clear selection</sp-button>
+            <span class="legend"><span class="legend-swatch"></span> Click or drag bytes to select</span>
+          </div>
+
+          <div class="panels" id="panels">
+            <sp-card class="view-panel">
+              <div class="panel-header">
+                <span>Raw bytes</span>
+                <span class="meta" id="byte-range"></span>
+              </div>
+              <div class="byte-view" id="bytes"></div>
+            </sp-card>
+            <sp-card class="view-panel">
+              <div class="panel-header">
+                <span>Selection as plain text</span>
+                <span class="meta" id="sel-info">no selection</span>
+              </div>
+              <div class="text-view" id="text"><span class="placeholder">Click and drag across bytes on the left to convert them to plain text here.</span></div>
+            </sp-card>
+          </div>
+        </div>
+      </sp-tabs>
+    </div>
 
   </div>
 

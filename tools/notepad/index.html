@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notepad</title>
+
+<link id="sp-theme-tokens" rel="stylesheet">
+<link id="sp-theme-active" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components@latest/atomics.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: var(--font-family-base, "Segoe UI", Tahoma, sans-serif);
+    font-size: 13px;
+    background: var(--color-bg-subtle, #f3f3f3);
+    color: var(--color-text, #1f1f1f);
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  sp-nav { flex-shrink: 0; }
+  .menubar {
+    display: flex;
+    background: var(--color-bg-subtle, #f9f9f9);
+    border-bottom: 1px solid var(--color-border, #d4d4d4);
+    padding: 4px 8px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .tabbar {
+    display: flex;
+    background: var(--color-bg-subtle, #ececec);
+    border-bottom: 1px solid var(--color-border, #d4d4d4);
+    overflow-x: auto;
+    flex-shrink: 0;
+    min-height: 32px;
+  }
+  .tabbar::-webkit-scrollbar { height: 6px; }
+  .tabbar::-webkit-scrollbar-thumb { background: var(--color-border-strong, #c0c0c0); border-radius: var(--radius-sm, 3px); }
+  .tab {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px 6px 12px;
+    background: var(--color-bg-subtle, #ececec);
+    border-right: 1px solid var(--color-border, #d4d4d4);
+    cursor: pointer;
+    min-width: 120px;
+    max-width: 200px;
+    gap: 8px;
+    user-select: none;
+    flex-shrink: 0;
+  }
+  .tab.active {
+    background: var(--color-bg, #ffffff);
+    border-bottom: 2px solid var(--color-primary, #0078d4);
+    margin-bottom: -1px;
+  }
+  .tab .title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .tab sp-tag { flex-shrink: 0; }
+  .tab .close {
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-sm, 3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--color-text-subtle, #666);
+  }
+  .tab .close:hover {
+    background: var(--color-border, #d4d4d4);
+    color: var(--color-text, #000);
+  }
+  .tab-add {
+    padding: 6px 12px;
+    cursor: pointer;
+    color: var(--color-text-subtle, #666);
+    align-self: center;
+    border-radius: var(--radius-sm, 3px);
+    margin: 0 4px;
+  }
+  .tab-add:hover { background: var(--color-border, #d4d4d4); color: var(--color-text, #000); }
+  .content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg, #ffffff);
+    min-height: 0;
+  }
+  .editor-wrap {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+  }
+  textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 10px 12px;
+    font-family: var(--font-family-mono, Consolas, "Courier New", monospace);
+    font-size: 14px;
+    line-height: 1.5;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #1f1f1f);
+  }
+  .md-pane {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px;
+    background: var(--color-bg, #fff);
+    border-left: 1px solid var(--color-border, #e0e0e0);
+    color: var(--color-text, #1f1f1f);
+    line-height: 1.6;
+  }
+  .md-pane h1, .md-pane h2, .md-pane h3 { margin-top: 0.8em; }
+  .md-pane h1 { border-bottom: 1px solid var(--color-border, #ddd); padding-bottom: 0.2em; }
+  .md-pane code { background: var(--color-bg-subtle, #f3f3f3); padding: 2px 5px; border-radius: var(--radius-sm, 3px); font-family: var(--font-family-mono, Consolas, monospace); font-size: 0.9em; }
+  .md-pane pre { background: var(--color-bg-subtle, #f6f8fa); padding: 12px; border-radius: var(--radius-md, 4px); overflow-x: auto; }
+  .md-pane pre code { background: transparent; padding: 0; }
+  .md-pane blockquote { border-left: 3px solid var(--color-border-strong, #d0d7de); color: var(--color-text-subtle, #555); margin: 0; padding: 0 12px; }
+  .md-pane table { border-collapse: collapse; }
+  .md-pane th, .md-pane td { border: 1px solid var(--color-border, #d0d7de); padding: 4px 10px; }
+  .statusbar {
+    background: var(--color-bg-subtle, #f3f3f3);
+    border-top: 1px solid var(--color-border, #d4d4d4);
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--color-text-subtle, #555);
+    display: flex;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .empty {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-disabled, #999);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+  <sp-theme></sp-theme>
+  <sp-nav>
+    <span slot="brand">Notepad</span>
+  </sp-nav>
+  <div class="menubar">
+    <sp-button variant="ghost" size="sm" id="btn-new">New Tab (Alt+T)</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-new-md">New Markdown (Alt+G)</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-clear">Clear</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-toggle-preview" style="display:none;">Toggle Preview</sp-button>
+    <div style="flex:1"></div>
+    <span style="align-self:center; color:var(--color-text-subtle, #888); font-size:12px;">Auto-saved</span>
+  </div>
+  <div class="tabbar" id="tabbar"></div>
+  <div class="content" id="content"></div>
+  <div class="statusbar">
+    <span id="status-mode">—</span>
+    <span id="status-count">0 chars · 0 lines</span>
+    <span style="flex:1"></span>
+    <span>Paste strips formatting</span>
+  </div>
+
+<script type="module">
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-tag.js'
+</script>
+<script>
+const STORE_KEY = "notepad-state-v1";
+let state = { tabs: [], activeId: null, showPreview: true };
+let saveTimer = null;
+
+function uid() { return "t" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) state = JSON.parse(raw);
+  } catch (e) { /* no saved state */ }
+  if (!state.tabs || state.tabs.length === 0) {
+    state.tabs = [{ id: uid(), title: "Untitled", type: "text", content: "" }];
+    state.activeId = state.tabs[0].id;
+  }
+  if (!state.activeId || !state.tabs.find(t => t.id === state.activeId)) {
+    state.activeId = state.tabs[0].id;
+  }
+  if (state.showPreview === undefined) state.showPreview = true;
+}
+
+function saveState() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+  }, 250);
+}
+
+function activeTab() { return state.tabs.find(t => t.id === state.activeId); }
+
+function newTab(type) {
+  const count = state.tabs.filter(t => t.type === type).length + 1;
+  const tab = {
+    id: uid(),
+    title: type === "markdown" ? "Markdown " + count : "Untitled " + count,
+    type,
+    content: ""
+  };
+  state.tabs.push(tab);
+  state.activeId = tab.id;
+  render();
+  saveState();
+  setTimeout(() => { const ta = document.querySelector("textarea"); if (ta) ta.focus(); }, 10);
+}
+
+function closeTab(id) {
+  const idx = state.tabs.findIndex(t => t.id === id);
+  if (idx === -1) return;
+  state.tabs.splice(idx, 1);
+  if (state.tabs.length === 0) {
+    state.tabs.push({ id: uid(), title: "Untitled", type: "text", content: "" });
+    state.activeId = state.tabs[0].id;
+  } else if (state.activeId === id) {
+    state.activeId = state.tabs[Math.max(0, idx - 1)].id;
+  }
+  render();
+  saveState();
+}
+
+function setActive(id) {
+  state.activeId = id;
+  render();
+  saveState();
+}
+
+// Minimal markdown renderer (safe-ish: escape HTML first)
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function renderMarkdown(src) {
+  let s = escapeHtml(src);
+  // code fences
+  s = s.replace(/```([\s\S]*?)```/g, (_, c) => "<pre><code>" + c.replace(/^\n/, "") + "</code></pre>");
+  // headings
+  s = s.replace(/^###### (.*)$/gm, "<h6>$1</h6>")
+       .replace(/^##### (.*)$/gm, "<h5>$1</h5>")
+       .replace(/^#### (.*)$/gm, "<h4>$1</h4>")
+       .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+       .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+       .replace(/^# (.*)$/gm, "<h1>$1</h1>");
+  // blockquote
+  s = s.replace(/^&gt; (.*)$/gm, "<blockquote>$1</blockquote>");
+  // hr
+  s = s.replace(/^---$/gm, "<hr>");
+  // bold/italic/code
+  s = s.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+       .replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>")
+       .replace(/`([^`\n]+)`/g, "<code>$1</code>");
+  // links
+  s = s.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  // lists
+  s = s.replace(/(?:^|\n)((?:- .*(?:\n|$))+)/g, (m, block) => {
+    const items = block.trim().split("\n").map(l => "<li>" + l.replace(/^- /, "") + "</li>").join("");
+    return "\n<ul>" + items + "</ul>";
+  });
+  s = s.replace(/(?:^|\n)((?:\d+\. .*(?:\n|$))+)/g, (m, block) => {
+    const items = block.trim().split("\n").map(l => "<li>" + l.replace(/^\d+\. /, "") + "</li>").join("");
+    return "\n<ol>" + items + "</ol>";
+  });
+  // paragraphs (lines not already in a block)
+  s = s.split(/\n{2,}/).map(chunk => {
+    if (/^\s*<(h\d|ul|ol|pre|blockquote|hr)/.test(chunk)) return chunk;
+    return "<p>" + chunk.replace(/\n/g, "<br>") + "</p>";
+  }).join("\n");
+  return s;
+}
+
+function render() {
+  // Tabs
+  const tabbar = document.getElementById("tabbar");
+  tabbar.innerHTML = "";
+  state.tabs.forEach(tab => {
+    const el = document.createElement("div");
+    el.className = "tab" + (tab.id === state.activeId ? " active" : "");
+    el.onclick = (e) => { if (!e.target.classList.contains("close")) setActive(tab.id); };
+    el.innerHTML = `
+      <span class="title">${escapeHtml(tab.title)}</span>
+      ${tab.type === "markdown" ? '<sp-tag color="primary">md</sp-tag>' : ''}
+      <span class="close" title="Close">×</span>
+    `;
+    el.querySelector(".close").onclick = (e) => { e.stopPropagation(); closeTab(tab.id); };
+    tabbar.appendChild(el);
+  });
+  const add = document.createElement("div");
+  add.className = "tab-add";
+  add.textContent = "+";
+  add.title = "New tab (Alt+T)";
+  add.onclick = () => newTab("text");
+  tabbar.appendChild(add);
+
+  // Content
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+  const tab = activeTab();
+  if (!tab) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "editor-wrap";
+
+  const ta = document.createElement("textarea");
+  ta.value = tab.content;
+  ta.spellcheck = false;
+  ta.placeholder = tab.type === "markdown" ? "# Start writing markdown..." : "Start typing...";
+  ta.addEventListener("input", () => {
+    tab.content = ta.value;
+    updateStatus();
+    if (tab.type === "markdown" && state.showPreview) {
+      preview.innerHTML = renderMarkdown(tab.content);
+    }
+    // Update title from first line
+    const firstLine = ta.value.split("\n")[0].replace(/^#+\s*/, "").trim();
+    if (firstLine) tab.title = firstLine.slice(0, 24);
+    else tab.title = tab.type === "markdown" ? "Markdown" : "Untitled";
+    const tabEl = document.querySelectorAll(".tab")[state.tabs.indexOf(tab)];
+    if (tabEl) tabEl.querySelector(".title").textContent = tab.title;
+    saveState();
+  });
+  ta.addEventListener("paste", (e) => {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData("text/plain");
+    const start = ta.selectionStart, end = ta.selectionEnd;
+    ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+    ta.selectionStart = ta.selectionEnd = start + text.length;
+    ta.dispatchEvent(new Event("input"));
+  });
+  ta.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const s = ta.selectionStart, en = ta.selectionEnd;
+      ta.value = ta.value.slice(0, s) + "  " + ta.value.slice(en);
+      ta.selectionStart = ta.selectionEnd = s + 2;
+      ta.dispatchEvent(new Event("input"));
+    }
+  });
+  wrap.appendChild(ta);
+
+  let preview;
+  if (tab.type === "markdown" && state.showPreview) {
+    preview = document.createElement("div");
+    preview.className = "md-pane";
+    preview.innerHTML = renderMarkdown(tab.content);
+    wrap.appendChild(preview);
+  }
+  content.appendChild(wrap);
+
+  document.getElementById("btn-toggle-preview").style.display = tab.type === "markdown" ? "" : "none";
+  document.getElementById("status-mode").textContent = tab.type === "markdown" ? "Markdown" : "Plain text";
+  updateStatus();
+  setTimeout(() => ta.focus(), 0);
+
+  function updateStatus() {
+    const v = tab.content;
+    document.getElementById("status-count").textContent = `${v.length} chars · ${v.split("\n").length} lines`;
+  }
+}
+
+// Wire buttons + shortcuts
+document.getElementById("btn-new").onclick = () => newTab("text");
+document.getElementById("btn-new-md").onclick = () => newTab("markdown");
+document.getElementById("btn-clear").onclick = () => {
+  const t = activeTab();
+  if (t && confirm("Clear this tab's contents?")) {
+    t.content = "";
+    render();
+    saveState();
+  }
+};
+document.getElementById("btn-toggle-preview").onclick = () => {
+  state.showPreview = !state.showPreview;
+  render();
+  saveState();
+};
+
+document.addEventListener("keydown", (e) => {
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (e.altKey && !ctrl && !e.shiftKey && e.key.toLowerCase() === "t") {
+    e.preventDefault();
+    e.stopPropagation();
+    newTab("text");
+  } else if (e.altKey && !ctrl && !e.shiftKey && e.key.toLowerCase() === "g") {
+    e.preventDefault();
+    e.stopPropagation();
+    newTab("markdown");
+  } else if (ctrl && e.key.toLowerCase() === "w") {
+    e.preventDefault();
+    if (activeTab()) closeTab(state.activeId);
+  } else if (e.ctrlKey && e.key === "Tab") {
+    e.preventDefault();
+    const idx = state.tabs.findIndex(t => t.id === state.activeId);
+    const next = state.tabs[(idx + 1) % state.tabs.length];
+    setActive(next.id);
+  }
+}, true);
+
+// Flush pending edits immediately if the page is closed/hidden before the debounce fires
+function flushSave() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+window.addEventListener("beforeunload", flushSave);
+document.addEventListener("visibilitychange", () => { if (document.hidden) flushSave(); });
+
+loadState();
+render();
+</script>
+</body>
+</html>

@@ -524,7 +524,8 @@ var toolData = {
   "Information": [
     { "title": "Timezones", "id": "timezone-viewer", "url": "./tools/timezones/timezones.html", "icon": "clock" },
     { "title": "Whats My IP?", "id": "whats-my-ip", "url": "./tools/WhatsMyIP/index.html", "icon": "location" },
-    { "title": "Dictionary", "id": "dictionary", "url": "./tools/dictionary/index.html", "icon": "magnifying-glass" }
+    { "title": "Dictionary", "id": "dictionary", "url": "./tools/dictionary/index.html", "icon": "magnifying-glass" },
+    { "title": "Notepad", "id": "notepad", "url": "./tools/notepad/index.html", "icon": "notepad" }
   ]
 }
 

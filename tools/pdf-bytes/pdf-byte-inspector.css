@@ -180,6 +180,15 @@
   border-radius: 3px;
 }
 
+/* Results tabs wrapper */
+.results {
+  display: none;
+}
+
+.results.show {
+  display: block;
+}
+
 /* Panels grid */
 .panels {
   display: none;
@@ -318,6 +327,33 @@ sp-card.view-panel::part(card) {
 
 .fields-table .ok { color: var(--color-success); }
 .fields-table .bad { color: var(--color-error); }
+
+/* Objects table */
+.objects-scroll {
+  max-height: 600px;
+  overflow: auto;
+}
+
+.objects-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.objects-table td.value {
+  white-space: nowrap;
+}
+
+.objects-table .obj-offset {
+  cursor: pointer;
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.objects-table .obj-offset:hover {
+  color: var(--color-primary-hover, var(--color-primary));
+}
 
 .fields-table tr.section-header td {
   background: var(--color-bg-subtle);

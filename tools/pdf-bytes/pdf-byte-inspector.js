@@ -163,6 +163,7 @@ function onLoaded() {
     `<span><b>Size:</b> ${size.toLocaleString()} bytes (${(size / 1024).toFixed(1)} KB)</span>` +
     `<span><b>Hex:</b> 0x0 – 0x${(size - 1).toString(16).toUpperCase()}</span>`;
 
+  document.getElementById('results').classList.add('show');
   document.getElementById('controls').classList.add('show');
   document.getElementById('panels').classList.add('show');
   document.getElementById('fields-section').classList.add('show');
@@ -179,6 +180,15 @@ function onLoaded() {
   renderBytes();
   renderSelection();
   renderFields();
+  renderObjects();
+}
+
+// ============ Result tab switching ============
+function switchResultTab(index) {
+  const tabs = document.getElementById('result-tabs');
+  if (!tabs || !tabs.shadowRoot) return;
+  const btns = tabs.shadowRoot.querySelectorAll('.tab-btn');
+  if (btns[index]) btns[index].click();
 }
 
 // ============ Byte rendering ============
@@ -538,3 +548,84 @@ function renderFields() {
   }
   tbody.innerHTML = html;
 }
+
+// ============ PDF object table ============
+function parseObjects() {
+  const objs = [];
+  if (!pdfBytes) return objs;
+  const full = bytesToString(pdfBytes);
+  const objRe = /(\d+)\s+(\d+)\s+obj\b/g;
+  let m;
+  while ((m = objRe.exec(full)) !== null) {
+    const startOff = m.index;
+    const bodyStart = objRe.lastIndex;
+    const endIdx = full.indexOf('endobj', bodyStart);
+    const body = endIdx >= 0 ? full.slice(bodyStart, endIdx) : full.slice(bodyStart, Math.min(bodyStart + 4096, full.length));
+    const endOff = endIdx >= 0 ? endIdx + 6 : Math.min(bodyStart + 4096, full.length);
+
+    const typeMatch = body.match(/\/Type\s*\/([A-Za-z0-9]+)/);
+    const subMatch = body.match(/\/Subtype\s*\/([A-Za-z0-9]+)/);
+    const isStream = /(^|[\s>])stream(\r\n|\r|\n)/.test(body);
+    const lenMatch = body.match(/\/Length\s+(\d+\s+\d+\s+R|\d+)/);
+
+    objs.push({
+      num: m[1],
+      gen: m[2],
+      type: typeMatch ? typeMatch[1] : null,
+      subtype: subMatch ? subMatch[1] : null,
+      isStream,
+      length: lenMatch ? lenMatch[1].replace(/\s+/g, ' ') : null,
+      startOff,
+      endOff,
+    });
+    // Skip past this object's body so "N G obj" byte sequences inside stream
+    // data aren't mistaken for real object headers.
+    if (endIdx >= 0) objRe.lastIndex = endOff;
+  }
+  return objs;
+}
+
+function renderObjects() {
+  if (!pdfBytes) return;
+  const tbody = document.getElementById('objects-body');
+  const objs = parseObjects();
+
+  document.getElementById('objects-count').textContent =
+    objs.length ? `${objs.length.toLocaleString()} object${objs.length === 1 ? '' : 's'}` : 'none found';
+
+  if (!objs.length) {
+    tbody.innerHTML = '<tr><td colspan="6"><span class="missing">No indirect objects found (the file may use cross-reference / object streams).</span></td></tr>';
+    return;
+  }
+
+  let html = '';
+  for (const o of objs) {
+    const type = o.type ? escapeHtml('/' + o.type) : '<span class="missing">—</span>';
+    const subtype = o.subtype ? escapeHtml('/' + o.subtype) : '<span class="missing">—</span>';
+    const stream = o.isStream ? '<span class="ok">yes</span>' : '<span class="missing">—</span>';
+    const length = o.length != null ? escapeHtml(o.length) : '<span class="missing">—</span>';
+    const hex = '0x' + o.startOff.toString(16).toUpperCase();
+    html += `<tr>` +
+      `<td>${escapeHtml(o.num + ' ' + o.gen)} obj</td>` +
+      `<td class="value">${type}</td>` +
+      `<td class="value">${subtype}</td>` +
+      `<td class="value">${stream}</td>` +
+      `<td class="value">${length}</td>` +
+      `<td class="value"><span class="obj-offset" data-start="${o.startOff}" data-end="${o.endOff}">${o.startOff} (${hex})</span></td>` +
+      `</tr>`;
+  }
+  tbody.innerHTML = html;
+}
+
+document.getElementById('objects-body').addEventListener('click', e => {
+  const t = e.target.closest('.obj-offset');
+  if (!t || !pdfBytes) return;
+  const s = parseInt(t.dataset.start, 10);
+  const eOff = parseInt(t.dataset.end, 10);
+  viewStart = Math.max(0, s);
+  viewEnd = Math.min(pdfBytes.length, eOff);
+  document.getElementById('start').value = viewStart;
+  document.getElementById('end').value = viewEnd;
+  renderBytes();
+  switchResultTab(2);
+});
