@@ -344,6 +344,13 @@ sp-card.view-panel::part(card) {
   white-space: nowrap;
 }
 
+.objects-table td.valid-cell {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: default;
+}
+
 .objects-table .obj-offset {
   cursor: pointer;
   color: var(--color-primary);
@@ -362,6 +369,211 @@ sp-card.view-panel::part(card) {
   color: var(--color-text-subtle);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* Reachable column + orphan rows */
+.objects-table td.reach-cell { white-space: nowrap; }
+
+.objects-table tr.orphan-row td {
+  background: color-mix(in srgb, var(--color-error) 7%, transparent);
+}
+
+/* ============ Page tree & orphans tab ============ */
+.structure-card {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.structure-body {
+  padding: 12px 14px;
+}
+
+/* Summary stat grid */
+#structure-summary-body {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+}
+
+.stat-value.ok { color: var(--color-success); }
+.stat-value.bad { color: var(--color-error); }
+
+.stat-label {
+  font-size: 11px;
+  color: var(--color-text-subtle);
+  margin-top: 2px;
+}
+
+/* Issues list */
+.issue {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.issue:last-child { margin-bottom: 0; }
+
+.issue-icon { flex-shrink: 0; font-weight: 700; }
+
+.issue-error {
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+  color: var(--color-text);
+}
+.issue-error .issue-icon { color: var(--color-error); }
+
+.issue-warn {
+  background: color-mix(in srgb, var(--color-warning, #b8860b) 12%, transparent);
+  color: var(--color-text);
+}
+.issue-warn .issue-icon { color: var(--color-warning, #b8860b); }
+
+.ok-issue {
+  background: color-mix(in srgb, var(--color-success) 10%, transparent);
+  color: var(--color-text);
+}
+
+.jump-link {
+  cursor: pointer;
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  white-space: nowrap;
+}
+
+/* Tree view */
+.tree-body {
+  padding: 12px 14px;
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.tree-node {
+  white-space: nowrap;
+  padding-left: calc(var(--depth, 0) * 22px);
+  border-radius: var(--radius-sm);
+}
+
+.tree-node:hover { background: var(--color-bg-subtle); }
+
+.tree-twig {
+  color: var(--color-text-disabled);
+  margin-right: 4px;
+}
+
+/* Expand / collapse */
+.tree-toggle {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tree-toggle:not(.leaf)::before { content: '▾'; font-size: 9px; vertical-align: 1px; }
+.tree-item.collapsed > .tree-node > .tree-toggle:not(.leaf)::before { content: '▸'; }
+.tree-item.collapsed > .tree-children { display: none; }
+.tree-toggle.leaf { cursor: default; }
+
+.tree-controls {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.tree-ctl {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 400;
+}
+.tree-ctl:hover { text-decoration: underline; }
+
+.tree-type { color: var(--color-primary); }
+.tree-meta { color: var(--color-text-subtle); }
+
+.tree-edge {
+  color: var(--color-text-subtle);
+  font-weight: 600;
+}
+
+.badge-ref {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--color-bg-subtle);
+  color: var(--color-text-subtle);
+  border: 1px solid var(--color-border);
+}
+
+.badge-infra {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  color: var(--color-primary);
+}
+
+.tree-node .obj-offset {
+  cursor: pointer;
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tree-node .obj-offset:hover { color: var(--color-primary); }
+
+.badge-detached {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 9px;
+  font-size: 10px;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-error) 18%, transparent);
+  color: var(--color-error);
+}
+
+.orphan-section {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-subtle);
+  margin: 12px 0 6px;
+}
+.orphan-section:first-child { margin-top: 0; }
+
+.hdr-path {
+  font-family: var(--font-family-mono);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--color-text-subtle);
 }
 
 /* Scrollbars */

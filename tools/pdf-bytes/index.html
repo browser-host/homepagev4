@@ -73,6 +73,19 @@ JVBERi0xLjQK"></textarea>
               <tbody id="fields-body"></tbody>
             </table>
           </sp-card>
+
+          <sp-card class="view-panel structure-card" id="structure-summary">
+            <div class="panel-header"><span>Structure summary</span></div>
+            <div class="structure-body" id="structure-summary-body"></div>
+          </sp-card>
+
+          <sp-card class="view-panel structure-card" id="structure-issues">
+            <div class="panel-header">
+              <span>Detected issues</span>
+              <span class="meta" id="structure-issues-count"></span>
+            </div>
+            <div class="structure-body" id="structure-issues-body"></div>
+          </sp-card>
         </div>
 
         <div data-label="PDF objects" hidden>
@@ -85,17 +98,33 @@ JVBERi0xLjQK"></textarea>
               <table class="fields-table objects-table">
                 <thead>
                   <tr>
-                    <th style="width: 12%;">Object</th>
-                    <th style="width: 18%;">Type</th>
-                    <th style="width: 18%;">Subtype</th>
-                    <th style="width: 10%;">Stream</th>
-                    <th style="width: 14%;">Length</th>
+                    <th style="width: 10%;">Object</th>
+                    <th style="width: 14%;">Type</th>
+                    <th style="width: 14%;">Subtype</th>
+                    <th style="width: 8%;">Stream</th>
+                    <th style="width: 11%;">Length</th>
+                    <th style="width: 8%;">Valid</th>
+                    <th style="width: 13%;">Reachable</th>
                     <th>Offset</th>
                   </tr>
                 </thead>
                 <tbody id="objects-body"></tbody>
               </table>
             </div>
+          </sp-card>
+        </div>
+
+        <div data-label="Document structure" hidden>
+          <sp-card class="view-panel structure-card" id="structure-tree">
+            <div class="panel-header">
+              <span>Document object tree &nbsp;<span class="hdr-path">/Root → … (forward references; /Parent and /P omitted)</span></span>
+              <span class="tree-controls">
+                <span class="tree-ctl" id="tree-expand">Expand all</span>
+                <span class="tree-ctl" id="tree-collapse">Collapse all</span>
+                <span class="meta" id="structure-tree-count"></span>
+              </span>
+            </div>
+            <div class="tree-body" id="structure-tree-body"></div>
           </sp-card>
         </div>
 

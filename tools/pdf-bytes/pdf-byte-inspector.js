@@ -180,7 +180,10 @@ function onLoaded() {
   renderBytes();
   renderSelection();
   renderFields();
-  renderObjects();
+  const objs = parseObjects();
+  const model = analyzeStructure(objs);
+  renderObjects(objs, model);
+  renderStructure(objs, model);
 }
 
 // ============ Result tab switching ============
@@ -549,6 +552,121 @@ function renderFields() {
   tbody.innerHTML = html;
 }
 
+// ============ Object format validation ============
+// Checks whether an indirect object is structurally well-formed per the PDF
+// spec (ISO 32000): "N G obj" header, an "endobj" terminator, balanced
+// dictionary/array/string delimiters, and — for stream objects — a correctly
+// delimited stream body with a /Length entry.
+function checkObjectFormat(o) {
+  const issues = [];
+
+  // Header object & generation numbers must be valid integers (gen ≥ 0).
+  if (!/^\d+$/.test(o.num) || parseInt(o.num, 10) < 1) {
+    issues.push('Object number must be a positive integer.');
+  }
+  if (!/^\d+$/.test(o.gen)) {
+    issues.push('Generation number must be a non-negative integer.');
+  }
+
+  // Must terminate with "endobj".
+  if (!o.hasEndobj) {
+    issues.push('No "endobj" terminator — object is truncated or runs into the next one.');
+  }
+
+  // For stream objects, the binary stream data must be excluded from the
+  // delimiter-balance scan, and the stream markers checked separately.
+  let scanText = o.body;
+  if (o.isStream) {
+    const sm = /(^|[\s>\]])stream([ \t]*)(\r\n|\n|\r)?/.exec(o.body);
+    if (sm) {
+      const streamKwStart = sm.index + sm[1].length; // index of 's' in "stream"
+      scanText = o.body.slice(0, streamKwStart);
+      // Spec: "stream" shall be followed by CRLF or a single LF — not a lone CR.
+      const eol = sm[3];
+      if (eol === undefined) {
+        issues.push('"stream" keyword is not followed by a newline.');
+      } else if (eol === '\r') {
+        issues.push('"stream" keyword followed by a lone CR (spec requires CRLF or LF).');
+      }
+      if (!/endstream/.test(o.body)) {
+        issues.push('Stream object is missing its "endstream" keyword.');
+      }
+      if (!/\/Length\b/.test(scanText)) {
+        issues.push('Stream dictionary is missing the required /Length entry.');
+      }
+    } else {
+      issues.push('Stream object detected but the "stream" keyword could not be located.');
+    }
+  }
+
+  // A second "N G obj" header inside the dictionary/value region means this
+  // object was never closed (its endobj is missing and we scanned past it).
+  if (/\d+\s+\d+\s+obj\b/.test(scanText)) {
+    issues.push('Another "N G obj" header appears before "endobj" — missing terminator.');
+  }
+
+  issues.push(...checkDelimiterBalance(scanText));
+
+  return { ok: issues.length === 0, issues };
+}
+
+// Scans a chunk of object text and reports unbalanced dictionary (<< >>),
+// array ([ ]) or string delimiters. Lexes literal strings, hex strings and
+// comments so that delimiter characters inside them are not miscounted.
+function checkDelimiterBalance(s) {
+  const issues = [];
+  let dictDepth = 0;
+  let arrDepth = 0;
+  let i = 0;
+  const n = s.length;
+  while (i < n) {
+    const c = s[i];
+    if (c === '%') { // comment: skip to end of line
+      while (i < n && s[i] !== '\n' && s[i] !== '\r') i++;
+      continue;
+    }
+    if (c === '(') { // literal string — parens may nest, \ escapes next char
+      let depth = 1; i++;
+      while (i < n && depth > 0) {
+        const ch = s[i];
+        if (ch === '\\') { i += 2; continue; }
+        if (ch === '(') depth++;
+        else if (ch === ')') depth--;
+        i++;
+      }
+      if (depth !== 0) { issues.push('Unbalanced parentheses in a literal string.'); break; }
+      continue;
+    }
+    if (c === '<') {
+      if (s[i + 1] === '<') { dictDepth++; i += 2; continue; } // dict open
+      i++; // hex string
+      while (i < n && s[i] !== '>') i++;
+      if (i >= n) { issues.push('Unterminated hex string (missing ">").'); break; }
+      i++;
+      continue;
+    }
+    if (c === '>') {
+      if (s[i + 1] === '>') {
+        dictDepth--; i += 2;
+        if (dictDepth < 0) { issues.push('Unbalanced dictionary: an extra ">>".'); break; }
+        continue;
+      }
+      i++;
+      continue;
+    }
+    if (c === '[') { arrDepth++; i++; continue; }
+    if (c === ']') {
+      arrDepth--; i++;
+      if (arrDepth < 0) { issues.push('Unbalanced array: an extra "]".'); break; }
+      continue;
+    }
+    i++;
+  }
+  if (dictDepth > 0) issues.push(`Unbalanced dictionary: ${dictDepth} unclosed "<<".`);
+  if (arrDepth > 0) issues.push(`Unbalanced array: ${arrDepth} unclosed "[".`);
+  return issues;
+}
+
 // ============ PDF object table ============
 function parseObjects() {
   const objs = [];
@@ -568,6 +686,30 @@ function parseObjects() {
     const isStream = /(^|[\s>])stream(\r\n|\r|\n)/.test(body);
     const lenMatch = body.match(/\/Length\s+(\d+\s+\d+\s+R|\d+)/);
 
+    // The dictionary / value region — the body with any binary stream payload
+    // trimmed off so reference scanning never touches compressed bytes.
+    let dictText = body;
+    if (isStream) {
+      const sm = /(^|[\s>\]])stream([ \t]*)(\r\n|\n|\r)?/.exec(body);
+      if (sm) dictText = body.slice(0, sm.index + sm[1].length);
+    }
+    if (dictText.length > 65536) dictText = dictText.slice(0, 65536);
+
+    // Forward (ownership) references only — /Parent and /P are back-references
+    // (page→tree, annotation→page) and must be excluded, or a stray back-link
+    // would make a detached subtree look "reachable" from /Root.
+    const fwdText = dictText
+      .replace(/\/Parent\s+\d+\s+\d+\s+R/g, ' ')
+      .replace(/\/P\s+\d+\s+\d+\s+R(?=[^A-Za-z0-9]|$)/g, ' ');
+
+    const { ok, issues } = checkObjectFormat({
+      num: m[1],
+      gen: m[2],
+      body,
+      hasEndobj: endIdx >= 0,
+      isStream,
+    });
+
     objs.push({
       num: m[1],
       gen: m[2],
@@ -577,6 +719,11 @@ function parseObjects() {
       length: lenMatch ? lenMatch[1].replace(/\s+/g, ' ') : null,
       startOff,
       endOff,
+      valid: ok,
+      issues,
+      dictText,
+      refs: extractRefs(dictText),
+      forwardRefs: extractRefs(fwdText),
     });
     // Skip past this object's body so "N G obj" byte sequences inside stream
     // data aren't mistaken for real object headers.
@@ -585,16 +732,211 @@ function parseObjects() {
   return objs;
 }
 
-function renderObjects() {
+// ============ Reference / structure analysis ============
+// Pulls every "N G R" indirect reference out of a chunk of dictionary text.
+function extractRefs(text) {
+  const refs = [];
+  const re = /(\d+)\s+(\d+)\s+R(?=[^A-Za-z0-9]|$)/g;
+  let m;
+  while ((m = re.exec(text)) !== null) refs.push(m[1] + ' ' + m[2]);
+  return refs;
+}
+
+// First "/Name N G R" reference for a given key, e.g. extractNamedRef(d, 'Root').
+function extractNamedRef(text, name) {
+  const m = text.match(new RegExp('\\/' + name + '\\s+(\\d+)\\s+(\\d+)\\s+R(?=[^A-Za-z0-9]|$)'));
+  return m ? m[1] + ' ' + m[2] : null;
+}
+
+// Refs listed inside a /Kids [ ... ] array.
+function extractKidRefs(text) {
+  const m = text.match(/\/Kids\s*\[([\s\S]*?)\]/);
+  return m ? extractRefs(m[1]) : [];
+}
+
+// Direct integer value of a /Name, e.g. /Count 4. Returns null for indirect refs.
+function extractNamedInt(text, name) {
+  const m = text.match(new RegExp('\\/' + name + '\\s+(\\d+)(?![\\d\\s]*R\\b)'));
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// Builds a reference graph over the parsed objects, walks reachability from the
+// trailer's /Root, then reconstructs the catalog's page tree and flags anything
+// that hangs off a different root (orphaned page trees / pages / annotations).
+function analyzeStructure(objs) {
+  const byKey = new Map();
+  const byNum = new Map();
+  for (const o of objs) {
+    byKey.set(o.num + ' ' + o.gen, o);
+    if (!byNum.has(o.num)) byNum.set(o.num, o);
+  }
+  const keyOf = o => o.num + ' ' + o.gen;
+  const resolve = ref => {
+    if (!ref) return null;
+    if (byKey.has(ref)) return byKey.get(ref);
+    return byNum.get(ref.split(' ')[0]) || null; // tolerate gen mismatch
+  };
+
+  // ---- Seed roots: trailer /Root /Info /Encrypt, else xref-stream, else any catalog ----
+  const trailerOff = findLast('trailer');
+  const trailerDict = trailerOff >= 0 ? readDictionary(trailerOff) : null;
+  let rootRef = trailerDict ? extractNamedRef(trailerDict, 'Root') : null;
+  let infoRef = trailerDict ? extractNamedRef(trailerDict, 'Info') : null;
+  let encryptRef = trailerDict ? extractNamedRef(trailerDict, 'Encrypt') : null;
+  if (!rootRef) {
+    const xref = objs.find(o => o.type === 'XRef');
+    if (xref) {
+      rootRef = extractNamedRef(xref.dictText, 'Root');
+      infoRef = infoRef || extractNamedRef(xref.dictText, 'Info');
+    }
+  }
+  const catalogs = objs.filter(o => o.type === 'Catalog');
+  if (!rootRef && catalogs.length) rootRef = keyOf(catalogs[0]);
+
+  // ---- Reachability walk from the seeds ----
+  const reachable = new Set();
+  const stack = [];
+  for (const seed of [rootRef, infoRef, encryptRef]) {
+    const t = resolve(seed);
+    if (t) stack.push(keyOf(t));
+  }
+  while (stack.length) {
+    const key = stack.pop();
+    if (reachable.has(key)) continue;
+    reachable.add(key);
+    const o = resolve(key);
+    if (!o) continue;
+    for (const r of o.forwardRefs) {
+      const t = resolve(r);
+      if (t && !reachable.has(keyOf(t))) stack.push(keyOf(t));
+    }
+  }
+
+  // Cross-reference streams, object streams and the linearization dict are
+  // structural infrastructure — not referenced from /Root, but not orphans.
+  const isInfra = o => o.type === 'XRef' || o.type === 'ObjStm' || /\/Linearized\b/.test(o.dictText);
+
+  for (const o of objs) {
+    o.reachable = reachable.has(keyOf(o));
+    o.infra = isInfra(o);
+    o.orphan = !o.reachable && !o.infra;
+  }
+
+  // ---- Reconstruct the catalog's page tree ----
+  const issues = [];
+  const inCatalogTree = new Set();
+  const catalog = resolve(rootRef);
+  let pageTree = null;
+  let leafCount = 0;
+
+  if (catalogs.length > 1) {
+    issues.push({ level: 'warn', text: `Multiple /Type /Catalog objects (${catalogs.map(keyOf).join(', ')}). Only ${rootRef} is referenced by the trailer /Root.` });
+  }
+
+  if (catalog) {
+    const pagesRef = extractNamedRef(catalog.dictText, 'Pages');
+    if (!pagesRef) {
+      issues.push({ level: 'error', text: `Catalog ${keyOf(catalog)} has no /Pages entry.` });
+    } else {
+      pageTree = buildPageNode(pagesRef, null, new Set());
+    }
+  } else {
+    issues.push({ level: 'error', text: 'No document catalog (/Root) could be resolved.' });
+  }
+
+  function buildPageNode(ref, parentKey, ancestors) {
+    const o = resolve(ref);
+    if (!o) {
+      issues.push({ level: 'error', text: `Page-tree reference ${ref} does not resolve to any object.` });
+      return { unresolved: ref };
+    }
+    const key = keyOf(o);
+    if (ancestors.has(key)) {
+      issues.push({ level: 'error', text: `Cycle in page tree at ${key}.` });
+      return { obj: o, key, cycle: true, children: [] };
+    }
+    inCatalogTree.add(key);
+
+    const node = { obj: o, key, children: [], parentIssue: null };
+    const parentRef = extractNamedRef(o.dictText, 'Parent');
+    const parentObj = resolve(parentRef);
+    if (parentKey === null) {
+      // root pages node — /Parent should be absent
+    } else if (!parentRef) {
+      node.parentIssue = 'missing /Parent';
+    } else if (!parentObj || keyOf(parentObj) !== parentKey) {
+      node.parentIssue = `/Parent ${parentRef || '—'} ≠ actual parent ${parentKey}`;
+    }
+
+    const kids = extractKidRefs(o.dictText);
+    const isPagesNode = o.type === 'Pages' || (!o.type && kids.length > 0);
+    if (isPagesNode) {
+      node.count = extractNamedInt(o.dictText, 'Count');
+      const nextAnc = new Set(ancestors); nextAnc.add(key);
+      for (const k of kids) node.children.push(buildPageNode(k, key, nextAnc));
+    } else {
+      leafCount++; // a /Page (or leaf) node
+    }
+    return node;
+  }
+
+  // ---- Orphan classification across the whole file ----
+  const orphanPageTrees = objs.filter(o => o.type === 'Pages' && !inCatalogTree.has(keyOf(o)));
+  const orphanPages = objs.filter(o => o.type === 'Page' && !inCatalogTree.has(keyOf(o)));
+
+  for (const o of orphanPageTrees) {
+    issues.push({ level: 'error', text: `Orphaned page tree: ${keyOf(o)} /Pages is never reached from the catalog. Its /Kids are detached from the document.`, jump: o });
+  }
+  for (const o of orphanPages) {
+    issues.push({ level: 'error', text: `Orphaned page: ${keyOf(o)} /Page is not in the catalog's page tree.`, jump: o });
+  }
+
+  // Annotations whose /P (host page) points outside the catalog page tree —
+  // the classic back-reference that breaks readers walking the object graph.
+  const annotSubtypes = /\/Subtype\s*\/(Link|Widget|Popup|Text|FreeText|Line|Square|Circle|Polygon|PolyLine|Highlight|Underline|Squiggly|StrikeOut|Stamp|Caret|Ink|FileAttachment|Sound|Redact)/;
+  for (const o of objs) {
+    if (o.type !== 'Annot' && !annotSubtypes.test(o.dictText)) continue;
+    const pRef = extractNamedRef(o.dictText, 'P');
+    if (!pRef) continue;
+    const p = resolve(pRef);
+    if (!p || !inCatalogTree.has(keyOf(p))) {
+      issues.push({ level: 'error', text: `Annotation ${keyOf(o)} has /P ${pRef} pointing at a page (${p ? keyOf(p) : 'unresolved'}) that is NOT in the catalog page tree.`, jump: o });
+    }
+  }
+
+  // Stray /Annots on a non-page object (e.g. a Bluebeam "melted" content
+  // stream) — the trigger that drags an orphaned tree into a merge output.
+  for (const o of objs) {
+    if (o.type === 'Page') continue;
+    if (/\/Annots\b/.test(o.dictText)) {
+      issues.push({ level: 'warn', text: `${keyOf(o)} (${o.type ? '/' + o.type : o.isStream ? 'stream, no /Type' : 'no /Type'}) carries a stray /Annots array — unusual outside a /Page and a known cause of back-reference walks.`, jump: o });
+    }
+  }
+
+  // ---- /Count sanity at the tree root ----
+  if (pageTree && pageTree.count != null && pageTree.count !== leafCount) {
+    issues.push({ level: 'warn', text: `Root /Pages /Count is ${pageTree.count} but ${leafCount} leaf page${leafCount === 1 ? '' : 's'} were found in the tree.` });
+  }
+
+  const orphanCount = objs.filter(o => o.orphan).length;
+  return {
+    rootRef, infoRef, encryptRef, catalog, pageTree, leafCount,
+    reachableCount: objs.filter(o => o.reachable).length,
+    infraCount: objs.filter(o => o.infra && !o.reachable).length,
+    orphanCount, orphanPageTrees, orphanPages, issues,
+    resolve, keyOf, inCatalogTree,
+  };
+}
+
+function renderObjects(objs, model) {
   if (!pdfBytes) return;
   const tbody = document.getElementById('objects-body');
-  const objs = parseObjects();
 
   document.getElementById('objects-count').textContent =
     objs.length ? `${objs.length.toLocaleString()} object${objs.length === 1 ? '' : 's'}` : 'none found';
 
   if (!objs.length) {
-    tbody.innerHTML = '<tr><td colspan="6"><span class="missing">No indirect objects found (the file may use cross-reference / object streams).</span></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8"><span class="missing">No indirect objects found (the file may use cross-reference / object streams).</span></td></tr>';
     return;
   }
 
@@ -604,28 +946,286 @@ function renderObjects() {
     const subtype = o.subtype ? escapeHtml('/' + o.subtype) : '<span class="missing">—</span>';
     const stream = o.isStream ? '<span class="ok">yes</span>' : '<span class="missing">—</span>';
     const length = o.length != null ? escapeHtml(o.length) : '<span class="missing">—</span>';
+    const valid = o.valid
+      ? '<span class="ok" title="Well-formed: valid header, balanced delimiters, and stream markers all check out.">✓</span>'
+      : `<span class="bad" title="${escapeHtml(o.issues.join(' • '))}">✗</span>`;
+    let reach;
+    if (o.reachable) reach = '<span class="ok" title="Reachable from the trailer /Root by following indirect references.">✓ linked</span>';
+    else if (o.infra) reach = '<span class="missing" title="Cross-reference / object stream / linearization infrastructure — not referenced from /Root, but not an orphan.">infra</span>';
+    else reach = '<span class="bad" title="Not reachable from the document root — this object is orphaned. See the Document structure tab.">⚠ orphan</span>';
     const hex = '0x' + o.startOff.toString(16).toUpperCase();
-    html += `<tr>` +
+    html += `<tr${o.orphan ? ' class="orphan-row"' : ''}>` +
       `<td>${escapeHtml(o.num + ' ' + o.gen)} obj</td>` +
       `<td class="value">${type}</td>` +
       `<td class="value">${subtype}</td>` +
       `<td class="value">${stream}</td>` +
       `<td class="value">${length}</td>` +
+      `<td class="value valid-cell">${valid}</td>` +
+      `<td class="value reach-cell">${reach}</td>` +
       `<td class="value"><span class="obj-offset" data-start="${o.startOff}" data-end="${o.endOff}">${o.startOff} (${hex})</span></td>` +
       `</tr>`;
   }
   tbody.innerHTML = html;
 }
 
-document.getElementById('objects-body').addEventListener('click', e => {
-  const t = e.target.closest('.obj-offset');
-  if (!t || !pdfBytes) return;
-  const s = parseInt(t.dataset.start, 10);
-  const eOff = parseInt(t.dataset.end, 10);
+// ============ Structure summary + issues (Common PDF fields tab) ============
+function renderStructure(objs, model) {
+  if (!pdfBytes) return;
+  const summaryEl = document.getElementById('structure-summary-body');
+  const issuesEl = document.getElementById('structure-issues-body');
+  const issuesCount = document.getElementById('structure-issues-count');
+  const treeEl = document.getElementById('structure-tree-body');
+  const treeCount = document.getElementById('structure-tree-count');
+
+  if (!objs.length) {
+    summaryEl.innerHTML = '<span class="missing">No indirect objects found to analyze.</span>';
+    issuesEl.innerHTML = '';
+    issuesCount.textContent = '';
+    treeEl.innerHTML = '<span class="missing">No indirect objects found (the file may use compressed object streams).</span>';
+    treeCount.textContent = '';
+    return;
+  }
+
+  const m = model;
+  // ---- Summary ----
+  summaryEl.innerHTML =
+    statCard('Total objects', objs.length) +
+    statCard('Reachable from root', m.reachableCount, 'ok') +
+    statCard('Orphaned', m.orphanCount, m.orphanCount ? 'bad' : 'ok') +
+    statCard('Infrastructure', m.infraCount) +
+    statCard('Leaf pages in tree', m.leafCount) +
+    statCard('Root object', m.rootRef ? m.rootRef + ' obj' : '—');
+
+  // ---- Issues ----
+  const errs = m.issues.filter(i => i.level === 'error');
+  const warns = m.issues.filter(i => i.level === 'warn');
+  issuesCount.textContent = m.issues.length
+    ? `${errs.length} error${errs.length === 1 ? '' : 's'}, ${warns.length} warning${warns.length === 1 ? '' : 's'}`
+    : 'none';
+  if (!m.issues.length) {
+    issuesEl.innerHTML = '<div class="issue ok-issue">✓ No structural inconsistencies detected. The page tree is self-consistent and every object is reachable.</div>';
+  } else {
+    issuesEl.innerHTML = m.issues.map(i => {
+      const cls = i.level === 'error' ? 'issue-error' : 'issue-warn';
+      const icon = i.level === 'error' ? '✗' : '⚠';
+      const jump = i.jump
+        ? ` <span class="jump-link" data-start="${i.jump.startOff}" data-end="${i.jump.endOff}">view bytes →</span>`
+        : '';
+      return `<div class="issue ${cls}"><span class="issue-icon">${icon}</span><span>${escapeHtml(i.text)}${jump}</span></div>`;
+    }).join('');
+  }
+
+  // ---- Full object tree (Document structure tab) ----
+  const { mainTree, rootObj, entryTrees, orphanTrees } = buildObjectTrees(objs, model);
+  let html = '';
+  if (mainTree) {
+    html += `<div class="orphan-section">Document root — ${escapeHtml(rootObj.num + ' ' + rootObj.gen)} obj${rootObj.type ? ' /' + escapeHtml(rootObj.type) : ''}</div>`;
+    html += renderGraphNode(mainTree, 0);
+  } else {
+    html += '<div class="orphan-section">No /Root catalog resolved — showing every object subtree</div>';
+  }
+  if (entryTrees.length) {
+    html += '<div class="orphan-section">Other trailer entries</div>';
+    for (const t of entryTrees) html += renderGraphNode(t, 0);
+  }
+  if (orphanTrees.length) {
+    html += '<div class="orphan-section">Orphaned / detached object trees</div>';
+    for (const t of orphanTrees) html += renderGraphNode(t, 0);
+  }
+  treeEl.innerHTML = html;
+  treeCount.textContent = `${objs.length} object${objs.length === 1 ? '' : 's'}` +
+    (m.orphanCount ? `, ${m.orphanCount} orphaned` : '');
+}
+
+function statCard(label, value, kind) {
+  const cls = kind ? ` ${kind}` : '';
+  return `<div class="stat"><div class="stat-value${cls}">${escapeHtml(String(value))}</div><div class="stat-label">${escapeHtml(label)}</div></div>`;
+}
+
+// ============ Full object-graph tree ============
+// Forward (ownership) edges of an object, each labelled with the dictionary key
+// it hangs off of. /Parent and /P are back-references and are excluded so the
+// tree only ever points downward.
+function getChildEdges(o) {
+  const edges = [];
+  const seen = new Set();
+  const add = (label, ref) => { if (!seen.has(ref)) { seen.add(ref); edges.push({ label, ref }); } };
+  const re = /\/([A-Za-z0-9.+\-]+)\s*(?:(\d+)\s+(\d+)\s+R(?=[^A-Za-z0-9]|$)|\[([^\]]*)\])/g;
+  let m;
+  while ((m = re.exec(o.dictText)) !== null) {
+    const name = m[1];
+    if (name === 'Parent' || name === 'P') continue;
+    if (m[2] !== undefined) {
+      add('/' + name, m[2] + ' ' + m[3]);
+    } else if (m[4] !== undefined) {
+      const refs = extractRefs(m[4]);
+      refs.forEach((r, i) => add('/' + name + (refs.length > 1 ? `[${i}]` : ''), r));
+    }
+  }
+  // Catch any forward refs that weren't under a recognised named key.
+  for (const r of o.forwardRefs) add('', r);
+  return edges;
+}
+
+// Depth-first build of one object subtree. A global `visited` set means each
+// object is expanded only once (at its first encounter); later references to it
+// render as a collapsed "↑ ref" leaf, and cycles are broken via `ancestors`.
+function buildGraphNode(edgeLabel, ref, model, visited, ancestors, depth) {
+  const o = model.resolve(ref);
+  if (!o) return { unresolved: ref, edgeLabel };
+  const key = model.keyOf(o);
+  if (ancestors.has(key)) return { obj: o, key, edgeLabel, cycle: true, children: [] };
+  if (visited.has(key)) return { obj: o, key, edgeLabel, repeat: true, children: [] };
+  visited.add(key);
+  ancestors.add(key);
+  const node = { obj: o, key, edgeLabel, children: [] };
+  if (depth < 250) {
+    for (const e of getChildEdges(o)) {
+      node.children.push(buildGraphNode(e.label, e.ref, model, visited, ancestors, depth + 1));
+    }
+  } else {
+    node.truncated = true;
+  }
+  ancestors.delete(key);
+  return node;
+}
+
+function buildObjectTrees(objs, model) {
+  const visited = new Set();
+  const ancestors = new Set();
+
+  // Entry point = the real document root object (the catalog that /Root names).
+  const rootObj = model.resolve(model.rootRef);
+  const mainTree = rootObj ? buildGraphNode('', model.keyOf(rootObj), model, visited, ancestors, 0) : null;
+
+  // Other things the trailer points at that don't live under the catalog.
+  const entryTrees = [];
+  for (const [label, ref] of [['/Info', model.infoRef], ['/Encrypt', model.encryptRef]]) {
+    const t = model.resolve(ref);
+    if (t && !visited.has(model.keyOf(t))) {
+      entryTrees.push(buildGraphNode(label + ' (trailer)', model.keyOf(t), model, visited, ancestors, 0));
+    }
+  }
+
+  // Whatever is left is unreachable from the root. Show each unreached object
+  // that nothing-else-unreached points to as the head of its own tree.
+  const unreached = objs.filter(o => !visited.has(model.keyOf(o)));
+  const referenced = new Set();
+  for (const o of unreached) {
+    for (const e of getChildEdges(o)) {
+      const t = model.resolve(e.ref);
+      if (t && !visited.has(model.keyOf(t))) referenced.add(model.keyOf(t));
+    }
+  }
+  const orphanTrees = [];
+  for (const o of unreached) {
+    const key = model.keyOf(o);
+    if (referenced.has(key) || visited.has(key)) continue;
+    const node = buildGraphNode('', key, model, visited, ancestors, 0);
+    node.orphanRoot = !o.infra;
+    node.infraRoot = o.infra;
+    orphanTrees.push(node);
+  }
+  // Stragglers trapped in a cycle with no external entry.
+  for (const o of objs) {
+    const key = model.keyOf(o);
+    if (visited.has(key)) continue;
+    const node = buildGraphNode('', key, model, visited, ancestors, 0);
+    node.orphanRoot = !o.infra;
+    node.infraRoot = o.infra;
+    orphanTrees.push(node);
+  }
+
+  return { mainTree, rootObj, entryTrees, orphanTrees };
+}
+
+function renderGraphNode(node, depth) {
+  const hasChildren = node.children && node.children.length > 0;
+  const toggle = `<span class="tree-toggle${hasChildren ? '' : ' leaf'}"></span>`;
+  const edge = node.edgeLabel ? `<span class="tree-edge">${escapeHtml(node.edgeLabel)}</span> ` : '';
+
+  let label;
+  if (node.unresolved) {
+    label = `<span class="bad">⚠ ${escapeHtml(node.unresolved)} R — unresolved (not present, e.g. inside an object stream)</span>`;
+  } else {
+    const o = node.obj;
+    const bits = [];
+    if (o.subtype) bits.push('/' + o.subtype);
+    const cnt = extractNamedInt(o.dictText, 'Count'); if (cnt != null) bits.push('/Count ' + cnt);
+    const mb = (o.dictText.match(/\/MediaBox\s*\[([^\]]+)\]/) || [])[1]; if (mb) bits.push('/MediaBox [' + mb.trim() + ']');
+    if (o.isStream) bits.push('stream');
+
+    const flags = [];
+    if (node.repeat) flags.push('<span class="badge-ref" title="Already shown above; expanded at its first occurrence.">↑ ref</span>');
+    if (node.cycle) flags.push('<span class="badge-ref bad" title="Reference cycle — this object is an ancestor of itself.">↻ cycle</span>');
+    if (node.truncated) flags.push('<span class="bad">… depth limit</span>');
+    if (node.orphanRoot) flags.push('<span class="badge-detached" title="Not reachable from the document root.">orphan</span>');
+    if (node.infraRoot) flags.push('<span class="badge-infra" title="Cross-reference / object stream / linearization infrastructure.">infrastructure</span>');
+
+    label =
+      `<span class="obj-offset" data-start="${o.startOff}" data-end="${o.endOff}">${escapeHtml(o.num + ' ' + o.gen)} obj</span> ` +
+      `<span class="tree-type">${o.type ? '/' + escapeHtml(o.type) : ''}</span> ` +
+      `<span class="tree-meta">${escapeHtml(bits.join('  '))}</span> ${flags.join(' ')}`;
+  }
+
+  let childrenHtml = '';
+  if (hasChildren) {
+    childrenHtml = '<div class="tree-children">' +
+      node.children.map(c => renderGraphNode(c, depth + 1)).join('') + '</div>';
+  }
+  return `<div class="tree-item">` +
+    `<div class="tree-node" style="--depth:${depth}">${toggle}${edge}${label}</div>` +
+    childrenHtml +
+    `</div>`;
+}
+
+// Shared: jump to a byte range from any clickable element with data-start/data-end.
+function jumpToBytes(el) {
+  const s = parseInt(el.dataset.start, 10);
+  const eOff = parseInt(el.dataset.end, 10);
   viewStart = Math.max(0, s);
   viewEnd = Math.min(pdfBytes.length, eOff);
+  // Auto-select the jumped-to range so it's highlighted and decoded to text.
+  selStart = viewStart;
+  selEnd = Math.max(viewStart, viewEnd - 1);
   document.getElementById('start').value = viewStart;
   document.getElementById('end').value = viewEnd;
   renderBytes();
-  switchResultTab(2);
+  renderSelection();
+  switchResultTab(3); // "Raw bytes & text" is the 4th result tab
+}
+
+document.getElementById('objects-body').addEventListener('click', e => {
+  const t = e.target.closest('.obj-offset');
+  if (!t || !pdfBytes) return;
+  jumpToBytes(t);
+});
+
+document.getElementById('structure-issues-body').addEventListener('click', e => {
+  const t = e.target.closest('.obj-offset, .jump-link');
+  if (!t || !pdfBytes) return;
+  jumpToBytes(t);
+});
+
+const treeBody = document.getElementById('structure-tree-body');
+treeBody.addEventListener('click', e => {
+  // Clicking a node's caret (or anywhere on a row that isn't a link) toggles it.
+  const toggle = e.target.closest('.tree-toggle');
+  if (toggle && !toggle.classList.contains('leaf')) {
+    toggle.closest('.tree-item').classList.toggle('collapsed');
+    return;
+  }
+  const t = e.target.closest('.obj-offset, .jump-link');
+  if (!t || !pdfBytes) return;
+  jumpToBytes(t);
+});
+
+document.getElementById('tree-expand').addEventListener('click', () => {
+  treeBody.querySelectorAll('.tree-item.collapsed').forEach(el => el.classList.remove('collapsed'));
+});
+document.getElementById('tree-collapse').addEventListener('click', () => {
+  // Collapse every node that actually has children, leaving the roots visible.
+  treeBody.querySelectorAll('.tree-item').forEach(el => {
+    if (el.querySelector(':scope > .tree-children')) el.classList.add('collapsed');
+  });
 });
