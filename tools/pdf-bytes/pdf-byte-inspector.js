@@ -322,6 +322,65 @@ document.getElementById('clear-sel').addEventListener('click', () => {
   renderSelection();
 });
 
+// ============ Copy buttons ============
+// Builds just the hex bytes for a range — space-separated, wrapped 16 per line.
+// No offset column, no ASCII gutter. Paste-able straight back into the hex parser.
+function formatHexBytes(start, end) {
+  const ROW = 16;
+  let out = '';
+  for (let row = start; row < end; row += ROW) {
+    const rowEnd = Math.min(row + ROW, end);
+    let hex = '';
+    for (let i = row; i < rowEnd; i++) {
+      hex += pdfBytes[i].toString(16).padStart(2, '0').toUpperCase() + ' ';
+    }
+    out += hex.trimEnd() + '\n';
+  }
+  return out;
+}
+
+async function copyText(text, btn) {
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch {}
+    document.body.removeChild(ta);
+  }
+  flashCopied(btn);
+}
+
+function flashCopied(btn) {
+  if (!btn) return;
+  if (btn.dataset.label === undefined) btn.dataset.label = btn.textContent;
+  btn.textContent = 'Copied!';
+  clearTimeout(btn._flashTimer);
+  btn._flashTimer = setTimeout(() => { btn.textContent = btn.dataset.label; }, 1200);
+}
+
+document.getElementById('copy-sel-bytes').addEventListener('click', e => {
+  if (!pdfBytes || selStart < 0) return;
+  const lo = Math.min(selStart, selEnd);
+  const hi = Math.max(selStart, selEnd);
+  copyText(formatHexBytes(lo, hi + 1), e.currentTarget);
+});
+
+document.getElementById('copy-all-bytes').addEventListener('click', e => {
+  if (!pdfBytes) return;
+  copyText(formatHexBytes(0, pdfBytes.length), e.currentTarget);
+});
+
+document.getElementById('copy-all-text').addEventListener('click', e => {
+  if (!pdfBytes || selStart < 0) return;
+  copyText(document.getElementById('text').textContent, e.currentTarget);
+});
+
 // ============ PDF field detection ============
 function bytesToString(slice) {
   let s = '';

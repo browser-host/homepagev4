@@ -104,6 +104,22 @@
     </div>
   </sp-modal>
 
+  <!-- ── Link Palette (keyboard quick-launcher, built on sp-modal) ── -->
+  <sp-modal id="link-palette" class="palette" aria-label="Jump to link">
+    <div class="palette__search">
+      <sp-icon class="palette__search-icon" name="magnifying-glass" size="sm"></sp-icon>
+      <input id="palette-input" class="palette__input" type="text" autocomplete="off"
+             placeholder="jump to a link…" />
+    </div>
+    <div id="palette-results" class="palette__results"></div>
+    <div class="palette__hint" slot="footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>ctrl</kbd>+<kbd>↵</kbd> new tab</span>
+      <span><kbd>esc</kbd> close</span>
+    </div>
+  </sp-modal>
+
   <!-- ── Modal: Organize Quick Links ── -->
   <sp-modal id="organize-modal" heading="Organize Links" style="--sp-modal-width: 560px;">
     <p class="org-instructions">Drag categories and links to reorder. Links can be moved between categories.</p>
@@ -121,6 +137,8 @@
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-card.js'
     import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-modal.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-tag.js'
+    import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-icon.js'
   </script>
 </body>
 </html>

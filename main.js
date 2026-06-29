@@ -7,6 +7,7 @@ function mainSetup() {
   setupSearchBar();
   createLinksList();
   createToolsLinks();
+  setupLinkPalette();
 
   modal = document.getElementById('modal');
   organizeModal = document.getElementById('organize-modal');
@@ -133,6 +134,160 @@ function createLinksList() {
 
     container.appendChild(groupEl);
   });
+}
+
+
+
+// * * * * * * * * * * * * *
+//       Link Palette
+// * * * * * * * * * * * * *
+
+let paletteResults = [];   // currently rendered, filtered results
+let paletteSelected = 0;   // index of highlighted result
+
+function setupLinkPalette() {
+  const palette = document.getElementById('link-palette');
+  const input = document.getElementById('palette-input');
+
+  // Global: Ctrl/Cmd+K opens the palette
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      openLinkPalette();
+    }
+  });
+
+  input.addEventListener('input', () => renderPaletteResults(input.value));
+
+  input.addEventListener('keydown', (e) => {
+    switch (e.key) {
+      case 'Escape':
+        e.preventDefault();
+        closeLinkPalette();
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        movePaletteSelection(1);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        movePaletteSelection(-1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        openSelectedPaletteLink(e.ctrlKey || e.metaKey);
+        break;
+    }
+  });
+}
+
+function getAllLinks() {
+  const linksData = JSON.parse(localStorage.getItem('links-data')) || {};
+  const all = [];
+  Object.entries(linksData).forEach(([category, links]) => {
+    (links || []).forEach(link => {
+      all.push({ title: link.title, href: link.href, category });
+    });
+  });
+  return all;
+}
+
+function openLinkPalette() {
+  const palette = document.getElementById('link-palette');
+  const input = document.getElementById('palette-input');
+  palette.show();
+  input.value = '';
+  renderPaletteResults('');
+  // Wait for sp-modal to flip to display:flex before focusing
+  requestAnimationFrame(() => input.focus());
+}
+
+function closeLinkPalette() {
+  document.getElementById('link-palette').close();
+}
+
+function renderPaletteResults(query) {
+  const container = document.getElementById('palette-results');
+  const q = query.trim().toLowerCase();
+
+  let results = getAllLinks();
+  if (q) {
+    results = results.filter(l =>
+      l.title.toLowerCase().includes(q) ||
+      l.href.toLowerCase().includes(q) ||
+      l.category.toLowerCase().includes(q)
+    );
+  }
+  results.sort((a, b) => a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+
+  paletteResults = results;
+  paletteSelected = 0;
+
+  container.innerHTML = '';
+
+  if (results.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'palette__empty';
+    empty.textContent = q ? 'No matching links' : 'No links yet';
+    container.appendChild(empty);
+    return;
+  }
+
+  results.forEach((link, i) => {
+    const card = document.createElement('sp-card');
+    card.className = 'palette-card';
+    card.setAttribute('interactive', '');
+    card.setAttribute('size', 'sm');
+    card.dataset.index = i;
+    if (i === paletteSelected) card.classList.add('is-active');
+
+    card.innerHTML = `
+      <div class="palette-card__row">
+        <span class="palette-card__name">${escapeHtml(link.title)}</span>
+        <span class="palette-card__url">${escapeHtml(link.href)}</span>
+        <sp-tag color="primary" class="palette-card__category">${escapeHtml(link.category)}</sp-tag>
+      </div>
+    `;
+
+    card.addEventListener('mousemove', () => setPaletteSelection(i));
+    card.addEventListener('click', (e) => openPaletteLinkAt(i, e.ctrlKey || e.metaKey));
+
+    container.appendChild(card);
+  });
+}
+
+function setPaletteSelection(index) {
+  const cards = document.querySelectorAll('#palette-results .palette-card');
+  if (!cards.length) return;
+  paletteSelected = Math.max(0, Math.min(index, cards.length - 1));
+  cards.forEach((c, i) => c.classList.toggle('is-active', i === paletteSelected));
+}
+
+function movePaletteSelection(delta) {
+  const cards = document.querySelectorAll('#palette-results .palette-card');
+  if (!cards.length) return;
+  setPaletteSelection(paletteSelected + delta);
+  cards[paletteSelected].scrollIntoView({ block: 'nearest' });
+}
+
+function openSelectedPaletteLink(newTab) {
+  const link = paletteResults[paletteSelected];
+  if (!link) return;
+  closeLinkPalette();
+  window.open(link.href, newTab ? '_blank' : '_self');
+}
+
+function openPaletteLinkAt(index, newTab) {
+  setPaletteSelection(index);
+  openSelectedPaletteLink(newTab);
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 

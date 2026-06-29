@@ -145,14 +145,21 @@ JVBERi0xLjQK"></textarea>
             <sp-card class="view-panel">
               <div class="panel-header">
                 <span>Raw bytes</span>
-                <span class="meta" id="byte-range"></span>
+                <span class="panel-actions">
+                  <sp-button size="sm" variant="outline" id="copy-sel-bytes">Copy selection</sp-button>
+                  <sp-button size="sm" variant="outline" id="copy-all-bytes">Copy all</sp-button>
+                  <span class="meta" id="byte-range"></span>
+                </span>
               </div>
               <div class="byte-view" id="bytes"></div>
             </sp-card>
             <sp-card class="view-panel">
               <div class="panel-header">
                 <span>Selection as plain text</span>
-                <span class="meta" id="sel-info">no selection</span>
+                <span class="panel-actions">
+                  <sp-button size="sm" variant="outline" id="copy-all-text">Copy all</sp-button>
+                  <span class="meta" id="sel-info">no selection</span>
+                </span>
               </div>
               <div class="text-view" id="text"><span class="placeholder">Click and drag across bytes on the left to convert them to plain text here.</span></div>
             </sp-card>

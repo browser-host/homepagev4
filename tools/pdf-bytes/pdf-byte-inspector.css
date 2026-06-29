@@ -238,6 +238,12 @@ sp-card.view-panel::part(card) {
   font-weight: 400;
 }
 
+.panel-header .panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .byte-view,
 .text-view {
   height: 380px;
