@@ -415,11 +415,91 @@ function createOrganizeLinkEl(link) {
     <span class="org-drag-handle">
       <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="3" cy="2" r="1.2" fill="currentColor"/><circle cx="9" cy="2" r="1.2" fill="currentColor"/><circle cx="3" cy="6" r="1.2" fill="currentColor"/><circle cx="9" cy="6" r="1.2" fill="currentColor"/><circle cx="3" cy="10" r="1.2" fill="currentColor"/><circle cx="9" cy="10" r="1.2" fill="currentColor"/></svg>
     </span>
-    <span class="org-link__title">${link.title}</span>
-    <span class="org-link__href">${link.href}</span>
+    <span class="org-link__title">${escapeHtml(link.title)}</span>
+    <span class="org-link__href">${escapeHtml(link.href)}</span>
+    <span class="org-link__actions">
+      <button type="button" class="org-link__btn" data-action="edit" title="Edit">✎</button>
+      <button type="button" class="org-link__btn" data-action="delete" title="Delete">✕</button>
+    </span>
   `;
 
+  el.querySelector('[data-action="edit"]').addEventListener('click', () => {
+    if (el.classList.contains('is-editing')) el.querySelector('.org-link__input').blur();
+    else startEditOrganizeLink(el);
+  });
+  el.querySelector('[data-action="delete"]').addEventListener('click', () => {
+    el.remove();
+    updateOrganizeCounts();
+  });
+  el.addEventListener('dblclick', () => startEditOrganizeLink(el));
+
   return el;
+}
+
+// Swap the title/href spans for inputs; Enter or blur commits, Escape cancels
+function startEditOrganizeLink(el) {
+  if (el.classList.contains('is-editing')) return;
+  el.classList.add('is-editing');
+  el.draggable = false;
+
+  const titleSpan = el.querySelector('.org-link__title');
+  const hrefSpan = el.querySelector('.org-link__href');
+
+  const titleInput = document.createElement('input');
+  titleInput.className = 'input org-link__input org-link__input--title';
+  titleInput.value = el.dataset.title;
+  titleInput.placeholder = 'title';
+
+  const hrefInput = document.createElement('input');
+  hrefInput.className = 'input org-link__input org-link__input--href';
+  hrefInput.value = el.dataset.href;
+  hrefInput.placeholder = 'url';
+
+  titleSpan.replaceWith(titleInput);
+  hrefSpan.replaceWith(hrefInput);
+  titleInput.focus();
+  titleInput.select();
+
+  const finish = (commit) => {
+    if (!el.classList.contains('is-editing')) return;
+    el.classList.remove('is-editing');
+    el.draggable = true;
+
+    const title = titleInput.value.trim();
+    const href = hrefInput.value.trim();
+    if (commit && title && href) {
+      el.dataset.title = title;
+      el.dataset.href = href;
+    }
+    titleSpan.textContent = el.dataset.title;
+    hrefSpan.textContent = el.dataset.href;
+    titleInput.replaceWith(titleSpan);
+    hrefInput.replaceWith(hrefSpan);
+  };
+
+  [titleInput, hrefInput].forEach(input => {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        finish(true);
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation(); // don't close the modal
+        finish(false);
+      }
+    });
+    // Commit when focus leaves the row (moving between the two inputs is fine)
+    input.addEventListener('blur', (e) => {
+      if (!el.contains(e.relatedTarget)) finish(true);
+    });
+  });
+}
+
+function updateOrganizeCounts() {
+  document.querySelectorAll('.org-category').forEach(cat => {
+    const count = cat.querySelector('.org-category__count');
+    if (count) count.textContent = cat.querySelectorAll('.org-link').length;
+  });
 }
 
 // ── Category drag ──
@@ -616,11 +696,7 @@ function onLinkDrop(e) {
   }
 
   // Update count on both affected categories
-  document.querySelectorAll('.org-category').forEach(cat => {
-    const count = cat.querySelector('.org-category__count');
-    const linkCount = cat.querySelectorAll('.org-link').length;
-    if (count) count.textContent = linkCount;
-  });
+  updateOrganizeCounts();
 
   // Re-attach drag events to this list
   setupLinkDrag(list);
@@ -632,6 +708,9 @@ function onLinkDrop(e) {
 // ── Save organized data ──
 
 function saveOrganized() {
+  // Commit any link still being edited
+  document.querySelector('.org-link.is-editing .org-link__input')?.blur();
+
   const list = document.getElementById('organize-list');
   const categories = list.querySelectorAll('.org-category');
   const newLinksData = {};
