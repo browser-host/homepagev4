@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diff</title>
+
+<link id="sp-theme-tokens" rel="stylesheet">
+<link id="sp-theme-active" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components@latest/atomics.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: var(--font-family-base, "Segoe UI", Tahoma, sans-serif);
+    font-size: 13px;
+    background: var(--color-bg-subtle, #f3f3f3);
+    color: var(--color-text, #1f1f1f);
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    --del-bg: rgba(248, 81, 73, 0.12);
+    --del-num: rgba(248, 81, 73, 0.22);
+    --del-word: rgba(248, 81, 73, 0.40);
+    --ins-bg: rgba(46, 160, 67, 0.12);
+    --ins-num: rgba(46, 160, 67, 0.22);
+    --ins-word: rgba(46, 160, 67, 0.40);
+    --empty-bg: repeating-linear-gradient(135deg, transparent 0 6px, rgba(127, 127, 127, 0.07) 6px 12px);
+  }
+  sp-nav { flex-shrink: 0; }
+  .menubar {
+    display: flex;
+    align-items: center;
+    background: var(--color-bg-subtle, #f9f9f9);
+    border-bottom: 1px solid var(--color-border, #d4d4d4);
+    padding: 4px 8px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .menubar label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 8px;
+    color: var(--color-text-subtle, #555);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* ── Inputs ── */
+  .inputs {
+    display: flex;
+    height: 32vh;
+    min-height: 80px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--color-border, #d4d4d4);
+    resize: vertical;
+    overflow: hidden;
+  }
+  .inputs.hidden { display: none; }
+  .pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  .pane + .pane { border-left: 1px solid var(--color-border, #d4d4d4); }
+  .pane__label {
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--color-text-subtle, #555);
+    background: var(--color-bg-subtle, #f3f3f3);
+    border-bottom: 1px solid var(--color-border, #e0e0e0);
+  }
+  textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 8px 12px;
+    font-family: var(--font-family-mono, Consolas, "Courier New", monospace);
+    font-size: 13px;
+    line-height: 1.5;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #1f1f1f);
+    white-space: pre;
+  }
+
+  /* ── Diff output ── */
+  .output {
+    flex: 1;
+    overflow: auto;
+    background: var(--color-bg, #ffffff);
+    min-height: 0;
+  }
+  table.diff {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-family: var(--font-family-mono, Consolas, "Courier New", monospace);
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  table.diff col.num { width: 52px; }
+  table.diff col.sign { width: 18px; }
+  table.diff td {
+    padding: 0 8px;
+    vertical-align: top;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  td.num {
+    text-align: right;
+    color: var(--color-text-subtle, #888);
+    user-select: none;
+    padding: 0 8px 0 4px;
+  }
+  td.sign {
+    padding: 0;
+    text-align: center;
+    user-select: none;
+    color: var(--color-text-subtle, #888);
+  }
+  td.num.right { border-left: 1px solid var(--color-border, #e0e0e0); }
+
+  td.del { background: var(--del-bg); }
+  td.num.del { background: var(--del-num); }
+  td.ins { background: var(--ins-bg); }
+  td.num.ins { background: var(--ins-num); }
+  td.empty { background: var(--empty-bg); }
+  span.del-word { background: var(--del-word); border-radius: 2px; }
+  span.ins-word { background: var(--ins-word); border-radius: 2px; }
+
+  tr.fold td {
+    background: var(--color-bg-subtle, #f1f8ff);
+    color: var(--color-text-subtle, #666);
+    cursor: pointer;
+    padding: 2px 12px;
+    user-select: none;
+  }
+  tr.fold:hover td { color: var(--color-primary, #0078d4); }
+
+  .empty-state {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-disabled, #999);
+    font-size: 14px;
+  }
+  .statusbar {
+    background: var(--color-bg-subtle, #f3f3f3);
+    border-top: 1px solid var(--color-border, #d4d4d4);
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--color-text-subtle, #555);
+    display: flex;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+  .stat-ins { color: #2ea043; font-weight: 600; }
+  .stat-del { color: #f85149; font-weight: 600; }
+</style>
+</head>
+<body>
+  <sp-theme></sp-theme>
+  <sp-nav>
+    <span slot="brand">Diff</span>
+  </sp-nav>
+  <div class="menubar">
+    <sp-button variant="ghost" size="sm" id="btn-swap">Swap</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-clear">Clear</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-toggle-inputs">Hide Inputs</sp-button>
+    <label><input type="checkbox" id="opt-ws"> Ignore whitespace</label>
+    <label><input type="checkbox" id="opt-full"> Show full file</label>
+  </div>
+  <div class="inputs" id="inputs">
+    <div class="pane">
+      <div class="pane__label">Original</div>
+      <textarea id="left" spellcheck="false" placeholder="Paste original text..."></textarea>
+    </div>
+    <div class="pane">
+      <div class="pane__label">Changed</div>
+      <textarea id="right" spellcheck="false" placeholder="Paste changed text..."></textarea>
+    </div>
+  </div>
+  <div class="output" id="output"></div>
+  <div class="statusbar">
+    <span id="status-stats">—</span>
+    <span style="flex:1"></span>
+    <span id="status-lines">0 → 0 lines</span>
+  </div>
+
+<script type="module">
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+</script>
+<script>
+const STORE_KEY = "diff-state-v1";
+const CONTEXT = 3;
+let state = { left: "", right: "", ignoreWs: false, full: false, hideInputs: false };
+let saveTimer = null, diffTimer = null;
+const expanded = new Set(); // fold ids the user clicked open
+
+const leftEl = document.getElementById("left");
+const rightEl = document.getElementById("right");
+const output = document.getElementById("output");
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Myers O(ND) diff over two arrays of comparable keys.
+// Returns ops: { t: "eq"|"del"|"ins", a: indexInA, b: indexInB }
+function myers(a, b) {
+  const n = a.length, m = b.length;
+
+  // Trim common prefix/suffix so the core search only sees the changed middle
+  let start = 0;
+  while (start < n && start < m && a[start] === b[start]) start++;
+  let endA = n, endB = m;
+  while (endA > start && endB > start && a[endA - 1] === b[endB - 1]) { endA--; endB--; }
+
+  const A = a.slice(start, endA), B = b.slice(start, endB);
+  const N = A.length, M = B.length, max = N + M;
+  const off = max + 1;
+  const v = new Int32Array(2 * max + 3);
+  const trace = [];
+  let D = 0;
+
+  outer:
+  for (let d = 0; d <= max; d++) {
+    trace.push(v.slice(off - d, off + d + 1)); // k in [-d, d], indexed by k + d
+    for (let k = -d; k <= d; k += 2) {
+      let x = (k === -d || (k !== d && v[off + k - 1] < v[off + k + 1])) ? v[off + k + 1] : v[off + k - 1] + 1;
+      let y = x - k;
+      while (x < N && y < M && A[x] === B[y]) { x++; y++; }
+      v[off + k] = x;
+      if (x >= N && y >= M) { D = d; break outer; }
+    }
+  }
+
+  const mid = [];
+  let x = N, y = M;
+  for (let d = D; d > 0; d--) {
+    const pv = trace[d];
+    const get = k => pv[k + d];
+    const k = x - y;
+    const prevK = (k === -d || (k !== d && get(k - 1) < get(k + 1))) ? k + 1 : k - 1;
+    const prevX = get(prevK), prevY = prevX - prevK;
+    while (x > prevX && y > prevY) { mid.push({ t: "eq", a: x - 1, b: y - 1 }); x--; y--; }
+    if (x === prevX) mid.push({ t: "ins", b: prevY });
+    else mid.push({ t: "del", a: prevX });
+    x = prevX; y = prevY;
+  }
+  while (x > 0 && y > 0) { mid.push({ t: "eq", a: x - 1, b: y - 1 }); x--; y--; }
+  mid.reverse();
+
+  const ops = [];
+  for (let i = 0; i < start; i++) ops.push({ t: "eq", a: i, b: i });
+  for (const op of mid) {
+    ops.push({ t: op.t, a: op.a !== undefined ? op.a + start : undefined, b: op.b !== undefined ? op.b + start : undefined });
+  }
+  for (let i = 0; i < n - endA; i++) ops.push({ t: "eq", a: endA + i, b: endB + i });
+  return ops;
+}
+
+// Word-level highlight for a changed line pair
+function wordDiff(oldLine, newLine) {
+  const tok = s => s.match(/\s+|\w+|[^\w\s]/g) || [];
+  const a = tok(oldLine), b = tok(newLine);
+  if (a.length * b.length > 250000) return [escapeHtml(oldLine), escapeHtml(newLine)];
+  const ops = myers(a, b);
+  let left = "", right = "";
+  for (const op of ops) {
+    if (op.t === "eq") { left += escapeHtml(a[op.a]); right += escapeHtml(b[op.b]); }
+    else if (op.t === "del") left += `<span class="del-word">${escapeHtml(a[op.a])}</span>`;
+    else right += `<span class="ins-word">${escapeHtml(b[op.b])}</span>`;
+  }
+  return [left, right];
+}
+
+// Turn ops into side-by-side rows, pairing runs of deletions with runs of insertions
+function buildRows(ops, a, b) {
+  const rows = [];
+  let i = 0;
+  while (i < ops.length) {
+    if (ops[i].t === "eq") {
+      rows.push({ t: "eq", a: ops[i].a, b: ops[i].b });
+      i++;
+      continue;
+    }
+    const dels = [], inss = [];
+    while (i < ops.length && ops[i].t !== "eq") {
+      if (ops[i].t === "del") dels.push(ops[i].a); else inss.push(ops[i].b);
+      i++;
+    }
+    const len = Math.max(dels.length, inss.length);
+    for (let j = 0; j < len; j++) rows.push({ t: "chg", a: dels[j], b: inss[j] });
+  }
+  return rows;
+}
+
+function renderDiff() {
+  const aText = state.left.replace(/\r\n?/g, "\n");
+  const bText = state.right.replace(/\r\n?/g, "\n");
+  const a = aText === "" ? [] : aText.split("\n");
+  const b = bText === "" ? [] : bText.split("\n");
+  document.getElementById("status-lines").textContent = `${a.length} → ${b.length} lines`;
+
+  if (a.length === 0 && b.length === 0) {
+    output.innerHTML = '<div class="empty-state">Paste text into both panes to compare</div>';
+    document.getElementById("status-stats").textContent = "—";
+    return;
+  }
+
+  const key = state.ignoreWs ? (s => s.trim().replace(/\s+/g, " ")) : (s => s);
+  const ops = myers(a.map(key), b.map(key));
+  const rows = buildRows(ops, a, b);
+
+  let adds = 0, dels = 0;
+  for (const op of ops) { if (op.t === "ins") adds++; else if (op.t === "del") dels++; }
+  document.getElementById("status-stats").innerHTML = (adds || dels)
+    ? `<span class="stat-ins">+${adds}</span> &nbsp;<span class="stat-del">−${dels}</span>`
+    : "No differences";
+
+  // Mark which equal rows are within CONTEXT of a change
+  const visible = new Array(rows.length).fill(state.full);
+  if (!state.full) {
+    rows.forEach((r, idx) => {
+      if (r.t !== "eq") {
+        for (let j = Math.max(0, idx - CONTEXT); j <= Math.min(rows.length - 1, idx + CONTEXT); j++) visible[j] = true;
+      }
+    });
+  }
+
+  let html = '<table class="diff"><colgroup><col class="num"><col class="sign"><col><col class="num"><col class="sign"><col></colgroup><tbody>';
+  let idx = 0;
+  while (idx < rows.length) {
+    if (!visible[idx]) {
+      const foldStart = idx;
+      while (idx < rows.length && !visible[idx]) idx++;
+      const foldId = `${rows[foldStart].a}:${rows[foldStart].b}`;
+      if (expanded.has(foldId)) {
+        for (let j = foldStart; j < idx; j++) html += rowHtml(rows[j], a, b);
+      } else {
+        const n = idx - foldStart;
+        const r = rows[foldStart];
+        html += `<tr class="fold" data-fold="${foldId}"><td colspan="6">⋯ @@ -${r.a + 1} +${r.b + 1} @@ &nbsp;${n} unchanged line${n === 1 ? "" : "s"} (click to expand)</td></tr>`;
+      }
+      continue;
+    }
+    html += rowHtml(rows[idx], a, b);
+    idx++;
+  }
+  html += "</tbody></table>";
+  output.innerHTML = html;
+}
+
+function rowHtml(r, a, b) {
+  if (r.t === "eq") {
+    const text = escapeHtml(b[r.b]);
+    return `<tr><td class="num">${r.a + 1}</td><td class="sign"></td><td>${escapeHtml(a[r.a])}</td>` +
+           `<td class="num right">${r.b + 1}</td><td class="sign"></td><td>${text}</td></tr>`;
+  }
+  let lHtml, rHtml;
+  if (r.a !== undefined && r.b !== undefined) [lHtml, rHtml] = wordDiff(a[r.a], b[r.b]);
+  const left = r.a !== undefined
+    ? `<td class="num del">${r.a + 1}</td><td class="sign del">-</td><td class="del">${lHtml ?? escapeHtml(a[r.a])}</td>`
+    : `<td class="num empty"></td><td class="sign empty"></td><td class="empty"></td>`;
+  const right = r.b !== undefined
+    ? `<td class="num right ins">${r.b + 1}</td><td class="sign ins">+</td><td class="ins">${rHtml ?? escapeHtml(b[r.b])}</td>`
+    : `<td class="num right empty"></td><td class="sign empty"></td><td class="empty"></td>`;
+  return `<tr>${left}${right}</tr>`;
+}
+
+output.addEventListener("click", (e) => {
+  const fold = e.target.closest("tr.fold");
+  if (!fold) return;
+  expanded.add(fold.dataset.fold);
+  renderDiff();
+});
+
+function scheduleDiff() {
+  if (diffTimer) clearTimeout(diffTimer);
+  diffTimer = setTimeout(renderDiff, 150);
+}
+
+function saveState() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+  }, 250);
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) state = Object.assign(state, JSON.parse(raw));
+  } catch (e) { /* no saved state */ }
+  leftEl.value = state.left;
+  rightEl.value = state.right;
+  document.getElementById("opt-ws").checked = state.ignoreWs;
+  document.getElementById("opt-full").checked = state.full;
+  applyInputsVisibility();
+}
+
+function applyInputsVisibility() {
+  document.getElementById("inputs").classList.toggle("hidden", state.hideInputs);
+  document.getElementById("btn-toggle-inputs").textContent = state.hideInputs ? "Show Inputs" : "Hide Inputs";
+}
+
+function onInput() {
+  state.left = leftEl.value;
+  state.right = rightEl.value;
+  expanded.clear();
+  scheduleDiff();
+  saveState();
+}
+
+[leftEl, rightEl].forEach(ta => {
+  ta.addEventListener("input", onInput);
+  ta.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const s = ta.selectionStart, en = ta.selectionEnd;
+      ta.value = ta.value.slice(0, s) + "\t" + ta.value.slice(en);
+      ta.selectionStart = ta.selectionEnd = s + 1;
+      onInput();
+    }
+  });
+});
+
+document.getElementById("btn-swap").onclick = () => {
+  [leftEl.value, rightEl.value] = [rightEl.value, leftEl.value];
+  onInput();
+};
+document.getElementById("btn-clear").onclick = () => {
+  leftEl.value = "";
+  rightEl.value = "";
+  onInput();
+  leftEl.focus();
+};
+document.getElementById("btn-toggle-inputs").onclick = () => {
+  state.hideInputs = !state.hideInputs;
+  applyInputsVisibility();
+  saveState();
+};
+document.getElementById("opt-ws").onchange = (e) => { state.ignoreWs = e.target.checked; renderDiff(); saveState(); };
+document.getElementById("opt-full").onchange = (e) => { state.full = e.target.checked; renderDiff(); saveState(); };
+
+function flushSave() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) {}
+}
+window.addEventListener("beforeunload", flushSave);
+document.addEventListener("visibilitychange", () => { if (document.hidden) flushSave(); });
+
+loadState();
+renderDiff();
+</script>
+</body>
+</html>

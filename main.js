@@ -753,13 +753,15 @@ var toolData = {
     { "title": "Base64 to Mp3", "id": "base64", "url": "./tools/base64 to mp3/base64.html", "icon": "computer-download" },
     { "title": "Clipboard to Image", "id": "clipboard-to-image", "url": "./tools/clipboard to image/clipboardToImage.html", "icon": "clipboard" },
     { "title": "Cyberchef", "id": "cyberchef", "url": "./tools/CyberChef_v10.19.4/CyberChef_v10.19.4.html", "icon": "code" },
-    { "title": "PDF Bytes", "id": "pdf-bytes", "url": "./tools/pdf-bytes/index.html", "icon": "pdf" }
+    { "title": "PDF Bytes", "id": "pdf-bytes", "url": "./tools/pdf-bytes/index.html", "icon": "pdf" },
+    { "title": "Diff", "id": "diff", "url": "./tools/diff/index.html", "icon": "diff" }
   ],
   "Information": [
     { "title": "Timezones", "id": "timezone-viewer", "url": "./tools/timezones/timezones.html", "icon": "clock" },
     { "title": "Whats My IP?", "id": "whats-my-ip", "url": "./tools/WhatsMyIP/index.html", "icon": "location" },
     { "title": "Dictionary", "id": "dictionary", "url": "./tools/dictionary/index.html", "icon": "magnifying-glass" },
-    { "title": "Notepad", "id": "notepad", "url": "./tools/notepad/index.html", "icon": "notepad" }
+    { "title": "Notepad", "id": "notepad", "url": "./tools/notepad/index.html", "icon": "notepad" },
+    { "title": "Viewport Size", "id": "viewport", "url": "./tools/viewport/index.html", "icon": "viewport" }
   ]
 }
 

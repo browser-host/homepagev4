@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viewport Size</title>
+
+<link id="sp-theme-tokens" rel="stylesheet">
+<link id="sp-theme-active" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components@latest/atomics.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: var(--font-family-base, "Segoe UI", Tahoma, sans-serif);
+    background: var(--color-bg-subtle, #f3f3f3);
+    color: var(--color-text, #1f1f1f);
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  sp-nav { flex-shrink: 0; }
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  .size {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 48px;
+  }
+  .dim {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .dim__label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-subtle, #555);
+  }
+  .dim__value {
+    font-size: 72px;
+    font-variant-numeric: tabular-nums;
+  }
+  .times {
+    font-size: 48px;
+    color: var(--color-text-subtle, #555);
+  }
+</style>
+</head>
+<body>
+  <sp-theme></sp-theme>
+  <sp-nav>
+    <span slot="brand">Viewport Size</span>
+  </sp-nav>
+  <div class="main">
+  <div class="size">
+    <div class="dim">
+      <span class="dim__value" id="width">0</span>
+      <span class="dim__label">Width</span>
+    </div>
+    <span class="times">&times;</span>
+    <div class="dim">
+      <span class="dim__value" id="height">0</span>
+      <span class="dim__label">Height</span>
+    </div>
+  </div>
+  <sp-button variant="secondary" id="btn-copy">Copy</sp-button>
+  </div>
+
+<script type="module">
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+</script>
+
+<script>
+  const widthEl = document.getElementById('width');
+  const heightEl = document.getElementById('height');
+
+  function updateSize() {
+    widthEl.textContent = window.innerWidth;
+    heightEl.textContent = window.innerHeight;
+  }
+
+  const copyBtn = document.getElementById('btn-copy');
+  let copyTimeout;
+
+  copyBtn.addEventListener('click', async () => {
+    await navigator.clipboard.writeText(`${window.innerWidth} x ${window.innerHeight}`);
+    copyBtn.textContent = 'Copied!';
+    clearTimeout(copyTimeout);
+    copyTimeout = setTimeout(() => copyBtn.textContent = 'Copy', 1500);
+  });
+
+  window.addEventListener('resize', updateSize);
+  updateSize();
+</script>
+</body>
+</html>
