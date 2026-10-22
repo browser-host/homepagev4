@@ -769,6 +769,7 @@ var toolData = {
     { "title": "Color Picker", "id": "color-picker", "url": "./tools/color picker/index.html", "icon": "color-picker" },
     { "title": "Gradients", "id": "gradients", "url": "./tools/background gradient gen/gradients.html", "icon": "picture" },
     { "title": "Grid Maker", "id": "grid-maker", "url": "./tools/GridMaker/grid-maker.html", "icon": "picture" },
+    { "title": "Paint", "id": "paint", "url": "./tools/paint/index.html", "icon": "paint" },
   ],
   "Data Transformation": [
     { "title": "Base64 to Mp3", "id": "base64", "url": "./tools/base64 to mp3/base64.html", "icon": "computer-download" },

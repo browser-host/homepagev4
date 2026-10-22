@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paint</title>
+
+<link id="sp-theme-tokens" rel="stylesheet">
+<link id="sp-theme-active" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components@latest/atomics.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    font-family: var(--font-family-base, "Segoe UI", Tahoma, sans-serif);
+    font-size: 13px;
+    background: var(--color-bg-subtle, #f3f3f3);
+    color: var(--color-text, #1f1f1f);
+    overflow: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  sp-nav { flex-shrink: 0; }
+  .menubar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    background: var(--color-bg-subtle, #f9f9f9);
+    border-bottom: 1px solid var(--color-border, #d4d4d4);
+    padding: 4px 8px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .menubar label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 4px;
+    color: var(--color-text-subtle, #555);
+    cursor: pointer;
+    user-select: none;
+  }
+  .sep {
+    width: 1px;
+    align-self: stretch;
+    margin: 2px 6px;
+    background: var(--color-border, #d4d4d4);
+  }
+
+  /* ── Tool buttons ── */
+  .tool-btn {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-text, #1f1f1f);
+    cursor: pointer;
+  }
+  .tool-btn svg { width: 18px; height: 18px; }
+  .tool-btn:hover { background: rgba(127, 127, 127, 0.14); }
+  .tool-btn.active {
+    border-color: var(--color-primary, #0078d4);
+    background: color-mix(in srgb, var(--color-primary, #0078d4) 14%, transparent);
+    color: var(--color-primary, #0078d4);
+  }
+
+  /* ── Colors / size ── */
+  .swatches { display: flex; align-items: center; gap: 4px; }
+  .swatch {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+  }
+  .swatch.active { outline: 2px solid var(--color-primary, #0078d4); outline-offset: 2px; }
+  input[type="color"] {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  input[type="range"] { width: 90px; }
+  .size-val {
+    min-width: 22px;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-subtle, #555);
+  }
+  input[type="number"] {
+    width: 62px;
+    padding: 2px 4px;
+    border: 1px solid var(--color-border, #d4d4d4);
+    border-radius: 4px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #1f1f1f);
+    font: inherit;
+  }
+
+  /* ── Workspace ── */
+  .workspace {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    display: flex;
+    padding: 24px 40px 40px 24px;
+    background:
+      repeating-conic-gradient(rgba(127, 127, 127, 0.06) 0 25%, transparent 0 50%) 0 0 / 20px 20px,
+      var(--color-bg-subtle, #ebebeb);
+  }
+  .workspace.dragover { outline: 2px dashed var(--color-primary, #0078d4); outline-offset: -6px; }
+  .stage {
+    position: relative;
+    margin: auto;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  }
+  .stage canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  #overlay { touch-action: none; }
+  .text-editor {
+    position: absolute;
+    z-index: 2;
+    margin: 0;
+    padding: 0;
+    border: 1px dashed #0078d4;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    white-space: pre;
+    background: transparent;
+    line-height: 1.25;
+  }
+  .rz {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--color-bg, #fff);
+    border: 1px solid var(--color-border-strong, #888);
+    border-radius: 2px;
+  }
+  .rz-e { right: -14px; top: calc(50% - 5px); cursor: ew-resize; }
+  .rz-s { bottom: -14px; left: calc(50% - 5px); cursor: ns-resize; }
+  .rz-se { right: -14px; bottom: -14px; cursor: nwse-resize; }
+
+  .statusbar {
+    background: var(--color-bg-subtle, #f3f3f3);
+    border-top: 1px solid var(--color-border, #d4d4d4);
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--color-text-subtle, #555);
+    display: flex;
+    gap: 20px;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  #status-msg { color: var(--color-primary, #0078d4); font-weight: 600; }
+  #status-zoom { cursor: pointer; }
+</style>
+</head>
+<body>
+  <sp-theme></sp-theme>
+  <sp-nav>
+    <span slot="brand">Paint</span>
+  </sp-nav>
+  <div class="menubar">
+    <button class="tool-btn" data-tool="select" title="Select / move (V)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7.904 17.563a1.2 1.2 0 0 0 2.228 .308l2.09 -3.093l4.907 4.907a1.067 1.067 0 0 0 1.509 0l.524 -.524a1.067 1.067 0 0 0 0 -1.509l-4.907 -4.907l3.113 -2.09a1.2 1.2 0 0 0 -.309 -2.228l-13.582 -3.904l3.904 13.563z"/></svg>
+    </button>
+    <div class="sep"></div>
+    <button class="tool-btn" data-tool="pencil" title="Pencil (P)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M13.5 6.5l4 4"/></svg>
+    </button>
+    <button class="tool-btn" data-tool="highlighter" title="Highlighter (H)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4"/><path d="M12.5 5.5l4 4"/><path d="M4.5 13.5l4 4"/><path d="M21 15v4h-8l4 -4z"/></svg>
+    </button>
+    <div class="sep"></div>
+    <button class="tool-btn" data-tool="rect" title="Rectangle (R) — Shift for square">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="6" width="16" height="12" rx="1"/></svg>
+    </button>
+    <button class="tool-btn" data-tool="ellipse" title="Ellipse (O) — Shift for circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="8" ry="6"/></svg>
+    </button>
+    <button class="tool-btn" data-tool="line" title="Line (L) — Shift to snap 45°">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5"/></svg>
+    </button>
+    <button class="tool-btn" data-tool="arrow" title="Arrow (A) — Shift to snap 45°">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19L19 5"/><path d="M10 5h9v9"/></svg>
+    </button>
+    <button class="tool-btn" data-tool="text" title="Text (T) — double-click text to edit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5h12"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>
+    </button>
+    <label title="Fill rectangles and ellipses"><input type="checkbox" id="opt-fill"> Fill</label>
+    <div class="sep"></div>
+    <div class="swatches" id="swatches"></div>
+    <input type="color" id="color" title="Custom color">
+    <div class="sep"></div>
+    <input type="range" id="size" min="1" max="60" title="Thickness">
+    <span class="size-val" id="size-val"></span>
+    <div class="sep"></div>
+    <label title="Canvas width">W <input type="number" id="canvas-w" min="16" max="10000"></label>
+    <label title="Canvas height">H <input type="number" id="canvas-h" min="16" max="10000"></label>
+    <span style="flex:1"></span>
+    <sp-button variant="ghost" size="sm" id="btn-undo" title="Undo (Ctrl+Z)">Undo</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-redo" title="Redo (Ctrl+Y)">Redo</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-insert" title="Insert image from file">Insert Image</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-fit" title="Shrink/grow the canvas to fit its contents">Fit to Content</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-clear">Clear</sp-button>
+    <sp-button variant="ghost" size="sm" id="btn-save" title="Download as PNG">Save PNG</sp-button>
+    <sp-button variant="primary" size="sm" id="btn-copy" title="Copy canvas to clipboard (Ctrl+C)">Copy</sp-button>
+    <input type="file" id="file-input" accept="image/*" multiple hidden>
+  </div>
+  <div class="workspace" id="workspace">
+    <div class="stage" id="stage">
+      <canvas id="canvas"></canvas>
+      <canvas id="overlay"></canvas>
+      <div class="rz rz-e" data-dir="e" title="Drag to resize canvas"></div>
+      <div class="rz rz-s" data-dir="s" title="Drag to resize canvas"></div>
+      <div class="rz rz-se" data-dir="se" title="Drag to resize canvas"></div>
+    </div>
+  </div>
+  <div class="statusbar">
+    <span id="status-size">—</span>
+    <span id="status-pos"></span>
+    <span id="status-msg"></span>
+    <span style="flex:1"></span>
+    <span>Ctrl+V to paste an image · Ctrl+scroll to zoom</span>
+    <span id="status-zoom" title="Click to reset zoom">100%</span>
+  </div>
+
+<script type="module">
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+</script>
+<script>
+const COLORS = ["#1f1f1f", "#ffffff", "#e03131", "#f08c00", "#fcc419", "#2f9e44", "#1971c2", "#9c36b5"];
+const MAX_HISTORY = 100;
+const SHAPES = ["rect", "ellipse", "line", "arrow"];
+const FONT = '"Segoe UI", Tahoma, sans-serif';
+const LINE_HEIGHT = 1.25;
+
+// Items are kept as objects (not pixels) so images and drawings can be moved/resized later.
+//   stroke:        { type, hl, color, width, pts: [x0, y0, x1, y1, ...] }
+//   line / arrow:  { type, color, width, pts: [x1, y1, x2, y2] }
+//   rect / ellipse:{ type, color, width, fill, x, y, w, h }
+//   image:         { type, img, x, y, w, h }
+//   text:          { type, text, color, size, x, y, w, h }  (w/h measured from text + size)
+let W = 800, H = 600, zoom = 1;
+let items = [], nextId = 1, selectedId = null, draft = null, drag = null;
+let tool = "pencil";
+let lastPointer = null; // canvas coords while hovering the canvas
+const settings = {
+  pencil:      { color: "#e03131", size: 3 },
+  highlighter: { color: "#fcc419", size: 20 },
+  shape:       { color: "#e03131", size: 3, fill: false },
+  text:        { color: "#e03131", size: 24 },
+};
+let editor = null; // { ta, item, isNew } while a text box is being edited
+let history = [], hIndex = -1;
+let msgTimer = null;
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const overlay = document.getElementById("overlay");
+const octx = overlay.getContext("2d");
+const stage = document.getElementById("stage");
+const workspace = document.getElementById("workspace");
+const sizeEl = document.getElementById("size");
+const colorEl = document.getElementById("color");
+const fillEl = document.getElementById("opt-fill");
+const wEl = document.getElementById("canvas-w");
+const hEl = document.getElementById("canvas-h");
+
+// ── Geometry ──
+
+function rawBounds(it) {
+  if (it.pts) {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < it.pts.length; i += 2) {
+      x0 = Math.min(x0, it.pts[i]); x1 = Math.max(x1, it.pts[i]);
+      y0 = Math.min(y0, it.pts[i + 1]); y1 = Math.max(y1, it.pts[i + 1]);
+    }
+    return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+  }
+  return { x: it.x, y: it.y, w: it.w, h: it.h };
+}
+
+// Bounds including stroke thickness (and arrow heads) — what actually gets painted.
+function paintBounds(it) {
+  const b = rawBounds(it);
+  const pad = it.type === "image" || it.type === "text" ? 0 : it.type === "arrow" ? arrowHead(it.width) : it.width / 2;
+  return { x: b.x - pad, y: b.y - pad, w: b.w + pad * 2, h: b.h + pad * 2 };
+}
+
+// Linearly maps an item from one bounding box onto another (used for move + resize).
+function mapItem(o, from, to) {
+  const sx = from.w ? to.w / from.w : 1, sy = from.h ? to.h / from.h : 1;
+  const fx = x => to.x + (x - from.x) * sx, fy = y => to.y + (y - from.y) * sy;
+  const n = { ...o };
+  if (o.pts) n.pts = o.pts.map((v, i) => i % 2 ? fy(v) : fx(v));
+  else { n.x = fx(o.x); n.y = fy(o.y); n.w = o.w * sx; n.h = o.h * sy; }
+  if (o.type === "text") {
+    n.size = Math.max(4, o.size * sy);
+    Object.assign(n, measureText(n));
+  }
+  return n;
+}
+
+function measureText(it) {
+  const lines = it.text.split("\n");
+  ctx.save();
+  ctx.font = `${it.size}px ${FONT}`;
+  const w = Math.max(...lines.map(l => ctx.measureText(l).width));
+  ctx.restore();
+  return { w: Math.max(w, 1), h: lines.length * it.size * LINE_HEIGHT };
+}
+
+function cloneItem(o) {
+  return o.pts ? { ...o, pts: o.pts.slice() } : { ...o };
+}
+
+function distToSeg(px, py, x1, y1, x2, y2) {
+  const dx = x2 - x1, dy = y2 - y1;
+  const len2 = dx * dx + dy * dy;
+  let t = len2 ? ((px - x1) * dx + (py - y1) * dy) / len2 : 0;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(px - (x1 + t * dx), py - (y1 + t * dy));
+}
+
+function hitItem(it, p) {
+  const tol = 4 / zoom;
+  if (it.pts) {
+    const r = it.width / 2 + tol, pts = it.pts;
+    if (pts.length === 2) return Math.hypot(p.x - pts[0], p.y - pts[1]) <= r;
+    for (let i = 0; i < pts.length - 2; i += 2) {
+      if (distToSeg(p.x, p.y, pts[i], pts[i + 1], pts[i + 2], pts[i + 3]) <= r) return true;
+    }
+    return false;
+  }
+  const b = paintBounds(it);
+  return p.x >= b.x - tol && p.x <= b.x + b.w + tol && p.y >= b.y - tol && p.y <= b.y + b.h + tol;
+}
+
+function hitTest(p) {
+  for (let i = items.length - 1; i >= 0; i--) if (hitItem(items[i], p)) return items[i];
+  return null;
+}
+
+function corners(b) {
+  return [[b.x, b.y], [b.x + b.w, b.y], [b.x + b.w, b.y + b.h], [b.x, b.y + b.h]];
+}
+
+function hitHandle(it, p) {
+  const tol = 6 / zoom;
+  const cs = corners(rawBounds(it));
+  for (let i = 0; i < 4; i++) {
+    if (Math.abs(p.x - cs[i][0]) <= tol && Math.abs(p.y - cs[i][1]) <= tol) return i;
+  }
+  return null;
+}
+
+function arrowHead(width) {
+  return Math.max(10, width * 4);
+}
+
+// ── Rendering ──
+
+function strokePath(c, pts) {
+  c.beginPath();
+  c.moveTo(pts[0], pts[1]);
+  if (pts.length === 2) {
+    c.lineTo(pts[0] + 0.01, pts[1]); // single click → round dot
+  } else {
+    // Quadratic curves through segment midpoints for smooth freehand lines
+    for (let i = 2; i < pts.length - 2; i += 2) {
+      c.quadraticCurveTo(pts[i], pts[i + 1], (pts[i] + pts[i + 2]) / 2, (pts[i + 1] + pts[i + 3]) / 2);
+    }
+    c.lineTo(pts[pts.length - 2], pts[pts.length - 1]);
+  }
+  c.stroke();
+}
+
+function drawItem(c, it) {
+  c.save();
+  c.strokeStyle = c.fillStyle = it.color;
+  c.lineWidth = it.width;
+  c.lineCap = c.lineJoin = "round";
+  switch (it.type) {
+    case "image":
+      c.drawImage(it.img, it.x, it.y, it.w, it.h);
+      break;
+    case "text":
+      if (editor && editor.item.id === it.id) break; // the textarea shows it while editing
+      c.font = `${it.size}px ${FONT}`;
+      c.textBaseline = "top";
+      it.text.split("\n").forEach((line, i) => {
+        // Center the glyphs within each line box, matching the textarea's line-height
+        c.fillText(line, it.x, it.y + i * it.size * LINE_HEIGHT + it.size * (LINE_HEIGHT - 1) / 2);
+      });
+      break;
+    case "stroke":
+      if (it.hl) {
+        c.globalAlpha = 0.45;
+        c.globalCompositeOperation = "multiply";
+      }
+      strokePath(c, it.pts);
+      break;
+    case "rect":
+      if (it.fill) c.fillRect(it.x, it.y, it.w, it.h);
+      else { c.lineJoin = "miter"; c.strokeRect(it.x, it.y, it.w, it.h); }
+      break;
+    case "ellipse":
+      c.beginPath();
+      c.ellipse(it.x + it.w / 2, it.y + it.h / 2, it.w / 2, it.h / 2, 0, 0, Math.PI * 2);
+      it.fill ? c.fill() : c.stroke();
+      break;
+    case "line":
+      strokePath(c, it.pts);
+      break;
+    case "arrow": {
+      const [x1, y1, x2, y2] = it.pts;
+      const a = Math.atan2(y2 - y1, x2 - x1), head = arrowHead(it.width);
+      const len = Math.hypot(x2 - x1, y2 - y1);
+      // Stop the shaft inside the head so the round cap doesn't poke past the tip
+      const shaft = Math.max(0, len - head * 0.6);
+      c.beginPath();
+      c.moveTo(x1, y1);
+      c.lineTo(x1 + Math.cos(a) * shaft, y1 + Math.sin(a) * shaft);
+      c.stroke();
+      c.beginPath();
+      c.moveTo(x2, y2);
+      c.lineTo(x2 - head * Math.cos(a - 0.45), y2 - head * Math.sin(a - 0.45));
+      c.lineTo(x2 - head * Math.cos(a + 0.45), y2 - head * Math.sin(a + 0.45));
+      c.closePath();
+      c.lineWidth = 1;
+      c.fill();
+      c.stroke();
+      break;
+    }
+  }
+  c.restore();
+}
+
+function render() {
+  ctx.globalCompositeOperation = "source-over";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, H);
+  items.forEach(it => drawItem(ctx, it));
+  if (draft) drawItem(ctx, draft);
+}
+
+function renderOverlay() {
+  octx.clearRect(0, 0, W, H);
+  const sel = getSelected();
+  if (!sel) return;
+  const b = rawBounds(sel);
+  const lw = 1 / zoom;
+  octx.save();
+  octx.lineWidth = lw;
+  octx.strokeStyle = "#0078d4";
+  octx.setLineDash([4 / zoom, 3 / zoom]);
+  octx.strokeRect(b.x, b.y, b.w, b.h);
+  octx.setLineDash([]);
+  const hs = 8 / zoom;
+  octx.fillStyle = "#ffffff";
+  corners(b).forEach(([x, y]) => {
+    octx.fillRect(x - hs / 2, y - hs / 2, hs, hs);
+    octx.strokeRect(x - hs / 2, y - hs / 2, hs, hs);
+  });
+  octx.restore();
+}
+
+function renderAll() {
+  render();
+  renderOverlay();
+}
+
+// ── Canvas size / zoom ──
+
+function setSize(w, h) {
+  W = Math.max(16, Math.min(10000, Math.round(w)));
+  H = Math.max(16, Math.min(10000, Math.round(h)));
+  canvas.width = overlay.width = W;
+  canvas.height = overlay.height = H;
+  wEl.value = W;
+  hEl.value = H;
+  document.getElementById("status-size").textContent = `${W} × ${H}`;
+  applyZoom();
+  renderAll();
+}
+
+function applyZoom() {
+  stage.style.width = W * zoom + "px";
+  stage.style.height = H * zoom + "px";
+  document.getElementById("status-zoom").textContent = Math.round(zoom * 100) + "%";
+  canvas.style.imageRendering = zoom > 1 ? "pixelated" : "auto";
+  if (editor) layoutEditor();
+}
+
+function setZoom(z) {
+  zoom = Math.max(0.1, Math.min(8, z));
+  applyZoom();
+  renderOverlay();
+}
+
+// ── History ──
+
+function snapshot() {
+  return { W, H, items: items.map(cloneItem) };
+}
+
+function commit() {
+  history = history.slice(0, hIndex + 1);
+  history.push(snapshot());
+  if (history.length > MAX_HISTORY) history.shift();
+  hIndex = history.length - 1;
+  updateHistoryButtons();
+}
+
+function restore(s) {
+  items = s.items.map(cloneItem);
+  if (!getSelected()) selectedId = null;
+  setSize(s.W, s.H);
+  syncControls();
+  updateHistoryButtons();
+}
+
+function undo() { if (hIndex > 0) restore(history[--hIndex]); }
+function redo() { if (hIndex < history.length - 1) restore(history[++hIndex]); }
+
+function updateHistoryButtons() {
+  document.getElementById("btn-undo").toggleAttribute("disabled", hIndex <= 0);
+  document.getElementById("btn-redo").toggleAttribute("disabled", hIndex >= history.length - 1);
+}
+
+// ── Selection / tools / controls ──
+
+function getSelected() {
+  return selectedId == null ? null : items.find(it => it.id === selectedId) || null;
+}
+
+function replaceItem(n) {
+  const i = items.findIndex(it => it.id === n.id);
+  if (i >= 0) items[i] = n;
+}
+
+function settingsKey(t) {
+  return t === "pencil" || t === "highlighter" || t === "text" ? t : SHAPES.includes(t) ? "shape" : null;
+}
+
+function setTool(t) {
+  tool = t;
+  if (t !== "select") selectedId = null;
+  document.querySelectorAll(".tool-btn").forEach(b => b.classList.toggle("active", b.dataset.tool === t));
+  overlay.style.cursor = t === "select" ? "default" : "crosshair";
+  syncControls();
+  renderOverlay();
+}
+
+// Controls reflect the active tool's settings, or the selected item when using Select.
+function currentStyle() {
+  if (tool === "select") {
+    const sel = getSelected();
+    if (sel && sel.type !== "image") return { color: sel.color, size: sel.type === "text" ? sel.size : sel.width, fill: !!sel.fill };
+    return null;
+  }
+  return settings[settingsKey(tool)];
+}
+
+function syncControls() {
+  const s = currentStyle();
+  if (!s) return;
+  const isText = tool === "text" || getSelected()?.type === "text";
+  sizeEl.max = isText ? 150 : 60;
+  sizeEl.title = isText ? "Font size" : "Thickness";
+  sizeEl.value = s.size;
+  document.getElementById("size-val").textContent = s.size;
+  colorEl.value = s.color;
+  fillEl.checked = !!s.fill;
+  document.querySelectorAll(".swatch").forEach(sw => sw.classList.toggle("active", sw.dataset.color === s.color));
+}
+
+// Applies a style change to the tool settings, or to the selected item (committing to history).
+function applyStyle(patch, final = true) {
+  if (tool === "select") {
+    const sel = getSelected();
+    if (!sel || sel.type === "image") return;
+    const n = { ...sel };
+    if ("color" in patch) n.color = patch.color;
+    if ("size" in patch) {
+      if (n.type === "text") Object.assign(n, { size: patch.size }, measureText({ ...n, size: patch.size }));
+      else n.width = patch.size;
+    }
+    if ("fill" in patch && (n.type === "rect" || n.type === "ellipse")) n.fill = patch.fill;
+    replaceItem(n);
+    renderAll();
+    if (final) commit();
+  } else {
+    Object.assign(settings[settingsKey(tool)], patch);
+    if (editor) styleEditor();
+  }
+  syncControls();
+}
+
+// ── Text editing ──
+// A textarea floats over the canvas while typing; the item is drawn on the canvas once committed.
+
+function openEditor(item, isNew) {
+  const ta = document.createElement("textarea");
+  ta.className = "text-editor";
+  ta.spellcheck = false;
+  ta.value = item.text;
+  editor = { ta, item, isNew, orig: { color: item.color, size: item.size } };
+  // Controls drive the text being edited
+  Object.assign(settings.text, { color: item.color, size: item.size });
+  syncControls();
+  stage.appendChild(ta);
+  styleEditor();
+  ta.addEventListener("input", layoutEditor);
+  ta.addEventListener("keydown", e => {
+    if (e.key === "Escape" || (e.key === "Enter" && (e.ctrlKey || e.metaKey))) {
+      e.preventDefault();
+      closeEditor();
+    }
+  });
+  render();
+  // Focus after the current pointerdown finishes, or the canvas click would steal it back
+  setTimeout(() => {
+    ta.focus();
+    ta.select();
+    ta.addEventListener("blur", closeEditor);
+  }, 0);
+}
+
+function styleEditor() {
+  const { ta, item } = editor;
+  Object.assign(item, { color: settings.text.color, size: settings.text.size });
+  ta.style.color = item.color;
+  layoutEditor();
+}
+
+function layoutEditor() {
+  const { ta, item } = editor;
+  const m = measureText({ ...item, text: ta.value || " " });
+  ta.style.font = `${item.size * zoom}px/${LINE_HEIGHT} ${FONT}`;
+  ta.style.left = item.x * zoom - 1 + "px";
+  ta.style.top = item.y * zoom - 1 + "px";
+  ta.style.width = (m.w + item.size) * zoom + "px";
+  ta.style.height = m.h * zoom + 2 + "px";
+}
+
+function closeEditor() {
+  if (!editor) return;
+  const { ta, item, isNew, orig } = editor;
+  editor = null;
+  const restyled = item.color !== orig.color || item.size !== orig.size;
+  ta.remove();
+  const text = ta.value.replace(/\s+$/, "");
+  if (!text) {
+    if (!isNew) {
+      items = items.filter(it => it.id !== item.id);
+      if (selectedId === item.id) selectedId = null;
+      commit();
+    }
+  } else if (isNew || restyled || text !== item.text) {
+    const n = { ...item, text };
+    Object.assign(n, measureText(n));
+    if (isNew) items.push(n); else replaceItem(n);
+    commit();
+  }
+  renderAll();
+}
+
+function makeShape(a, b, shift, id) {
+  const s = settings.shape;
+  const base = { id, type: tool, color: s.color, width: s.size };
+  if (tool === "rect" || tool === "ellipse") {
+    let w = b.x - a.x, h = b.y - a.y;
+    if (shift) {
+      const m = Math.max(Math.abs(w), Math.abs(h));
+      w = (w < 0 ? -1 : 1) * m;
+      h = (h < 0 ? -1 : 1) * m;
+    }
+    return { ...base, fill: s.fill, x: Math.min(a.x, a.x + w), y: Math.min(a.y, a.y + h), w: Math.abs(w), h: Math.abs(h) };
+  }
+  let bx = b.x, by = b.y;
+  if (shift) {
+    const ang = Math.round(Math.atan2(by - a.y, bx - a.x) / (Math.PI / 4)) * (Math.PI / 4);
+    const len = Math.hypot(bx - a.x, by - a.y);
+    bx = a.x + Math.cos(ang) * len;
+    by = a.y + Math.sin(ang) * len;
+  }
+  return { ...base, pts: [a.x, a.y, bx, by] };
+}
+
+function deleteSelected() {
+  if (!getSelected()) return;
+  items = items.filter(it => it.id !== selectedId);
+  selectedId = null;
+  renderAll();
+  commit();
+}
+
+function nudge(dx, dy) {
+  const sel = getSelected();
+  if (!sel) return;
+  const b = rawBounds(sel);
+  replaceItem(mapItem(sel, b, { ...b, x: b.x + dx, y: b.y + dy }));
+  renderAll();
+  commit();
+}
+
+// ── Pointer: drawing, moving, resizing items ──
+
+function toCanvas(e) {
+  const r = overlay.getBoundingClientRect();
+  return { x: (e.clientX - r.left) / zoom, y: (e.clientY - r.top) / zoom };
+}
+
+overlay.addEventListener("pointerdown", e => {
+  if (e.button !== 0) return;
+  const p = toCanvas(e);
+
+  if (tool === "text") {
+    // First click away from an open text box just finishes it
+    if (editor) { closeEditor(); return; }
+    const hit = hitTest(p);
+    if (hit && hit.type === "text") openEditor(hit, false);
+    else {
+      const s = settings.text;
+      // Put the click roughly at the middle of the first line
+      openEditor({ id: nextId++, type: "text", text: "", color: s.color, size: s.size,
+                   x: p.x, y: p.y - s.size * LINE_HEIGHT / 2, w: 1, h: s.size * LINE_HEIGHT }, true);
+    }
+    return;
+  }
+
+  overlay.setPointerCapture(e.pointerId);
+
+  if (tool === "select") {
+    const sel = getSelected();
+    const h = sel ? hitHandle(sel, p) : null;
+    if (h != null) {
+      drag = { kind: "scale", handle: h, orig: cloneItem(sel), b: rawBounds(sel) };
+      return;
+    }
+    const hit = hitTest(p);
+    selectedId = hit ? hit.id : null;
+    if (hit) drag = { kind: "move", start: p, orig: cloneItem(hit), b: rawBounds(hit), moved: false };
+    syncControls();
+    renderOverlay();
+    return;
+  }
+
+  const id = nextId++;
+  if (tool === "pencil" || tool === "highlighter") {
+    const s = settings[tool];
+    draft = { id, type: "stroke", hl: tool === "highlighter", color: s.color, width: s.size, pts: [p.x, p.y] };
+    drag = { kind: "draw" };
+  } else {
+    draft = makeShape(p, p, e.shiftKey, id);
+    drag = { kind: "shape", start: p, id };
+  }
+  render();
+});
+
+overlay.addEventListener("pointermove", e => {
+  const p = toCanvas(e);
+  lastPointer = p;
+  document.getElementById("status-pos").textContent = `${Math.round(p.x)}, ${Math.round(p.y)}`;
+
+  if (!drag) {
+    if (tool === "select") {
+      const sel = getSelected();
+      const h = sel ? hitHandle(sel, p) : null;
+      overlay.style.cursor = h != null ? (h % 2 ? "nesw-resize" : "nwse-resize") : hitTest(p) ? "move" : "default";
+    }
+    return;
+  }
+
+  if (drag.kind === "draw") {
+    const pts = draft.pts;
+    if (Math.hypot(p.x - pts[pts.length - 2], p.y - pts[pts.length - 1]) >= 1 / zoom) pts.push(p.x, p.y);
+    render();
+  } else if (drag.kind === "shape") {
+    draft = makeShape(drag.start, p, e.shiftKey, drag.id);
+    render();
+  } else if (drag.kind === "move") {
+    const dx = p.x - drag.start.x, dy = p.y - drag.start.y;
+    replaceItem(mapItem(drag.orig, drag.b, { ...drag.b, x: drag.b.x + dx, y: drag.b.y + dy }));
+    drag.moved = true;
+    renderAll();
+  } else if (drag.kind === "scale") {
+    const b = drag.b;
+    const fixed = corners(b)[(drag.handle + 2) % 4];
+    let w = Math.abs(p.x - fixed[0]), h = Math.abs(p.y - fixed[1]);
+    // Images keep aspect ratio unless Shift is held; everything else is the opposite
+    const keepAspect = drag.orig.type === "text" || (drag.orig.type === "image" ? !e.shiftKey : e.shiftKey);
+    if (keepAspect && b.w && b.h) {
+      const r = b.w / b.h;
+      if (w / Math.max(h, 1e-6) > r) w = h * r; else h = w / r;
+    }
+    w = b.w ? Math.max(w, 2) : 0;
+    h = b.h ? Math.max(h, 2) : 0;
+    const nb = {
+      x: b.w ? (p.x < fixed[0] ? fixed[0] - w : fixed[0]) : b.x,
+      y: b.h ? (p.y < fixed[1] ? fixed[1] - h : fixed[1]) : b.y,
+      w, h,
+    };
+    replaceItem(mapItem(drag.orig, b, nb));
+    renderAll();
+  }
+});
+
+function endDrag() {
+  if (!drag) return;
+  if (drag.kind === "draw") {
+    items.push(draft);
+    commit();
+  } else if (drag.kind === "shape") {
+    const b = rawBounds(draft);
+    if (b.w >= 2 || b.h >= 2) {
+      items.push(draft);
+      commit();
+    }
+  } else if (drag.kind === "move") {
+    if (drag.moved) commit();
+  } else if (drag.kind === "scale") {
+    commit();
+  }
+  draft = null;
+  drag = null;
+  renderAll();
+}
+overlay.addEventListener("pointerup", endDrag);
+overlay.addEventListener("pointercancel", endDrag);
+overlay.addEventListener("pointerleave", () => {
+  if (!drag) {
+    lastPointer = null;
+    document.getElementById("status-pos").textContent = "";
+  }
+});
+
+// Clicking empty workspace around the canvas deselects
+workspace.addEventListener("pointerdown", e => {
+  if (e.target === workspace && selectedId != null) {
+    selectedId = null;
+    renderOverlay();
+  }
+});
+
+// ── Canvas resize handles ──
+
+document.querySelectorAll(".rz").forEach(handle => {
+  handle.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    handle.setPointerCapture(e.pointerId);
+    const dir = handle.dataset.dir, sx = e.clientX, sy = e.clientY, w0 = W, h0 = H;
+    const move = ev => {
+      const w = dir.includes("e") ? w0 + (ev.clientX - sx) / zoom : w0;
+      const h = dir.includes("s") ? h0 + (ev.clientY - sy) / zoom : h0;
+      setSize(w, h);
+    };
+    const up = () => {
+      handle.removeEventListener("pointermove", move);
+      handle.removeEventListener("pointerup", up);
+      handle.removeEventListener("pointercancel", up);
+      if (W !== w0 || H !== h0) commit();
+    };
+    handle.addEventListener("pointermove", move);
+    handle.addEventListener("pointerup", up);
+    handle.addEventListener("pointercancel", up);
+  });
+});
+
+function onSizeInput() {
+  const w = +wEl.value || W, h = +hEl.value || H;
+  if (w === W && h === H) return;
+  setSize(w, h);
+  commit();
+}
+wEl.addEventListener("change", onSizeInput);
+hEl.addEventListener("change", onSizeInput);
+
+function fitToContent() {
+  if (!items.length) return;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  items.forEach(it => {
+    const b = paintBounds(it);
+    x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
+    x1 = Math.max(x1, b.x + b.w); y1 = Math.max(y1, b.y + b.h);
+  });
+  x0 = Math.floor(x0); y0 = Math.floor(y0);
+  items = items.map(it => {
+    const b = rawBounds(it);
+    return mapItem(it, b, { ...b, x: b.x - x0, y: b.y - y0 });
+  });
+  setSize(Math.ceil(x1 - x0), Math.ceil(y1 - y0));
+  commit();
+}
+
+// ── Images: paste, drop, insert ──
+
+function addImageBlob(blob, at) {
+  const img = new Image();
+  img.onload = () => placeImage(img, at);
+  img.onerror = () => flash("Couldn't read that image");
+  img.src = URL.createObjectURL(blob);
+}
+
+function placeImage(img, at) {
+  const w = img.naturalWidth, h = img.naturalHeight;
+  let x, y;
+  if (!items.length) {
+    // Empty canvas → canvas becomes the image (handy for annotating screenshots)
+    x = 0; y = 0;
+    setSize(w, h);
+  } else {
+    if (at) {
+      ({ x, y } = at);
+    } else {
+      // Top-left of the currently visible part of the canvas
+      const wr = workspace.getBoundingClientRect(), cr = overlay.getBoundingClientRect();
+      x = Math.max(0, (wr.left - cr.left) / zoom) + 10;
+      y = Math.max(0, (wr.top - cr.top) / zoom) + 10;
+    }
+    x = Math.round(Math.max(0, x));
+    y = Math.round(Math.max(0, y));
+    if (x + w > W || y + h > H) setSize(Math.max(W, x + w), Math.max(H, y + h));
+  }
+  const it = { id: nextId++, type: "image", img, x, y, w, h };
+  items.push(it);
+  setTool("select");
+  selectedId = it.id;
+  renderAll();
+  commit();
+}
+
+document.addEventListener("paste", e => {
+  const files = [...(e.clipboardData?.items || [])]
+    .filter(i => i.kind === "file" && i.type.startsWith("image/"))
+    .map(i => i.getAsFile());
+  if (!files.length) return;
+  e.preventDefault();
+  files.forEach(f => addImageBlob(f, lastPointer));
+});
+
+workspace.addEventListener("dragover", e => {
+  e.preventDefault();
+  workspace.classList.add("dragover");
+});
+workspace.addEventListener("dragleave", e => {
+  if (e.target === workspace) workspace.classList.remove("dragover");
+});
+workspace.addEventListener("drop", e => {
+  e.preventDefault();
+  workspace.classList.remove("dragover");
+  const r = overlay.getBoundingClientRect();
+  const at = { x: (e.clientX - r.left) / zoom, y: (e.clientY - r.top) / zoom };
+  [...e.dataTransfer.files].filter(f => f.type.startsWith("image/")).forEach(f => addImageBlob(f, at));
+});
+
+const fileInput = document.getElementById("file-input");
+fileInput.addEventListener("change", () => {
+  [...fileInput.files].forEach(f => addImageBlob(f));
+  fileInput.value = "";
+});
+
+// ── Copy / save ──
+
+function flash(msg) {
+  const el = document.getElementById("status-msg");
+  el.textContent = msg;
+  clearTimeout(msgTimer);
+  msgTimer = setTimeout(() => { el.textContent = ""; }, 2500);
+}
+
+async function copyCanvas() {
+  try {
+    // Passing a promise keeps the clipboard write inside the user gesture (needed by Safari)
+    const blob = new Promise(res => canvas.toBlob(res, "image/png"));
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    flash("Copied to clipboard");
+  } catch (err) {
+    flash("Copy failed: " + err.message);
+  }
+}
+
+function savePng() {
+  const a = document.createElement("a");
+  a.download = "paint.png";
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+}
+
+// ── Toolbar wiring ──
+
+const swatchesEl = document.getElementById("swatches");
+COLORS.forEach(c => {
+  const sw = document.createElement("button");
+  sw.className = "swatch";
+  sw.style.background = c;
+  sw.dataset.color = c;
+  sw.title = c;
+  sw.onclick = () => applyStyle({ color: c });
+  swatchesEl.appendChild(sw);
+});
+colorEl.addEventListener("input", () => applyStyle({ color: colorEl.value }, false));
+colorEl.addEventListener("change", () => applyStyle({ color: colorEl.value }));
+sizeEl.addEventListener("input", () => applyStyle({ size: +sizeEl.value }, false));
+sizeEl.addEventListener("change", () => applyStyle({ size: +sizeEl.value }));
+fillEl.addEventListener("change", () => applyStyle({ fill: fillEl.checked }));
+
+document.querySelectorAll(".tool-btn").forEach(b => { b.onclick = () => setTool(b.dataset.tool); });
+document.getElementById("btn-undo").onclick = undo;
+document.getElementById("btn-redo").onclick = redo;
+document.getElementById("btn-insert").onclick = () => fileInput.click();
+document.getElementById("btn-fit").onclick = fitToContent;
+document.getElementById("btn-clear").onclick = () => {
+  if (!items.length) return;
+  items = [];
+  selectedId = null;
+  renderAll();
+  commit();
+};
+document.getElementById("btn-save").onclick = savePng;
+document.getElementById("btn-copy").onclick = copyCanvas;
+document.getElementById("status-zoom").onclick = () => setZoom(1);
+
+workspace.addEventListener("wheel", e => {
+  if (!e.ctrlKey) return;
+  e.preventDefault();
+  setZoom(zoom * (e.deltaY < 0 ? 1.1 : 1 / 1.1));
+}, { passive: false });
+
+overlay.addEventListener("dblclick", e => {
+  if (tool !== "select") return;
+  const hit = hitTest(toCanvas(e));
+  if (hit && hit.type === "text") {
+    setTool("text");
+    openEditor(hit, false);
+  }
+});
+
+const TOOL_KEYS = { v: "select", p: "pencil", h: "highlighter", r: "rect", o: "ellipse", l: "line", a: "arrow", t: "text" };
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "TEXTAREA") return;
+  if (e.target.tagName === "INPUT" && e.target.type !== "range" && e.target.type !== "checkbox") return;
+  const mod = e.ctrlKey || e.metaKey;
+  const k = e.key.toLowerCase();
+  if (mod && k === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (mod && k === "y") { e.preventDefault(); redo(); return; }
+  if (mod && k === "c") {
+    if (!String(window.getSelection())) { e.preventDefault(); copyCanvas(); }
+    return;
+  }
+  if (mod || e.altKey) return;
+  if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); deleteSelected(); return; }
+  if (e.key === "Escape") { selectedId = null; renderOverlay(); return; }
+  if (e.key.startsWith("Arrow") && getSelected()) {
+    e.preventDefault();
+    const step = e.shiftKey ? 10 : 1;
+    const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+    nudge(d[0], d[1]);
+    return;
+  }
+  if (TOOL_KEYS[k]) setTool(TOOL_KEYS[k]);
+});
+
+setSize(W, H);
+setTool("pencil");
+commit();
+</script>
+</body>
+</html>
