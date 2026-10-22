@@ -8,9 +8,30 @@ function mainSetup() {
   createLinksList();
   createToolsLinks();
   setupLinkPalette();
+  setupClock();
 
   modal = document.getElementById('modal');
   organizeModal = document.getElementById('organize-modal');
+}
+
+
+
+// * * * * * * * * * * * * *
+//          Clock
+// * * * * * * * * * * * * *
+
+function setupClock() {
+  const time = document.getElementById('clock-time');
+  const date = document.getElementById('clock-date');
+
+  function tick() {
+    const now = new Date();
+    time.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    date.textContent = now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
+  }
+
+  tick();
+  setInterval(tick, 1000);
 }
 
 

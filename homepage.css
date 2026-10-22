@@ -16,11 +16,11 @@ body {
 /* ── Page grid layout ── */
 .layout {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 220px 3fr minmax(220px, 1fr);
   grid-template-rows: auto 1fr;
   grid-template-areas:
-    "sidebar topbar"
-    "sidebar main";
+    "sidebar topbar clock"
+    "sidebar main   main";
   flex: 1;
   min-height: 0;
   gap: var(--space-5);
@@ -30,6 +30,7 @@ body {
 
 .sidebar-container  { grid-area: sidebar; min-height: 0; }
 .topbar-container   { grid-area: topbar; }
+.clock-container    { grid-area: clock; }
 .main-container     { grid-area: main; min-height: 0; }
 
 /* ── Card overrides for layout panels ── */
@@ -37,6 +38,10 @@ body {
 .main-container::part(card) {
   height: 100%;
   overflow-y: auto;
+}
+.topbar-container::part(card),
+.clock-container::part(card) {
+  height: 100%;
 }
 
 /* ── Sidebar header row ── */
@@ -158,6 +163,34 @@ body {
 .search input:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-dim);
+}
+
+/* ── Clock area ── */
+#clock-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-6);
+}
+
+#clock-time {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#clock-date {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-text-alt);
+  text-transform: lowercase;
+  white-space: nowrap;
 }
 
 /* ── Tools area ── */
