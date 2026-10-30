@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro</title>
+
+<link id="sp-theme-tokens" rel="stylesheet">
+<link id="sp-theme-active" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components@latest/atomics.css">
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    font-family: var(--font-family-base, "Segoe UI", Tahoma, sans-serif);
+    background: var(--color-bg-subtle, #f3f3f3);
+    color: var(--color-text, #1f1f1f);
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  sp-nav { flex-shrink: 0; }
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+    gap: 28px;
+  }
+
+  /* Time inputs */
+  .durations {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .duration {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .duration__label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-subtle, #555);
+  }
+  .duration__inputs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 24px;
+  }
+  .duration__inputs input {
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    width: 3.2ch;
+    box-sizing: content-box;
+    padding: 4px 8px;
+    text-align: center;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 6px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #1f1f1f);
+    -moz-appearance: textfield;
+  }
+  .duration__inputs input::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .duration__inputs input:disabled { color: var(--color-text-disabled, #999); }
+
+  /* Timer ring */
+  .ring {
+    position: relative;
+    width: min(320px, 80vw);
+    aspect-ratio: 1;
+  }
+  .ring svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+  .ring circle {
+    fill: none;
+    stroke-width: 6;
+  }
+  .ring .track { stroke: var(--color-border, #ddd); }
+  .ring .progress {
+    stroke: var(--color-primary, #2563eb);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.25s linear;
+  }
+  .ring__inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+  .time {
+    font-size: clamp(48px, 14vw, 72px);
+    font-variant-numeric: tabular-nums;
+  }
+  .label {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-subtle, #555);
+  }
+
+  .controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Settings */
+  .settings {
+    width: min(520px, 100%);
+    display: grid;
+    gap: 16px;
+    padding: 20px;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 12px;
+    background: var(--color-bg, #fff);
+  }
+  .settings h2 {
+    margin: 0;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-subtle, #555);
+  }
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: var(--color-text-subtle, #555);
+  }
+  .field select {
+    font: inherit;
+    font-size: 15px;
+    padding: 6px 8px;
+    border: 1px solid var(--color-border, #ddd);
+    border-radius: 6px;
+    background: var(--color-bg, #fff);
+    color: var(--color-text, #1f1f1f);
+    width: 100%;
+  }
+  .sound-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .sound-row .field { flex: 1; min-width: 140px; }
+  .check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+  }
+  .sessions {
+    font-size: 14px;
+    color: var(--color-text-subtle, #555);
+  }
+</style>
+</head>
+<body>
+  <sp-theme></sp-theme>
+  <sp-nav>
+    <span slot="brand">Pomodoro</span>
+  </sp-nav>
+  <div class="main">
+    <div class="durations">
+      <div class="duration">
+        <span class="duration__label">Work</span>
+        <div class="duration__inputs">
+          <input type="number" id="work-min" min="0" max="999" placeholder="mm" aria-label="Work minutes">
+          <span>:</span>
+          <input type="number" id="work-sec" min="0" max="59" placeholder="ss" aria-label="Work seconds">
+        </div>
+      </div>
+      <div class="duration">
+        <span class="duration__label">Break</span>
+        <div class="duration__inputs">
+          <input type="number" id="break-min" min="0" max="999" placeholder="mm" aria-label="Break minutes">
+          <span>:</span>
+          <input type="number" id="break-sec" min="0" max="59" placeholder="ss" aria-label="Break seconds">
+        </div>
+      </div>
+    </div>
+
+    <div class="ring">
+      <svg viewBox="0 0 100 100">
+        <circle class="track" cx="50" cy="50" r="46" />
+        <circle class="progress" id="progress" cx="50" cy="50" r="46" />
+      </svg>
+      <div class="ring__inner">
+        <span class="time" id="time">00:00</span>
+        <span class="label" id="label">Work</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <sp-button variant="primary" id="btn-start">Start</sp-button>
+      <sp-button variant="secondary" id="btn-reset">Reset</sp-button>
+      <sp-button variant="ghost" id="btn-skip" title="Switch between work and break">Skip</sp-button>
+      <sp-button variant="ghost" id="btn-defaults" title="Back to 25:00 work / 5:00 break, round 1">Defaults</sp-button>
+    </div>
+    <div class="sessions" id="sessions">Round 1</div>
+
+    <div class="settings">
+      <h2>Sound</h2>
+      <div class="sound-row">
+        <label class="field">Beeper
+          <select id="sound">
+            <option value="beep">Classic beep</option>
+            <option value="digital">Digital watch</option>
+            <option value="chime">Chime</option>
+            <option value="bell">Bell</option>
+            <option value="alarm">Alarm</option>
+            <option value="none">None</option>
+          </select>
+        </label>
+        <label class="field">Volume
+          <input type="range" id="volume" min="0" max="100">
+        </label>
+        <sp-button variant="secondary" size="sm" id="btn-test">Test</sp-button>
+      </div>
+
+      <label class="check">
+        <input type="checkbox" id="auto-start"> Auto-start next session
+      </label>
+    </div>
+  </div>
+
+<script type="module">
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-theme.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-nav.js'
+  import 'https://cdn.jsdelivr.net/gh/Seth-Harlaar/sp-components/components/sp-button.js'
+</script>
+
+<script>
+  const MODE_LABELS = { work: 'Work', break: 'Break' };
+  const STORAGE_KEY = 'pomodoro-settings';
+
+  // Everything in here is remembered between page loads
+  const DEFAULT_TIMES = { workMin: '25', workSec: '', breakMin: '5', breakSec: '' };
+  let settings = { ...DEFAULT_TIMES, sound: 'beep', volume: 60, autoStart: false };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem(STORAGE_KEY))); } catch {}
+  // a fully blank duration falls back to the default
+  if (settings.workMin === '' && settings.workSec === '') settings.workMin = DEFAULT_TIMES.workMin;
+  if (settings.breakMin === '' && settings.breakSec === '') settings.breakMin = DEFAULT_TIMES.breakMin;
+
+  const timeEl = document.getElementById('time');
+  const labelEl = document.getElementById('label');
+  const progressEl = document.getElementById('progress');
+  const sessionsEl = document.getElementById('sessions');
+  const startBtn = document.getElementById('btn-start');
+
+  const timeInputs = {
+    workMin: document.getElementById('work-min'),
+    workSec: document.getElementById('work-sec'),
+    breakMin: document.getElementById('break-min'),
+    breakSec: document.getElementById('break-sec'),
+  };
+  const soundInput = document.getElementById('sound');
+  const volumeInput = document.getElementById('volume');
+  const autoStartInput = document.getElementById('auto-start');
+
+  const CIRCUMFERENCE = 2 * Math.PI * 46;
+  progressEl.style.strokeDasharray = CIRCUMFERENCE;
+
+  let mode = 'work';
+  let round = 1;
+  let total = 0;             // seconds for the current run
+  let remaining = 0;         // seconds left (when paused)
+  let endTime = null;        // timestamp when running
+  let interval = null;
+
+  // * * * * * * * * * * * * *
+  //        Settings
+  // * * * * * * * * * * * * *
+
+  function saveSettings() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(settings)); } catch {}
+  }
+
+  function durationFor(m) {
+    const min = Number(settings[m + 'Min']) || 0;
+    const sec = Number(settings[m + 'Sec']) || 0;
+    return min * 60 + sec;
+  }
+
+  Object.entries(timeInputs).forEach(([key, input]) => {
+    input.value = settings[key];
+    input.addEventListener('input', () => {
+      settings[key] = input.value;
+      saveSettings();
+      // reflect the new length right away unless this mode is mid-run
+      if (key.startsWith(mode) && !isRunning() && remaining === total) loadMode();
+    });
+    input.addEventListener('change', () => {
+      if (input.value === '') return;
+      const max = key.endsWith('Sec') ? 59 : 999;
+      input.value = Math.min(max, Math.max(0, Math.round(Number(input.value)) || 0));
+      input.dispatchEvent(new Event('input'));
+    });
+  });
+
+  soundInput.value = settings.sound;
+  volumeInput.value = settings.volume;
+  autoStartInput.checked = settings.autoStart;
+
+  soundInput.addEventListener('change', () => { settings.sound = soundInput.value; saveSettings(); playSound(); });
+  volumeInput.addEventListener('change', () => { settings.volume = Number(volumeInput.value); saveSettings(); });
+  autoStartInput.addEventListener('change', () => { settings.autoStart = autoStartInput.checked; saveSettings(); });
+  document.getElementById('btn-test').addEventListener('click', playSound);
+
+  // * * * * * * * * * * * * *
+  //          Timer
+  // * * * * * * * * * * * * *
+
+  function isRunning() { return endTime !== null; }
+
+  function currentRemaining() {
+    return isRunning() ? Math.max(0, (endTime - Date.now()) / 1000) : remaining;
+  }
+
+  function loadMode() {
+    total = durationFor(mode);
+    remaining = total;
+    labelEl.textContent = MODE_LABELS[mode];
+    render();
+  }
+
+  function start() {
+    if (isRunning()) return;
+    if (remaining <= 0) remaining = total;
+    if (total <= 0) {
+      timeInputs[mode + 'Min'].focus();
+      return;
+    }
+    getAudio(); // unlock audio on user gesture
+    endTime = Date.now() + remaining * 1000;
+    interval = setInterval(tick, 250);
+    render();
+  }
+
+  function pause() {
+    if (!isRunning()) return;
+    remaining = currentRemaining();
+    endTime = null;
+    clearInterval(interval);
+    render();
+  }
+
+  function reset() {
+    pause();
+    loadMode();
+  }
+
+  function advance() {
+    pause();
+    if (mode === 'break') round++;
+    mode = mode === 'work' ? 'break' : 'work';
+    loadMode();
+    if (settings.autoStart) start();
+  }
+
+  function tick() {
+    if (currentRemaining() <= 0) {
+      playSound();
+      advance();
+      return;
+    }
+    render();
+  }
+
+  function format(secs) {
+    const s = Math.ceil(secs);
+    const m = Math.floor(s / 60);
+    return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  function render() {
+    const left = currentRemaining();
+    timeEl.textContent = format(left);
+    progressEl.style.strokeDashoffset = CIRCUMFERENCE * (1 - (total ? left / total : 0));
+    startBtn.textContent = isRunning() ? 'Pause' : (remaining < total ? 'Resume' : 'Start');
+    sessionsEl.textContent = `Round ${round}`;
+    document.title = isRunning() ? `${format(left)} · ${MODE_LABELS[mode]}` : 'Pomodoro';
+    saveState();
+  }
+
+  // * * * * * * * * * * * * *
+  //       Saved progress
+  // * * * * * * * * * * * * *
+
+  const STATE_KEY = 'pomodoro-state';
+  const RESTORE_LIMIT = 3 * 60 * 60 * 1000; // away longer than this and we start fresh
+
+  function saveState() {
+    const state = { mode, round, total, remaining: currentRemaining(), endTime, savedAt: Date.now() };
+    try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); } catch {}
+  }
+
+  function restoreState() {
+    let state;
+    try { state = JSON.parse(localStorage.getItem(STATE_KEY)); } catch {}
+    if (!state || !MODE_LABELS[state.mode] || Date.now() - state.savedAt > RESTORE_LIMIT) return loadMode();
+
+    mode = state.mode;
+    round = state.round;
+    total = state.total;
+    remaining = state.endTime ? (state.endTime - Date.now()) / 1000 : state.remaining;
+    labelEl.textContent = MODE_LABELS[mode];
+
+    if (remaining <= 0) advance();   // finished while the page was closed
+    else if (state.endTime) start(); // was running, keep going
+    else render();
+  }
+
+  startBtn.addEventListener('click', () => isRunning() ? pause() : start());
+  document.getElementById('btn-reset').addEventListener('click', reset);
+  document.getElementById('btn-skip').addEventListener('click', advance);
+  document.getElementById('btn-defaults').addEventListener('click', () => {
+    Object.assign(settings, DEFAULT_TIMES);
+    Object.entries(timeInputs).forEach(([key, input]) => input.value = settings[key]);
+    saveSettings();
+    pause();
+    mode = 'work';
+    round = 1;
+    loadMode();
+  });
+
+  // * * * * * * * * * * * * *
+  //         Sounds
+  // * * * * * * * * * * * * *
+
+  let audioCtx;
+  function getAudio() {
+    audioCtx ??= new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  // a timer resumed on page load has no click to unlock audio, so grab the first one
+  ['pointerdown', 'keydown'].forEach(evt => document.addEventListener(evt, () => getAudio(), { once: true }));
+
+  // Schedules a single tone with a quick attack and exponential decay
+  function tone(ctx, out, { freq, type = 'sine', start, dur, gain = 1 }) {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, start);
+    g.gain.exponentialRampToValueAtTime(gain, start + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+    osc.connect(g).connect(out);
+    osc.start(start);
+    osc.stop(start + dur + 0.05);
+  }
+
+  const SOUNDS = {
+    beep(ctx, out, t) {
+      for (let i = 0; i < 3; i++) {
+        tone(ctx, out, { freq: 880, type: 'square', start: t + i * 0.35, dur: 0.2, gain: 0.3 });
+      }
+    },
+    digital(ctx, out, t) {
+      for (let i = 0; i < 4; i++) {
+        const s = t + i * 0.5;
+        tone(ctx, out, { freq: 2000, type: 'square', start: s, dur: 0.07, gain: 0.2 });
+        tone(ctx, out, { freq: 2000, type: 'square', start: s + 0.12, dur: 0.07, gain: 0.2 });
+      }
+    },
+    chime(ctx, out, t) {
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+        tone(ctx, out, { freq, start: t + i * 0.18, dur: 1.2, gain: 0.5 });
+      });
+    },
+    bell(ctx, out, t) {
+      for (let i = 0; i < 2; i++) {
+        const s = t + i * 1.2;
+        // inharmonic partials give a metallic bell timbre
+        [[660, 0.6], [1320, 0.3], [1650, 0.2], [2310, 0.1]].forEach(([freq, gain]) => {
+          tone(ctx, out, { freq, start: s, dur: 1.8, gain });
+        });
+      }
+    },
+    alarm(ctx, out, t) {
+      for (let i = 0; i < 12; i++) {
+        tone(ctx, out, { freq: i % 2 ? 750 : 1000, type: 'sawtooth', start: t + i * 0.15, dur: 0.14, gain: 0.2 });
+      }
+    },
+    none() {},
+  };
+
+  function playSound() {
+    const ctx = getAudio();
+    const out = ctx.createGain();
+    out.gain.value = settings.volume / 100;
+    out.connect(ctx.destination);
+    SOUNDS[settings.sound]?.(ctx, out, ctx.currentTime + 0.05);
+  }
+
+  restoreState();
+</script>
+</body>
+</html>

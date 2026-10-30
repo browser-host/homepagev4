@@ -783,7 +783,8 @@ var toolData = {
     { "title": "Whats My IP?", "id": "whats-my-ip", "url": "./tools/WhatsMyIP/index.html", "icon": "location" },
     { "title": "Dictionary", "id": "dictionary", "url": "./tools/dictionary/index.html", "icon": "magnifying-glass" },
     { "title": "Notepad", "id": "notepad", "url": "./tools/notepad/index.html", "icon": "notepad" },
-    { "title": "Viewport Size", "id": "viewport", "url": "./tools/viewport/index.html", "icon": "viewport" }
+    { "title": "Viewport Size", "id": "viewport", "url": "./tools/viewport/index.html", "icon": "viewport" },
+    { "title": "Pomodoro", "id": "pomodoro", "url": "./tools/pomodoro/index.html", "icon": "pomodoro" }
   ]
 }
 
