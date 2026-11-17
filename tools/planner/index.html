@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+<script>
+  try { document.documentElement.dataset.theme = localStorage.getItem('planner-theme') || 'dark'; } catch {}
+</script>
+<style>
+  :root, :root[data-theme="dark"] {
+    --bg: #0B0E14;
+    --bar: #0E121A;
+    --surface: #11151D;
+    --surface-2: #141924;
+    --border: #1C222D;
+    --border-strong: #252C39;
+    --grid-hour: #1F2633;
+    --grid-half: #181E29;
+    --text: #E6E9EF;
+    --text-muted: #8A93A6;
+    --text-faint: #7C8598;
+    --group-label: #B4BCCB;
+    --add-border: #2A3140;
+    --now: #FF6B6B;
+    --accent: #8B7CF6;
+    --today-bg: #1E1A3A;
+    --today-border: #3A3270;
+    --today-text: #C9C1FF;
+    --hover: rgba(255, 255, 255, 0.04);
+    --action-bg: rgba(255, 255, 255, 0.06);
+    --action-hover: rgba(255, 255, 255, 0.12);
+    --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    color-scheme: dark;
+  }
+  :root[data-theme="light"] {
+    --bg: #F4F5F8;
+    --bar: #FFFFFF;
+    --surface: #FFFFFF;
+    --surface-2: #F1F3F7;
+    --border: #E3E6EC;
+    --border-strong: #D3D8E0;
+    --grid-hour: #E1E5EB;
+    --grid-half: #EEF0F4;
+    --text: #161A22;
+    --text-muted: #5B6474;
+    --text-faint: #646C7E;
+    --group-label: #4A5263;
+    --add-border: #C9CFD9;
+    --now: #E5484D;
+    --accent: #6E5BE6;
+    --today-bg: #EEEBFF;
+    --today-border: #CFC8FA;
+    --today-text: #4B3DB8;
+    --hover: rgba(0, 0, 0, 0.04);
+    --action-bg: rgba(0, 0, 0, 0.05);
+    --action-hover: rgba(0, 0, 0, 0.10);
+    --shadow: 0 8px 24px rgba(20, 24, 40, 0.15);
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  body.is-grabbing, body.is-grabbing * { cursor: grabbing !important; }
+
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: background-color 130ms, border-color 130ms, opacity 130ms;
+  }
+  :focus { outline: none; }
+  :focus-visible { outline: 2px solid var(--text-muted); outline-offset: 2px; }
+  svg { display: block; flex-shrink: 0; }
+
+  /* * * Top bar * * */
+  .bar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 32px;
+    background: var(--bar);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 600; }
+  .brand__mark { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); }
+
+  .datenav { display: flex; align-items: center; gap: 12px; }
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    padding: 0;
+  }
+  .icon-btn:hover { background: color-mix(in srgb, var(--surface-2), #fff 4%); }
+  :root[data-theme="light"] .icon-btn:hover { background: color-mix(in srgb, var(--surface-2), #000 4%); }
+  .date { min-width: 240px; text-align: center; font-size: 17px; font-weight: 600; }
+  .date__year { color: var(--text-muted); font-weight: 500; margin-left: 6px; }
+  .today-btn {
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--today-border);
+    background: var(--today-bg);
+    color: var(--today-text);
+    font-weight: 500;
+  }
+  .today-btn:hover { background: color-mix(in srgb, var(--today-bg), #fff 4%); }
+
+  .segmented {
+    justify-self: end;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 10px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+  }
+  .segmented button {
+    width: 32px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 0;
+  }
+  .segmented button:hover { background: var(--hover); color: var(--text); }
+  .segmented button[aria-pressed="true"] { background: var(--border-strong); color: var(--text); }
+
+  /* * * Columns * * */
+  .board {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 24px;
+  }
+  .panel {
+    flex: 3 1 360px;
+    min-width: 0;
+    min-height: 0;
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .panel--chunks { flex: 1 1 240px; min-width: 240px; }
+  .panel__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 54px;
+    flex-shrink: 0;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .panel__title { margin: 0; font-size: 15px; font-weight: 600; }
+  .panel__meta { color: var(--text-muted); }
+  .chips { display: flex; gap: 6px; margin-left: auto; min-width: 0; overflow: hidden; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--c-fill);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+  }
+  .panel__body { flex: 1; min-height: 0; position: relative; padding: 12px 16px 12px 0; }
+
+  /* * * Timeline * * */
+  .timeline { display: grid; grid-template-columns: 64px 1fr; }
+  .timeline__labels { position: relative; }
+  .timeline__label {
+    position: absolute;
+    right: 12px;
+    transform: translateY(-7px);
+    line-height: 14px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+  .timeline__label--half { font-size: 10px; opacity: 0.7; }
+  .lane { position: relative; }
+  .lane__line { position: absolute; left: 0; right: 0; height: 0; border-top: 1px solid var(--grid-hour); }
+  .lane__line--half { border-top: 1px dashed var(--grid-half); }
+
+  .slot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: var(--c-fill);
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .now {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    margin-top: -1px;
+    background: var(--now);
+    z-index: 4;
+    pointer-events: none;
+  }
+  .now::before {
+    content: "";
+    position: absolute;
+    left: -4.5px;
+    top: -3.5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--now);
+  }
+
+  /* * * Blocks * * */
+  .block {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 6px 6px 6px 10px;
+    border-radius: 8px;
+    background: var(--c-fill);
+    border: 1px solid var(--c-border);
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    transition: background-color 130ms, border-color 130ms, opacity 130ms;
+  }
+  .block:hover { background: color-mix(in srgb, var(--c-fill), var(--c) 6%); }
+  .block.is-dragging { z-index: 5; box-shadow: var(--shadow); }
+  .block.is-done { opacity: 0.55; }
+  .block--compact { align-items: center; padding-top: 0; padding-bottom: 0; }
+  .block--preview { border-style: dashed; pointer-events: none; z-index: 3; }
+
+  .block__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .block--compact .block__main { flex-direction: row; align-items: baseline; gap: 8px; }
+  .block__name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--c-text);
+  }
+  .block__name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .block__check { color: var(--c-text); }
+  .block__time { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .block__dur { font-size: 11px; color: var(--text-faint); white-space: nowrap; line-height: 24px; }
+  .block__actions { display: flex; gap: 4px; opacity: 0; }
+  .block:hover .block__actions,
+  .block:focus-within .block__actions,
+  .block:focus .block__actions { opacity: 1; }
+  @media (hover: none) { .block__actions { opacity: 1; } }
+
+  .action {
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 6px;
+    background: var(--action-bg);
+    color: var(--text);
+    padding: 0;
+  }
+  .action:hover { background: var(--action-hover); }
+
+  .block__resize {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 6px;
+    cursor: ns-resize;
+  }
+
+  /* * * Chunks * * */
+  .library { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 20px; }
+  .group + .group { margin-top: 22px; }
+  .group__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--group-label);
+  }
+  .group__count { color: var(--text-faint); font-weight: 500; letter-spacing: 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .group__items { display: flex; flex-direction: column; gap: 8px; }
+
+  .chunk {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 6px 0 8px;
+    border-radius: 8px;
+    background: var(--c-fill);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    font-weight: 500;
+    cursor: grab;
+    user-select: none;
+    transition: background-color 130ms, border-color 130ms, opacity 130ms;
+  }
+  .chunk:hover { background: color-mix(in srgb, var(--c-fill), var(--c) 6%); }
+  .chunk.is-dragging { box-shadow: var(--shadow); opacity: 0.7; }
+  .chunk__grip { color: var(--c-text); opacity: 0.6; }
+  .chunk__name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chunk .action { background: transparent; color: var(--c-text); opacity: 0.45; }
+  .chunk .action:hover, .chunk .action:focus-visible { opacity: 1; background: var(--action-hover); }
+
+  .add-btn, .add-input {
+    width: 100%;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px dashed var(--add-border);
+    background: transparent;
+    color: var(--text-muted);
+  }
+  .add-btn { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 0 10px; }
+  .add-btn:hover { background: var(--hover); color: var(--text); }
+  .add-form { display: flex; align-items: center; gap: 6px; }
+  .add-input { flex: 1; min-width: 0; padding: 0 12px; font: inherit; color: var(--text); }
+  .add-input::placeholder { color: var(--text-faint); }
+  .add-dur { flex: 0 0 auto; width: 52px; text-align: center; padding: 0 4px; -moz-appearance: textfield; }
+  .add-dur::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .add-unit { color: var(--text-faint); font-size: 12px; }
+
+  .ghost {
+    position: fixed;
+    z-index: 100;
+    pointer-events: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--c-border);
+    color: var(--c-text);
+    font-weight: 500;
+    box-shadow: var(--shadow);
+  }
+
+  @media (max-width: 900px) {
+    body { overflow: auto; height: auto; }
+    .bar { grid-template-columns: 1fr auto; padding: 14px 16px; }
+    .datenav { grid-column: 1 / -1; grid-row: 2; justify-content: center; }
+    .date { min-width: 0; }
+    .board { flex-direction: column; flex-wrap: nowrap; padding: 16px; }
+    .panel, .panel--chunks { flex: none; max-height: none; min-width: 0; }
+    .library { overflow: visible; }
+  }
+</style>
+<style id="category-styles"></style>
+</head>
+<body>
+  <header class="bar">
+    <div class="brand"><span class="brand__mark" aria-hidden="true"></span>Planner</div>
+
+    <div class="datenav">
+      <button class="icon-btn" id="btn-prev" aria-label="Previous day">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="date" aria-live="polite"><span id="date-main"></span><span class="date__year" id="date-year"></span></div>
+      <button class="icon-btn" id="btn-next" aria-label="Next day">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+      <button class="today-btn" id="btn-today">Today</button>
+    </div>
+
+    <div class="segmented" role="group" aria-label="Theme">
+      <button data-theme-option="light" aria-label="Light theme" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+      </button>
+      <button data-theme-option="dark" aria-label="Dark theme" aria-pressed="false">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="board">
+    <section class="panel">
+      <header class="panel__head">
+        <h2 class="panel__title">Plan</h2>
+        <span class="panel__meta" id="plan-meta"></span>
+        <div class="chips" id="plan-chips"></div>
+      </header>
+      <div class="panel__body">
+        <div class="timeline" data-side="plan"></div>
+      </div>
+    </section>
+
+    <section class="panel panel--chunks">
+      <header class="panel__head">
+        <h2 class="panel__title">Chunks</h2>
+        <span class="panel__meta">Drag onto a timeline</span>
+      </header>
+      <div class="library" id="library"></div>
+    </section>
+
+    <section class="panel">
+      <header class="panel__head">
+        <h2 class="panel__title">Actual</h2>
+        <span class="panel__meta" id="actual-meta"></span>
+      </header>
+      <div class="panel__body">
+        <div class="timeline" data-side="actual"></div>
+      </div>
+    </section>
+  </main>
+
+<script>
+  const DAY_START = 8 * 60;
+  const DAY_END = 17 * 60;
+  const NARROW_PX_PER_MIN = 1.2;   // 72px per hour when columns are stacked
+  const SNAP = 5;
+  const DROP_SLOT = 15;
+  const MIN_DURATION = 5;
+  const DRAG_THRESHOLD = 4;
+
+  const CATEGORIES = {
+    work:    { label: 'Work',    color: '#451F55', duration: 25 },
+    meeting: { label: 'Meeting', color: '#E54F6D', duration: 30 },
+    break:   { label: 'Break',   color: '#F8C630', duration: 30 },
+  };
+
+  const ICONS = {
+    check: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+    x: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+    badge: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+    plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    grip: '<svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor"><circle cx="2.5" cy="3" r="1.5"/><circle cx="7.5" cy="3" r="1.5"/><circle cx="2.5" cy="8" r="1.5"/><circle cx="7.5" cy="8" r="1.5"/><circle cx="2.5" cy="13" r="1.5"/><circle cx="7.5" cy="13" r="1.5"/></svg>',
+  };
+
+  let db;
+  let chunks = [];
+  let day = null;          // { date, plan: [], actual: [] }
+  let viewDate = todayKey();
+  let lastToday = viewDate;
+  let pxPerMin = NARROW_PX_PER_MIN;
+  const narrow = matchMedia('(max-width: 900px)');
+
+  // * * * * * * * * * * * * *
+  //     Category colours
+  // * * * * * * * * * * * * *
+
+  function hexToRgb(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  const mix = (rgb, target, t) => rgb.map((v, i) => Math.round(v + (target[i] - v) * t));
+  const rgbStr = rgb => `rgb(${rgb.join(',')})`;
+
+  // Every category's fill / border / text is derived from its single base colour
+  function buildCategoryStyles() {
+    let css = '';
+    Object.entries(CATEGORIES).forEach(([key, { color }]) => {
+      const rgb = hexToRgb(color);
+      const [r, g, b] = rgb;
+      // Very dark base colours vanish on the dark theme, so lift them toward white there
+      const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      const dk = lum < 0.3 ? mix(rgb, [255, 255, 255], 0.4) : rgb;
+      const [dr, dg, db] = dk;
+      css += `.cat-${key}{--c:${rgbStr(dk)};--c-fill:rgba(${dr},${dg},${db},.18);--c-border:rgba(${dr},${dg},${db},.55);--c-text:${rgbStr(mix(dk, [255, 255, 255], 0.55))}}`;
+      css += `:root[data-theme="light"] .cat-${key}{--c:${color};--c-fill:rgba(${r},${g},${b},.12);--c-border:rgba(${r},${g},${b},.5);--c-text:${rgbStr(lum < 0.3 ? rgb : mix(rgb, [0, 0, 0], 0.45))}}`;
+    });
+    document.getElementById('category-styles').textContent = css;
+  }
+
+  // * * * * * * * * * * * * *
+  //        IndexedDB
+  // * * * * * * * * * * * * *
+
+  function openDb() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('daily-planner', 1);
+      req.onupgradeneeded = () => {
+        const d = req.result;
+        d.createObjectStore('chunks', { keyPath: 'id' });
+        d.createObjectStore('days', { keyPath: 'date' });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  function run(storeName, mode, fn) {
+    return new Promise((resolve, reject) => {
+      const t = db.transaction(storeName, mode);
+      const req = fn(t.objectStore(storeName));
+      t.oncomplete = () => resolve(req ? req.result : undefined);
+      t.onerror = () => reject(t.error);
+    });
+  }
+
+  const getAllChunks = () => run('chunks', 'readonly', s => s.getAll());
+  const putChunk = c => run('chunks', 'readwrite', s => s.put(c));
+  const deleteChunk = id => run('chunks', 'readwrite', s => s.delete(id));
+  const getDay = date => run('days', 'readonly', s => s.get(date));
+  const saveDay = () => run('days', 'readwrite', s => s.put(day));
+
+  // * * * * * * * * * * * * *
+  //         Helpers
+  // * * * * * * * * * * * * *
+
+  function todayKey() { return dateKey(new Date()); }
+
+  function dateKey(d) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  function parseKey(key) {
+    const [y, m, d] = key.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+
+  function fmtTime(min) {
+    const h12 = ((Math.floor(min / 60) + 11) % 12) + 1;
+    return `${h12}:${String(min % 60).padStart(2, '0')}`;
+  }
+
+  function fmtHourLabel(min) {
+    const h = Math.floor(min / 60);
+    const h12 = ((h + 11) % 12) + 1;
+    if (min % 60) return `${h12}:${String(min % 60).padStart(2, '0')}`;
+    return `${h12} ${h < 12 ? 'AM' : 'PM'}`;
+  }
+
+  function fmtDuration(min) {
+    const h = Math.floor(min / 60);
+    const m = min % 60;
+    if (!h) return `${m}m`;
+    return m ? `${h}h ${m}m` : `${h}h`;
+  }
+
+  const fmtRange = (start, duration) => `${fmtTime(start)} – ${fmtTime(start + duration)}`;
+  const snap = min => Math.round(min / SNAP) * SNAP;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()));
+  const sum = blocks => blocks.reduce((t, b) => t + b.duration, 0);
+
+  function minuteAt(clientY, lane) {
+    return DAY_START + (clientY - lane.getBoundingClientRect().top) / pxPerMin;
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // * * * * * * * * * * * * *
+  //          Theme
+  // * * * * * * * * * * * * *
+
+  function setTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem('planner-theme', theme); } catch {}
+    document.querySelectorAll('[data-theme-option]').forEach(btn =>
+      btn.setAttribute('aria-pressed', String(btn.dataset.themeOption === theme)));
+  }
+
+  // * * * * * * * * * * * * *
+  //         Timelines
+  // * * * * * * * * * * * * *
+
+  function buildTimelines() {
+    const timelines = document.querySelectorAll('.timeline');
+    timelines.forEach(tl => tl.replaceChildren());
+
+    // Stretch the 8–5 day to the full height of the window
+    if (narrow.matches) {
+      pxPerMin = NARROW_PX_PER_MIN;
+    } else {
+      const body = timelines[0].parentElement;
+      const available = body.clientHeight - 24;
+      pxPerMin = Math.max(available / (DAY_END - DAY_START), 0.3);
+    }
+    const height = (DAY_END - DAY_START) * pxPerMin;
+
+    timelines.forEach(tl => {
+      const labels = document.createElement('div');
+      labels.className = 'timeline__labels';
+      labels.style.height = height + 'px';
+      labels.setAttribute('aria-hidden', 'true');
+
+      const lane = document.createElement('div');
+      lane.className = 'lane';
+      lane.dataset.side = tl.dataset.side;
+      lane.style.height = height + 'px';
+
+      for (let m = DAY_START; m <= DAY_END; m += 30) {
+        const y = (m - DAY_START) * pxPerMin;
+        const half = m % 60 !== 0;
+
+        const line = document.createElement('div');
+        line.className = 'lane__line' + (half ? ' lane__line--half' : '');
+        line.style.top = y + 'px';
+        lane.appendChild(line);
+
+        const label = document.createElement('div');
+        label.className = 'timeline__label' + (half ? ' timeline__label--half' : '');
+        label.style.top = y + 'px';
+        label.textContent = fmtHourLabel(m);
+        labels.appendChild(label);
+      }
+
+      tl.append(labels, lane);
+    });
+  }
+
+  const laneFor = side => document.querySelector(`.lane[data-side="${side}"]`);
+
+  function renderNow() {
+    document.querySelectorAll('.now').forEach(n => n.remove());
+    if (viewDate !== todayKey()) return;
+    const d = new Date();
+    const min = d.getHours() * 60 + d.getMinutes();
+    if (min < DAY_START || min > DAY_END) return;
+    ['plan', 'actual'].forEach(side => {
+      const line = document.createElement('div');
+      line.className = 'now';
+      line.style.top = (min - DAY_START) * pxPerMin + 'px';
+      laneFor(side).appendChild(line);
+    });
+  }
+
+  function renderSummaries() {
+    const planned = sum(day.plan);
+    const tracked = sum(day.actual);
+    const count = day.plan.length;
+
+    document.getElementById('plan-meta').textContent =
+      `${count} block${count === 1 ? '' : 's'} · ${fmtDuration(planned)}`;
+
+    document.getElementById('plan-chips').innerHTML = Object.entries(CATEGORIES)
+      .map(([cat, info]) => [cat, info, sum(day.plan.filter(b => b.category === cat))])
+      .filter(([, , total]) => total > 0)
+      .map(([cat, info, total]) => `<span class="chip cat-${cat}">${info.label} ${fmtDuration(total)}</span>`)
+      .join('');
+
+    let actualMeta = `${fmtDuration(tracked)} tracked`;
+    if (planned > 0) actualMeta += ` · ${Math.round((tracked / planned) * 100)}% of plan`;
+    document.getElementById('actual-meta').textContent = actualMeta;
+  }
+
+  function renderDay() {
+    const date = parseKey(viewDate);
+    document.getElementById('date-main').textContent =
+      date.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' });
+    document.getElementById('date-year').textContent = date.getFullYear();
+
+    ['plan', 'actual'].forEach(side => {
+      const lane = laneFor(side);
+      lane.querySelectorAll('.block').forEach(b => b.remove());
+      day[side].forEach(block => lane.appendChild(blockEl(block, side)));
+    });
+
+    renderSummaries();
+    renderNow();
+  }
+
+  function positionBlock(el, block) {
+    const height = block.duration * pxPerMin;
+    el.style.top = (block.start - DAY_START) * pxPerMin + 1 + 'px';
+    el.style.height = Math.max(height - 2, 4) + 'px';
+    el.classList.toggle('block--compact', height < 40);
+    const time = el.querySelector('.block__time');
+    if (time) time.textContent = fmtRange(block.start, block.duration);
+    const dur = el.querySelector('.block__dur');
+    if (dur) dur.textContent = fmtDuration(block.duration);
+  }
+
+  function blockEl(block, side) {
+    const el = document.createElement('div');
+    el.className = `block cat-${block.category}` + (block.done ? ' is-done' : '');
+    el.tabIndex = 0;
+    const showDone = side === 'plan' && !block.done;
+    el.innerHTML = `
+      <div class="block__main">
+        <div class="block__name">${block.done ? `<span class="block__check" aria-label="Logged">${ICONS.badge}</span>` : ''}<span>${escapeHtml(block.title)}</span></div>
+        <div class="block__time"></div>
+      </div>
+      <span class="block__dur"></span>
+      <div class="block__actions">
+        ${showDone ? `<button class="action" data-action="complete" aria-label="Log ${escapeHtml(block.title)} to actual">${ICONS.check}</button>` : ''}
+        <button class="action" data-action="delete" aria-label="Remove ${escapeHtml(block.title)}">${ICONS.x}</button>
+      </div>
+      <div class="block__resize" aria-hidden="true"></div>
+    `;
+    positionBlock(el, block);
+
+    el.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      day[side] = day[side].filter(b => b.id !== block.id);
+      if (side === 'actual' && block.fromPlan) {
+        const source = day.plan.find(b => b.id === block.fromPlan);
+        if (source) source.done = false;
+      }
+      commit();
+    });
+
+    const completeBtn = el.querySelector('[data-action="complete"]');
+    if (completeBtn) completeBtn.addEventListener('click', () => {
+      block.done = true;
+      day.actual.push({
+        id: uid(),
+        fromPlan: block.id,
+        chunkId: block.chunkId,
+        category: block.category,
+        title: block.title,
+        start: block.start,
+        duration: block.duration,
+      });
+      commit();
+    });
+
+    el.addEventListener('pointerdown', e => {
+      if (e.button !== 0 || e.target.closest('.action')) return;
+      e.preventDefault();
+      if (e.target.classList.contains('block__resize')) startResize(e, el, block, side);
+      else startMove(e, el, block, side);
+    });
+
+    return el;
+  }
+
+  function startMove(e, el, block, side) {
+    const lane = laneFor(side);
+    const offset = minuteAt(e.clientY, lane) - block.start;
+    const original = block.start;
+    el.classList.add('is-dragging');
+    document.body.classList.add('is-grabbing');
+
+    trackPointer(
+      ev => {
+        block.start = clamp(snap(minuteAt(ev.clientY, lane) - offset), DAY_START, DAY_END - block.duration);
+        positionBlock(el, block);
+      },
+      () => {
+        el.classList.remove('is-dragging');
+        document.body.classList.remove('is-grabbing');
+        if (block.start !== original) commit();
+      }
+    );
+  }
+
+  function startResize(e, el, block, side) {
+    const lane = laneFor(side);
+    const original = block.duration;
+    el.classList.add('is-dragging');
+
+    trackPointer(
+      ev => {
+        const end = clamp(snap(minuteAt(ev.clientY, lane)), block.start + MIN_DURATION, DAY_END);
+        block.duration = end - block.start;
+        positionBlock(el, block);
+      },
+      () => {
+        el.classList.remove('is-dragging');
+        if (block.duration !== original) commit();
+      }
+    );
+  }
+
+  function trackPointer(onMove, onUp) {
+    const move = ev => onMove(ev);
+    const up = ev => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      onUp(ev);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+  }
+
+  async function commit() {
+    renderDay();
+    await saveDay();
+  }
+
+  // * * * * * * * * * * * * *
+  //       Chunk library
+  // * * * * * * * * * * * * *
+
+  function renderLibrary(openInputFor) {
+    const container = document.getElementById('library');
+    container.innerHTML = '';
+
+    Object.entries(CATEGORIES).forEach(([cat, info]) => {
+      const items = chunks.filter(c => c.category === cat);
+      const group = document.createElement('div');
+      group.className = `group cat-${cat}`;
+      group.innerHTML = `
+        <div class="group__head"><span class="dot"></span>${info.label}<span class="group__count">${items.length}</span></div>
+        <div class="group__items"></div>
+      `;
+      const list = group.querySelector('.group__items');
+
+      items.forEach(chunk => {
+        const item = document.createElement('div');
+        item.className = 'chunk';
+        item.innerHTML = `
+          <span class="chunk__grip" aria-hidden="true">${ICONS.grip}</span>
+          <span class="chunk__name">${escapeHtml(chunk.title)}</span>
+          <button class="action" aria-label="Delete ${escapeHtml(chunk.title)} chunk">${ICONS.x}</button>
+        `;
+        item.querySelector('button').addEventListener('click', async () => {
+          chunks = chunks.filter(c => c.id !== chunk.id);
+          renderLibrary();
+          await deleteChunk(chunk.id);
+        });
+        item.addEventListener('pointerdown', e => {
+          if (e.button !== 0 || e.target.closest('button')) return;
+          e.preventDefault();
+          startChunkDrag(e, chunk, item);
+        });
+        list.appendChild(item);
+      });
+
+      const addBtn = document.createElement('button');
+      addBtn.className = 'add-btn';
+      addBtn.innerHTML = `${ICONS.plus}New ${info.label.toLowerCase()} chunk`;
+      addBtn.addEventListener('click', () => openAddInput(addBtn, cat, info));
+      list.appendChild(addBtn);
+
+      container.appendChild(group);
+      if (openInputFor === cat) openAddInput(addBtn, cat, info);
+    });
+  }
+
+  // Name + default length (minutes) for a new chunk
+  function openAddInput(addBtn, cat, info) {
+    const name = info.label.toLowerCase();
+    const form = document.createElement('div');
+    form.className = 'add-form';
+    form.innerHTML = `
+      <input class="add-input" placeholder="New ${name} chunk" aria-label="New ${name} chunk name">
+      <input class="add-input add-dur" type="number" min="${MIN_DURATION}" max="${DAY_END - DAY_START}" step="5" value="${info.duration}" aria-label="Default length in minutes">
+      <span class="add-unit">min</span>
+    `;
+    const [input, durInput] = form.querySelectorAll('input');
+    addBtn.replaceWith(form);
+    input.focus();
+
+    let done = false;
+    const close = () => {
+      if (done) return;
+      done = true;
+      form.replaceWith(addBtn);
+    };
+
+    form.addEventListener('keydown', async e => {
+      if (e.key === 'Escape') { close(); addBtn.focus(); return; }
+      if (e.key !== 'Enter') return;
+      const title = input.value.trim();
+      if (!title) { input.focus(); return; }
+      const minutes = Math.round(Number(durInput.value));
+      const defaultDuration = clamp(Number.isFinite(minutes) && minutes > 0 ? minutes : info.duration, MIN_DURATION, DAY_END - DAY_START);
+      done = true;
+      const chunk = { id: uid(), category: cat, title, defaultDuration, created: Date.now() };
+      chunks.push(chunk);
+      renderLibrary(cat);
+      await putChunk(chunk);
+    });
+    // Close only when focus leaves both fields
+    form.addEventListener('focusout', e => {
+      if (!form.contains(e.relatedTarget)) close();
+    });
+  }
+
+  function startChunkDrag(e, chunk, item) {
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const duration = chunk.defaultDuration || CATEGORIES[chunk.category].duration;
+    let ghost = null;
+    let slot = null;
+    let preview = null;
+    let target = null;   // { side, start }
+
+    const clearIndicators = () => {
+      if (slot) { slot.remove(); slot = null; }
+      if (preview) { preview.remove(); preview = null; }
+    };
+
+    trackPointer(
+      ev => {
+        if (!ghost) {
+          if (Math.hypot(ev.clientX - startX, ev.clientY - startY) < DRAG_THRESHOLD) return;
+          ghost = document.createElement('div');
+          ghost.className = `ghost cat-${chunk.category}`;
+          ghost.textContent = chunk.title;
+          document.body.appendChild(ghost);
+          document.body.classList.add('is-grabbing');
+          item.classList.add('is-dragging');
+        }
+        ghost.style.left = ev.clientX + 14 + 'px';
+        ghost.style.top = ev.clientY + 14 + 'px';
+
+        const side = ['plan', 'actual'].find(s => {
+          const r = laneFor(s).getBoundingClientRect();
+          return ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+        });
+
+        if (!side) { target = null; clearIndicators(); return; }
+
+        const lane = laneFor(side);
+        const slotStart = DAY_START + Math.floor((minuteAt(ev.clientY, lane) - DAY_START) / DROP_SLOT) * DROP_SLOT;
+        const start = clamp(slotStart, DAY_START, DAY_END - duration);
+
+        if (target && target.side !== side) clearIndicators();
+        target = { side, start };
+
+        if (!slot) {
+          slot = document.createElement('div');
+          slot.className = `slot cat-${chunk.category}`;
+          preview = document.createElement('div');
+          preview.className = `block block--preview cat-${chunk.category}`;
+          preview.innerHTML = `
+            <div class="block__main">
+              <div class="block__name"><span>${escapeHtml(chunk.title)}</span></div>
+              <div class="block__time"></div>
+            </div>
+            <span class="block__dur"></span>`;
+          lane.append(slot, preview);
+        }
+        slot.style.top = (clamp(slotStart, DAY_START, DAY_END - DROP_SLOT) - DAY_START) * pxPerMin + 'px';
+        slot.style.height = DROP_SLOT * pxPerMin + 'px';
+        positionBlock(preview, { start, duration });
+      },
+      () => {
+        if (ghost) ghost.remove();
+        clearIndicators();
+        item.classList.remove('is-dragging');
+        document.body.classList.remove('is-grabbing');
+        if (!target) return;
+        day[target.side].push({
+          id: uid(),
+          chunkId: chunk.id,
+          category: chunk.category,
+          title: chunk.title,
+          start: target.start,
+          duration,
+        });
+        commit();
+      }
+    );
+  }
+
+  // * * * * * * * * * * * * *
+  //         Days
+  // * * * * * * * * * * * * *
+
+  async function loadDay(key) {
+    viewDate = key;
+    day = (await getDay(key)) || { date: key, plan: [], actual: [] };
+    renderDay();
+  }
+
+  function shiftDay(delta) {
+    const d = parseKey(viewDate);
+    d.setDate(d.getDate() + delta);
+    loadDay(dateKey(d));
+  }
+
+  // Every minute: move the now-line, and roll over to a fresh schedule after midnight
+  function startClock() {
+    setInterval(() => {
+      const today = todayKey();
+      if (today !== lastToday) {
+        if (viewDate === lastToday) loadDay(today);
+        lastToday = today;
+      }
+      renderNow();
+    }, 60 * 1000);
+  }
+
+  async function init() {
+    buildCategoryStyles();
+    setTheme(document.documentElement.dataset.theme || 'dark');
+    document.querySelectorAll('[data-theme-option]').forEach(btn =>
+      btn.addEventListener('click', () => setTheme(btn.dataset.themeOption)));
+
+    db = await openDb();
+    chunks = (await getAllChunks()).sort((a, b) => a.created - b.created);
+    buildTimelines();
+    renderLibrary();
+    await loadDay(viewDate);
+
+    document.getElementById('btn-prev').addEventListener('click', () => shiftDay(-1));
+    document.getElementById('btn-next').addEventListener('click', () => shiftDay(1));
+    document.getElementById('btn-today').addEventListener('click', () => loadDay(todayKey()));
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { buildTimelines(); renderDay(); }, 100);
+    });
+
+    startClock();
+  }
+
+  init();
+</script>
+</body>
+</html>

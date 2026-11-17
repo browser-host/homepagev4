@@ -765,6 +765,11 @@ function saveOrganized() {
 // * * * * * * * * * * * * *
 
 var toolData = {
+  "Productivity": [
+    { "title": "Planner", "id": "planner", "url": "./tools/planner/index.html", "icon": "planner" },
+    { "title": "Pomodoro", "id": "pomodoro", "url": "./tools/pomodoro/index.html", "icon": "pomodoro" },
+    { "title": "Notepad", "id": "notepad", "url": "./tools/notepad/index.html", "icon": "notepad" }
+  ],
   "Web Design": [
     { "title": "Color Picker", "id": "color-picker", "url": "./tools/color picker/index.html", "icon": "color-picker" },
     { "title": "Gradients", "id": "gradients", "url": "./tools/background gradient gen/gradients.html", "icon": "picture" },
@@ -782,9 +787,7 @@ var toolData = {
     { "title": "Timezones", "id": "timezone-viewer", "url": "./tools/timezones/timezones.html", "icon": "clock" },
     { "title": "Whats My IP?", "id": "whats-my-ip", "url": "./tools/WhatsMyIP/index.html", "icon": "location" },
     { "title": "Dictionary", "id": "dictionary", "url": "./tools/dictionary/index.html", "icon": "magnifying-glass" },
-    { "title": "Notepad", "id": "notepad", "url": "./tools/notepad/index.html", "icon": "notepad" },
     { "title": "Viewport Size", "id": "viewport", "url": "./tools/viewport/index.html", "icon": "viewport" },
-    { "title": "Pomodoro", "id": "pomodoro", "url": "./tools/pomodoro/index.html", "icon": "pomodoro" },
     { "title": "UTF-8 Characters", "id": "utf8", "url": "./tools/utf8/index.html", "icon": "utf8" }
   ]
 }
