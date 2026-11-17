@@ -784,7 +784,8 @@ var toolData = {
     { "title": "Dictionary", "id": "dictionary", "url": "./tools/dictionary/index.html", "icon": "magnifying-glass" },
     { "title": "Notepad", "id": "notepad", "url": "./tools/notepad/index.html", "icon": "notepad" },
     { "title": "Viewport Size", "id": "viewport", "url": "./tools/viewport/index.html", "icon": "viewport" },
-    { "title": "Pomodoro", "id": "pomodoro", "url": "./tools/pomodoro/index.html", "icon": "pomodoro" }
+    { "title": "Pomodoro", "id": "pomodoro", "url": "./tools/pomodoro/index.html", "icon": "pomodoro" },
+    { "title": "UTF-8 Characters", "id": "utf8", "url": "./tools/utf8/index.html", "icon": "utf8" }
   ]
 }
 
