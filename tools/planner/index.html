@@ -313,6 +313,45 @@
     cursor: ns-resize;
   }
 
+  /* * * Edit dialog * * */
+  .edit {
+    width: 320px;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface-2);
+    color: var(--text);
+    box-shadow: var(--shadow);
+  }
+  .edit [hidden] { display: none; }
+  .edit::backdrop { background: rgba(0, 0, 0, 0.4); }
+  .edit__title { margin: 0 0 16px; font-size: 15px; font-weight: 600; }
+  .edit__field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .edit__row { display: flex; gap: 12px; }
+  .edit__row .edit__field { flex: 1; }
+  .edit__label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+  .edit__input {
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+  }
+  .edit__error { min-height: 18px; margin: -4px 0 8px; font-size: 12px; color: var(--now); }
+  .edit__actions { display: flex; justify-content: flex-end; gap: 8px; }
+  .edit__btn {
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    font-weight: 500;
+  }
+  .edit__btn:hover { background: var(--hover); }
+  .edit__btn--primary { background: var(--today-bg); border-color: var(--today-border); color: var(--today-text); }
+
   /* * * Chunks * * */
   .library { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 20px; }
   .group + .group { margin-top: 22px; }
@@ -450,6 +489,35 @@
       </div>
     </section>
   </main>
+
+  <dialog class="edit" id="edit-dialog">
+    <form method="dialog" id="edit-form">
+      <h2 class="edit__title" id="edit-heading">Edit</h2>
+      <label class="edit__field">
+        <span class="edit__label">Title</span>
+        <input class="edit__input" id="edit-name" required>
+      </label>
+      <div class="edit__row" id="edit-times">
+        <label class="edit__field">
+          <span class="edit__label">Start</span>
+          <input class="edit__input" id="edit-start" type="time" step="300">
+        </label>
+        <label class="edit__field">
+          <span class="edit__label">End</span>
+          <input class="edit__input" id="edit-end" type="time" step="300">
+        </label>
+      </div>
+      <label class="edit__field" id="edit-length-field">
+        <span class="edit__label">Default length (minutes)</span>
+        <input class="edit__input" id="edit-length" type="number" min="5" step="5">
+      </label>
+      <div class="edit__error" id="edit-error" role="alert"></div>
+      <div class="edit__actions">
+        <button class="edit__btn" type="button" id="edit-cancel">Cancel</button>
+        <button class="edit__btn edit__btn--primary" type="submit">Save</button>
+      </div>
+    </form>
+  </dialog>
 
 <script>
   const DAY_START = 8 * 60;
@@ -756,6 +824,11 @@
       commit();
     });
 
+    el.addEventListener('dblclick', e => {
+      if (e.target.closest('.action')) return;
+      editBlock(block);
+    });
+
     el.addEventListener('pointerdown', e => {
       if (e.button !== 0 || e.target.closest('.action')) return;
       e.preventDefault();
@@ -850,6 +923,10 @@
           chunks = chunks.filter(c => c.id !== chunk.id);
           renderLibrary();
           await deleteChunk(chunk.id);
+        });
+        item.addEventListener('dblclick', e => {
+          if (e.target.closest('button')) return;
+          editChunk(chunk);
         });
         item.addEventListener('pointerdown', e => {
           if (e.button !== 0 || e.target.closest('button')) return;
@@ -989,6 +1066,88 @@
   }
 
   // * * * * * * * * * * * * *
+  //        Edit dialog
+  // * * * * * * * * * * * * *
+
+  const toTimeInput = min => `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+  const fromTimeInput = val => {
+    const [h, m] = val.split(':').map(Number);
+    return h * 60 + m;
+  };
+
+  let editSave = null;   // called with the form values; returns an error string or nothing
+
+  function openEditor({ heading, title, start, end, length }, save) {
+    const isBlock = start !== undefined;
+    document.getElementById('edit-heading').textContent = heading;
+    document.getElementById('edit-name').value = title;
+    document.getElementById('edit-times').hidden = !isBlock;
+    document.getElementById('edit-length-field').hidden = isBlock;
+    if (isBlock) {
+      document.getElementById('edit-start').value = toTimeInput(start);
+      document.getElementById('edit-end').value = toTimeInput(end);
+    } else {
+      document.getElementById('edit-length').value = length;
+    }
+    document.getElementById('edit-error').textContent = '';
+    editSave = save;
+    const dialog = document.getElementById('edit-dialog');
+    dialog.showModal();
+    document.getElementById('edit-name').select();
+  }
+
+  function setupEditor() {
+    const dialog = document.getElementById('edit-dialog');
+    document.getElementById('edit-cancel').addEventListener('click', () => dialog.close());
+    document.getElementById('edit-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const error = editSave({
+        title: document.getElementById('edit-name').value.trim(),
+        start: document.getElementById('edit-start').value,
+        end: document.getElementById('edit-end').value,
+        length: document.getElementById('edit-length').value,
+      });
+      if (error) document.getElementById('edit-error').textContent = error;
+      else dialog.close();
+    });
+  }
+
+  function editBlock(block) {
+    openEditor(
+      { heading: 'Edit block', title: block.title, start: block.start, end: block.start + block.duration },
+      ({ title, start, end }) => {
+        if (!title) return 'Title is required.';
+        if (!start || !end) return 'Start and end times are required.';
+        const s = fromTimeInput(start);
+        const e = fromTimeInput(end);
+        if (s < DAY_START || e > DAY_END) return `Times must be between ${fmtHourLabel(DAY_START)} and ${fmtHourLabel(DAY_END)}.`;
+        if (e - s < MIN_DURATION) return `End must be at least ${MIN_DURATION} minutes after start.`;
+        block.title = title;
+        block.start = s;
+        block.duration = e - s;
+        commit();
+      }
+    );
+  }
+
+  function editChunk(chunk) {
+    const info = CATEGORIES[chunk.category];
+    openEditor(
+      { heading: `Edit ${info.label.toLowerCase()} chunk`, title: chunk.title, length: chunk.defaultDuration || info.duration },
+      ({ title, length }) => {
+        if (!title) return 'Title is required.';
+        const minutes = Math.round(Number(length));
+        if (!Number.isFinite(minutes) || minutes < MIN_DURATION) return `Length must be at least ${MIN_DURATION} minutes.`;
+        if (minutes > DAY_END - DAY_START) return `Length can't be longer than the day.`;
+        chunk.title = title;
+        chunk.defaultDuration = minutes;
+        renderLibrary();
+        putChunk(chunk);
+      }
+    );
+  }
+
+  // * * * * * * * * * * * * *
   //         Days
   // * * * * * * * * * * * * *
 
@@ -1038,6 +1197,7 @@
       resizeTimer = setTimeout(() => { buildTimelines(); renderDay(); }, 100);
     });
 
+    setupEditor();
     startClock();
   }
 
